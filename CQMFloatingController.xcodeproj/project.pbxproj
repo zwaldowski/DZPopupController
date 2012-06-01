@@ -279,10 +279,12 @@
 		F5C4226D1560BF2400F7E3EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CQMFloatingController/CQMFloatingController-Prefix.pch";
 				INFOPLIST_FILE = "CQMFloatingController/CQMFloatingController-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -290,10 +292,12 @@
 		F5C4226E1560BF2400F7E3EE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CQMFloatingController/CQMFloatingController-Prefix.pch";
 				INFOPLIST_FILE = "CQMFloatingController/CQMFloatingController-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

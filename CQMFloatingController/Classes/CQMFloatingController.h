@@ -33,7 +33,7 @@
 @interface CQMFloatingController : UIViewController
 
 @property (nonatomic) CGSize frameSize;
-@property (nonatomic, retain) UIColor *frameColor;
+@property (nonatomic, strong) UIColor *frameColor;
 
 + (CQMFloatingController*)sharedFloatingController;
 

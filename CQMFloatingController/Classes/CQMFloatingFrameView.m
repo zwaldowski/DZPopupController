@@ -52,10 +52,6 @@
 }
 
 
-- (void)dealloc {
-	[baseColor_ release];
-	[super dealloc];
-}
 
 
 #pragma mark -
@@ -67,8 +63,7 @@
 }
 - (void)setBaseColor:(UIColor*)baseColor {
 	if (baseColor_ != baseColor) {
-		[baseColor_ release];
-		baseColor_ = [baseColor retain];
+		baseColor_ = baseColor;
 	}
 	[self setNeedsDisplay];
 }
@@ -121,12 +116,12 @@
 	
 	// Highlight
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	NSArray *colors = [[NSArray alloc] initWithObjects:
+	CFArrayRef colors = (__bridge_retained CFArrayRef)[[NSArray alloc] initWithObjects:
 					   (id)[kStartHighlightColor CGColor],
 					   (id)[kEndHighlightColor CGColor],
 					   nil];
 	CGFloat locations[] = {0, 1.0f};
-	CGGradientRef gradient = CGGradientCreateWithColors(colorSpace, (CFArrayRef)colors, locations);
+	CGGradientRef gradient = CGGradientCreateWithColors(colorSpace, colors, locations);
 	CGFloat highlightMargin = kLightBorderWidth + kHighlightMargin;
 	CGRect highlightRect = CGRectMake(highlightMargin, highlightMargin,
 									  viewSize.width - highlightMargin * 2,
@@ -142,7 +137,7 @@
 								CGPointMake(0, kHighlightHeight),
 								0);
 	CGGradientRelease(gradient);
-	[colors release];
+	CFRelease(colors);
 	CGColorSpaceRelease(colorSpace);
 	CGPathRelease(path);
 	CGContextRestoreGState(context);
