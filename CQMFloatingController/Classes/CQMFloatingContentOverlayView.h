@@ -23,12 +23,8 @@
 // SOFTWARE.
 //
 
-#import <Foundation/Foundation.h>
-
-
 @interface CQMFloatingContentOverlayView : UIView
 
-@property (nonatomic) CGFloat cornerRadius;
 @property (nonatomic, strong) UIColor *edgeColor;
 
 + (CGFloat)frameWidth;

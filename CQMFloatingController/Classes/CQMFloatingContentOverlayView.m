@@ -26,8 +26,7 @@
 #import "CQMFloatingContentOverlayView.h"
 #import "CQMPathUtilities.h"
 
-
-#define kDefaultCornerRadius 5.0f
+#define kCornerRadius        5.0f
 #define kShadowOffset        CGSizeMake(0, 1.0f)
 #define kShadowBlur          2.0f
 #define kShadowColor         [UIColor colorWithWhite:0 alpha:0.8f]
@@ -35,12 +34,11 @@
 
 @implementation CQMFloatingContentOverlayView
 
-@synthesize cornerRadius = _cornerRadius, edgeColor = _edgeColor;
+@synthesize edgeColor = _edgeColor;
 
 - (id)init {
 	if (self = [super init]) {
 		[self setBackgroundColor:[UIColor clearColor]];
-		[self setCornerRadius:kDefaultCornerRadius];
 	}
 	return self;
 }
@@ -49,13 +47,6 @@
 
 + (CGFloat)frameWidth {
 	return kShadowBlur;
-}
-
-- (void)setCornerRadius:(CGFloat)cornerRadius {
-	if (_cornerRadius != cornerRadius) {
-		_cornerRadius = cornerRadius;
-		[self setNeedsDisplay];
-	}
 }
 
 - (void)setEdgeColor:(UIColor*)edgeColor {
@@ -70,7 +61,7 @@
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGSize viewSize = [self frame].size;
-	CGFloat radius = [self cornerRadius];
+	const CGFloat radius = kCornerRadius;
 	CGPathRef path;
 	
 	CGContextSaveGState(context);

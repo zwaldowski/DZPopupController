@@ -35,10 +35,6 @@
 #define kDefaultFrameSize  CGSizeMake(320 - 66, 460 - 66)
 #define kFramePadding      5.0f
 #define kRootKey           @"root"
-#define kShadowColor       [UIColor blackColor]
-#define kShadowOffset      CGSizeMake(0, 2.0f)
-#define kShadowOpacity     0.70f
-#define kShadowRadius      10.0f
 #define kAnimationDuration 0.3f
 
 
@@ -108,10 +104,6 @@
 - (UIView*)frameView {
 	if (frameView_ == nil) {
 		frameView_ = [[CQMFloatingFrameView alloc] init];
-		[frameView_.layer setShadowColor:[kShadowColor CGColor]];
-		[frameView_.layer setShadowOffset:kShadowOffset];
-		[frameView_.layer setShadowOpacity:kShadowOpacity];
-		[frameView_.layer setShadowRadius:kShadowRadius];
 	}
 	return frameView_;
 }
@@ -253,14 +245,6 @@ static char windowRetainCycle;
 										contentSize.width  + contentFrameWidth * 2,
 										contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2)];
 	[contentOverlay.superview bringSubviewToFront:contentOverlay];
-	
-	// Shadow
-	CGFloat radius = [self.frameView cornerRadius];
-	CGPathRef shadowPath = CQMPathCreateRoundingRect(CGRectMake(0, 0,
-																frameSize.width, frameSize.height),
-													 radius, radius, radius, radius);
-	[frameView.layer setShadowPath:shadowPath];
-	CGPathRelease(shadowPath);
 }
 
 #pragma mark -

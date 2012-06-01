@@ -23,12 +23,8 @@
 // SOFTWARE.
 //
 
-#import <Foundation/Foundation.h>
-
-
 @interface CQMFloatingFrameView : UIView
 
 @property (nonatomic, strong) UIColor *baseColor;
-@property (nonatomic) CGFloat cornerRadius;
 
 @end
