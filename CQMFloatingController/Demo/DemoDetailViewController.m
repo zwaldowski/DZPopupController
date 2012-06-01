@@ -32,52 +32,26 @@
 #define kTextColor       [UIColor blackColor]
 #define kTextShadowColor [UIColor colorWithWhite:1.0f alpha:0.5f]
 
+@implementation DemoDetailViewController
 
-@interface DemoDetailViewController()
+@synthesize textLabel = _textLabel;
 
-@property (nonatomic, readonly, strong) UILabel *textLabel;
-
-@end
-
-
-@implementation DemoDetailViewController {
-@private
-	// View
-	UILabel *label_;
-}
-
-
-
-#pragma mark -
-#pragma mark Property
-
-
-- (NSString*)text {
-	return [self.textLabel text];
-}
-- (void)setText:(NSString*)text {
-	[self.textLabel setText:text];
-	[self.navigationItem setTitle:text];
-}
-
+#pragma mark - Properties
 
 - (UILabel*)textLabel {
-	if (label_ == nil) {
-		label_ = [[UILabel alloc] init];
-		[label_ setBackgroundColor:[UIColor clearColor]];
-		[label_ setFont:kLabelFont];
-		[label_ setShadowColor:kTextShadowColor];
-		[label_ setShadowOffset:kShadowOffset];
-		[label_ setTextAlignment:UITextAlignmentCenter];
-		[label_ setTextColor:kTextColor];
+	if (!_textLabel) {
+		_textLabel = [[UILabel alloc] init];
+		[_textLabel setBackgroundColor:[UIColor clearColor]];
+		[_textLabel setFont:kLabelFont];
+		[_textLabel setShadowColor:kTextShadowColor];
+		[_textLabel setShadowOffset:kShadowOffset];
+		[_textLabel setTextAlignment:UITextAlignmentCenter];
+		[_textLabel setTextColor:kTextColor];
 	}
-	return label_;
+	return _textLabel;
 }
 
-
-#pragma mark -
-#pragma mark UIViewController
-
+#pragma mark - UIViewController
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
@@ -90,6 +64,5 @@
 	[label setFrame:CGRectMake(0, 0, viewSize.width, viewSize.height)];
 	[self.view addSubview:label];
 }
-
 
 @end

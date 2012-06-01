@@ -25,9 +25,8 @@
 
 #import <Foundation/Foundation.h>
 
-
 @interface DemoDetailViewController : UIViewController
 
-@property (nonatomic, copy) NSString *text;
+@property (nonatomic, readonly, strong) UILabel *textLabel;
 
 @end

@@ -50,26 +50,18 @@
 @property (nonatomic, readonly, strong) UIView *contentView;
 @property (nonatomic, readonly, strong) CQMFloatingContentOverlayView *contentOverlayView;
 @property (nonatomic, readonly, strong) UINavigationController *navigationController;
+@property (nonatomic, readonly, strong) UIViewController *contentViewController;
 @property (nonatomic, strong) UIImageView *shadowView;
+@property (atomic) BOOL presented;
 
 - (void)layoutFrameView;
-// Actions
 - (void)maskControlDidTouchUpInside:(id)sender;
 
 @end
 
+@implementation CQMFloatingController
 
-@implementation CQMFloatingController {
-@private
-	BOOL presented_;
-	// View
-	UIControl *maskControl_;
-	CQMFloatingFrameView *frameView_;
-	UIView *contentView_;
-	CQMFloatingContentOverlayView *contentOverlayView_;
-	UINavigationController *navController_;
-	UIViewController *contentViewController_;
-}
+@synthesize presented = presented_, maskControl = maskControl_, frameView = frameView_, contentView = contentView_, contentOverlayView = contentOverlayView_, navigationController = navController_, contentViewController = contentViewController_;
 
 
 - (id)init {
@@ -193,12 +185,10 @@
 
 
 - (void)presentWithContentViewController:(UIViewController*)viewController animated:(BOOL)animated {
-	@synchronized(self) {
-		if (presented_) {
-			return;
-		}
-		presented_ = YES;
-	}
+	if (self.presented)
+		return;
+	else
+		self.presented = YES;
 	
 	[self.view setAlpha:0];
 	
@@ -227,18 +217,15 @@
 
 
 - (void)dismissAnimated:(BOOL)animated {
-	__weak CQMFloatingController *me = self;
-	[UIView animateWithDuration:(animated ? kAnimationDuration : 0)
-					 animations:
-	 ^(void) {
-		[me.view setAlpha:0];
-	 }
-					 completion:
-	 ^(BOOL finished) {
-		 if (finished) {
-			 [me.view removeFromSuperview];
-			 presented_ = NO;
-		 }
+	[UIView animateWithDuration: (animated ? kAnimationDuration : 0)
+					 animations: ^{
+		[self.view setAlpha:0];
+	 } completion: ^(BOOL finished){
+		 if (!finished)
+			 return;
+		 
+		[self.view removeFromSuperview];
+		self.presented = NO;
 	 }];
 }
 

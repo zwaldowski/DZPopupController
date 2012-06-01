@@ -30,53 +30,32 @@
 #define kCellIdentifier  @"UITableViewCell"
 #define kNavigationTitle @"Demo"
 
-
 @interface DemoTableViewController()
 
 @property (nonatomic, readonly, strong) NSArray *texts;
 
-+ (NSArray*)testData;
-
 @end
 
+@implementation DemoTableViewController
 
-@implementation DemoTableViewController {
-@private
-	NSArray *texts_;
-}
+@synthesize texts = _texts;
 
+#pragma mark - Properties
 
-
-
-#pragma mark -
-#pragma mark Property
-
-
-- (NSArray*)texts {
-	if (texts_ == nil) {
-		texts_ = [DemoTableViewController testData];
+- (NSArray *)texts {
+	if (!_texts) {
+		NSMutableArray *data = [NSMutableArray new];
+		
+		for (unichar ch = 'A'; ch <= 'Z'; ch++) {
+			[data addObject: [NSString stringWithFormat:@"%C%C%C", ch, ch, ch]];
+		}
+		
+		_texts = data;
 	}
-	return texts_;
+	return _texts;
 }
 
-
-#pragma mark -
-
-
-+ (NSArray*)testData {
-	NSMutableArray *data = [[NSMutableArray alloc] init];
-	
-	for (unichar ch = 'A'; ch <= 'Z'; ch++) {
-		[data addObject:[NSString stringWithFormat:@"%C%C%C", ch, ch, ch]];
-	}
-	
-	return data;
-}
-
-
-#pragma mark -
-#pragma mark UITableViewController
-
+#pragma mark - UITableViewController
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
 	return [self.texts count];
@@ -104,15 +83,14 @@
 	
 	DemoDetailViewController *detailViewController = [[DemoDetailViewController alloc] init];
 	NSString *text = [self.texts objectAtIndex:[indexPath row]];
-	[detailViewController setText:text];
+	detailViewController.title = text;
+	detailViewController.textLabel.text = text;
 	[self.navigationController pushViewController:detailViewController
 										 animated:YES];
 }
 
-
 #pragma mark -
 #pragma mark UIViewController
-
 
 - (void)viewDidLoad {
 	[super viewDidLoad];

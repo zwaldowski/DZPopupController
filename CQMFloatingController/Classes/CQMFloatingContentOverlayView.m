@@ -33,12 +33,9 @@
 #define kShadowColor         [UIColor colorWithWhite:0 alpha:0.8f]
 
 
-@implementation CQMFloatingContentOverlayView {
-@private
-	CGFloat cornerRadius_;
-	UIColor *edgeColor_;
-}
+@implementation CQMFloatingContentOverlayView
 
+@synthesize cornerRadius = _cornerRadius, edgeColor = _edgeColor;
 
 - (id)init {
 	if (self = [super init]) {
@@ -48,45 +45,29 @@
 	return self;
 }
 
-
-
-
-#pragma mark -
-#pragma mark Property
-
+#pragma mark - Properties
 
 + (CGFloat)frameWidth {
 	return kShadowBlur;
 }
 
-
-- (CGFloat)cornerRadius {
-	return cornerRadius_;
-}
 - (void)setCornerRadius:(CGFloat)cornerRadius {
-	cornerRadius_ = cornerRadius;
-	[self setNeedsDisplay];
-}
-
-
-- (UIColor*)edgeColor {
-	return edgeColor_;
-}
-- (void)setEdgeColor:(UIColor*)edgeColor {
-	if (edgeColor_ != edgeColor) {
-		edgeColor_ = edgeColor;
+	if (_cornerRadius != cornerRadius) {
+		_cornerRadius = cornerRadius;
+		[self setNeedsDisplay];
 	}
-	[self setNeedsDisplay];
 }
 
+- (void)setEdgeColor:(UIColor*)edgeColor {
+	if (![_edgeColor isEqual: edgeColor]) {
+		_edgeColor = edgeColor;
+		[self setNeedsDisplay];
+	}
+}
 
-#pragma mark -
-#pragma mark UIView
-
+#pragma mark - UIView
 
 - (void)drawRect:(CGRect)rect {
-	[super drawRect:rect];
-	
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGSize viewSize = [self frame].size;
 	CGFloat radius = [self cornerRadius];
@@ -108,6 +89,5 @@
 	CGPathRelease(path);
 	CGContextRestoreGState(context);
 }
-
 
 @end

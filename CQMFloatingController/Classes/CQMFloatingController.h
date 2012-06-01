@@ -25,10 +25,7 @@
 
 #import <Foundation/Foundation.h>
 
-
 @class CQMFloatingFrameView;
-@class CQMFloatingNavigationBar;
-
 
 @interface CQMFloatingController : UIViewController
 

@@ -35,13 +35,9 @@
 #define kEndHighlightColor   [UIColor colorWithWhite:1.00f alpha:0.05f]
 #define kDefaultCornerRadius 8.0f
 
+@implementation CQMFloatingFrameView
 
-@implementation CQMFloatingFrameView {
-@private
-	CGFloat cornerRadius_;
-	UIColor *baseColor_;
-}
-
+@synthesize cornerRadius = _cornerRadius, baseColor = _baseColor;
 
 - (id)init {
 	if (self = [super init]) {
@@ -51,40 +47,25 @@
 	return self;
 }
 
+#pragma mark - Properties
 
-
-
-#pragma mark -
-#pragma mark Property
-
-
-- (UIColor*)baseColor {
-	return baseColor_;
-}
 - (void)setBaseColor:(UIColor*)baseColor {
-	if (baseColor_ != baseColor) {
-		baseColor_ = baseColor;
+	if (![_baseColor isEqual: baseColor]) {
+		_baseColor = baseColor;
+		[self setNeedsDisplay];
 	}
-	[self setNeedsDisplay];
 }
 
-
-- (CGFloat)cornerRadius {
-	return cornerRadius_;
-}
 - (void)setCornerRadius:(CGFloat)cornerRadius {
-	cornerRadius_ = cornerRadius;
-	[self setNeedsDisplay];
+	if (_cornerRadius != cornerRadius) {
+		_cornerRadius = cornerRadius;
+		[self setNeedsDisplay];
+	}
 }
 
-
-#pragma mark -
-#pragma mark UIView
-
+#pragma mark - UIView
 
 - (void)drawRect:(CGRect)rect {
-	[super drawRect:rect];
-	
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGFloat radius = [self cornerRadius];
 	CGSize viewSize = [self frame].size;
