@@ -43,14 +43,13 @@
 @property (nonatomic, weak) CQMFloatingFrameView *frameView;
 @property (nonatomic, readonly, strong) UIView *contentView;
 @property (nonatomic, readonly, strong) CQMFloatingContentOverlayView *contentOverlayView;
-@property (nonatomic, readonly, strong) UINavigationController *navigationController;
 @property (nonatomic, strong) UIImageView *shadowView;
 
 @end
 
 @implementation CQMFloatingController
 
-@synthesize frameView, contentView = contentView_, contentOverlayView = contentOverlayView_, navigationController = navController_, contentViewController = contentViewController_, shadowView = shadowView_, frameSize = _frameSize;
+@synthesize frameView, contentView = contentView_, contentOverlayView = contentOverlayView_, contentViewController = contentViewController_, shadowView = shadowView_, frameSize = _frameSize;
 
 - (id)init {
 	if (self = [super init]) {
@@ -98,7 +97,6 @@
 - (void)setFrameColor:(UIColor*)frameColor {
 	[self.frameView setBaseColor:frameColor];
 	[self.contentOverlayView setEdgeColor:frameColor];
-	[self.navigationController.navigationBar setTintColor:frameColor];
 	[self.frameView setNeedsDisplay];
 	[self.contentOverlayView setNeedsDisplay];
 }
