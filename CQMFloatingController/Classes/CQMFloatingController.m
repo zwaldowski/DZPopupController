@@ -63,6 +63,16 @@
 
 - (id)init {
 	if (self = [super init]) {
+		static dispatch_once_t onceToken;
+		dispatch_once(&onceToken, ^{
+			UIImage *blank = CQMCreateBlankImage();
+			id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [self class], nil];
+			id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [self class], nil];
+			[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsDefault];
+			[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsLandscapePhone];
+			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
+			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsLandscapePhone];
+		});
 		[self setFrameSize:kDefaultFrameSize];
 		[self setFrameColor:kDefaultFrameColor];
 	}
@@ -140,12 +150,8 @@
 
 - (UINavigationController*)navigationController {
 	if (navController_ == nil) {
-		UIImage *blank = CQMCreateBlankImage();
-		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [self class], nil];
-		[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsDefault];
-		[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsLandscapePhone];
-		
 		navController_ = [[UINavigationController alloc] initWithRootViewController: [UIViewController new]];
+		[navController_ setToolbarHidden:NO];
 	}
 	return navController_;
 }
@@ -232,10 +238,11 @@
 	// Content overlay
 	UIView *contentOverlay = [self contentOverlayView];
 	CGFloat contentFrameWidth = [CQMFloatingContentOverlayView frameWidth];
+	CGFloat toolbarHeight = [self.navigationController.toolbar frame].size.height;
 	[contentOverlay setFrame:CGRectMake(contentFrame.origin.x - contentFrameWidth,
 										contentFrame.origin.y + navBarHeight - contentFrameWidth,
 										contentSize.width  + contentFrameWidth * 2,
-										contentSize.height - navBarHeight + contentFrameWidth * 2)];
+										contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2)];
 	[contentOverlay.superview bringSubviewToFront:contentOverlay];
 	
 	// Shadow

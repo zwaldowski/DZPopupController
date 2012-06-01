@@ -53,6 +53,14 @@
 	// 2. Get shared floating controller
 	CQMFloatingController *floatingController = [CQMFloatingController new];
 	
+	
+	
+	UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemFlexibleSpace target: nil action:NULL];
+	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh target: nil action:NULL];
+	UIBarButtonItem *share = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemAction target: nil action:NULL];
+	demoViewController.toolbarItems = [NSArray arrayWithObjects: refresh, space, share, nil];
+	demoViewController.hidesBottomBarWhenPushed = NO;
+	
 	// 3. Show floating controller with specified content
 	[floatingController presentWithContentViewController:demoViewController
 												animated:YES];

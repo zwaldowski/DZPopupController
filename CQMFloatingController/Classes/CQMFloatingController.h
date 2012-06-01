@@ -23,10 +23,6 @@
 // SOFTWARE.
 //
 
-#import <Foundation/Foundation.h>
-
-@class CQMFloatingFrameView;
-
 @interface CQMFloatingController : UIViewController <UIAppearanceContainer>
 
 @property (nonatomic) CGSize frameSize;
