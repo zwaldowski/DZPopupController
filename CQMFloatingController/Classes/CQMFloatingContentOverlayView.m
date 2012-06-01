@@ -25,10 +25,11 @@
 
 #import "CQMFloatingContentOverlayView.h"
 #import "CQMPathUtilities.h"
+#import <QuartzCore/QuartzCore.h>
 
 #define kCornerRadius        5.0f
 #define kShadowOffset        CGSizeMake(0, 1.0f)
-#define kShadowBlur          2.0f
+#define kShadowBlur          3.0f
 #define kShadowColor         [UIColor colorWithWhite:0 alpha:0.8f]
 
 
@@ -38,7 +39,10 @@
 
 - (id)init {
 	if (self = [super init]) {
-		[self setBackgroundColor:[UIColor clearColor]];
+		self.layer.cornerRadius = kCornerRadius;
+		self.layer.masksToBounds = YES;
+		self.backgroundColor = [UIColor clearColor];
+		self.userInteractionEnabled = NO;
 	}
 	return self;
 }
@@ -49,35 +53,24 @@
 	return kShadowBlur;
 }
 
-- (void)setEdgeColor:(UIColor*)edgeColor {
-	if (![_edgeColor isEqual: edgeColor]) {
-		_edgeColor = edgeColor;
-		[self setNeedsDisplay];
-	}
-}
-
 #pragma mark - UIView
 
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
-	CGSize viewSize = [self frame].size;
 	const CGFloat radius = kCornerRadius;
-	CGPathRef path;
+	const CGFloat frameWidth = kShadowBlur;
 	
 	CGContextSaveGState(context);
-	CGFloat frameWidth = [CQMFloatingContentOverlayView frameWidth];
-	path = CQMPathCreateRoundingRect(CGRectMake(frameWidth, frameWidth,
-												viewSize.width - frameWidth * 2,
-												viewSize.height - frameWidth * 2),
-									 radius, radius, radius, radius);
-	CGContextAddRect(context, CGRectMake(0, 0,
-										 viewSize.width, viewSize.height));
-	CGContextAddPath(context, path);
-	CGContextSetFillColorWithColor(context, [self.edgeColor CGColor]);
+	
+	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRect:rect];
+	UIBezierPath *roundRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
+	UIBezierPath *innerShadowRect = [outerRect copy];
+	[innerShadowRect appendPath: roundRect];
+	[innerShadowRect setUsesEvenOddFillRule: YES];
 	CGContextSetShadowWithColor(context, kShadowOffset, kShadowBlur, [kShadowColor CGColor]);
-	CGContextEOFillPath(context);
-	CGContextDrawPath(context, 0);
-	CGPathRelease(path);
+	[roundRect addClip];
+	[innerShadowRect fill];
+	
 	CGContextRestoreGState(context);
 }
 
