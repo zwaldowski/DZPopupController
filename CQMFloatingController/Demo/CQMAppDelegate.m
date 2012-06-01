@@ -48,10 +48,10 @@
 	// To use CQMFloatingController:
 	
 	// 1. Prepare a content view controller
-	DemoTableViewController *demoViewController = [[DemoTableViewController alloc] init];
+	DemoTableViewController *demoViewController = [DemoTableViewController new];
 	
 	// 2. Get shared floating controller
-	CQMFloatingController *floatingController = [CQMFloatingController sharedFloatingController];
+	CQMFloatingController *floatingController = [CQMFloatingController new];
 	
 	// 3. Show floating controller with specified content
 	[floatingController presentWithContentViewController:demoViewController

@@ -32,8 +32,6 @@
 @property (nonatomic) CGSize frameSize;
 @property (nonatomic, strong) UIColor *frameColor;
 
-+ (CQMFloatingController*)sharedFloatingController;
-
 @property (nonatomic, strong) UIViewController *contentViewController;
 
 - (void)presentWithContentViewController:(UIViewController*)contentViewController animated:(BOOL)animated;

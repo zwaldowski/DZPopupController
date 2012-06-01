@@ -161,19 +161,6 @@
 }
 
 #pragma mark -
-#pragma mark Singleton
-
-+ (CQMFloatingController*)sharedFloatingController {
-	static CQMFloatingController *instance;
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^ {
-		instance = [[CQMFloatingController alloc] init];
-	});
-	return instance;
-}
-
-
-#pragma mark -
 
 
 - (void)presentWithContentViewController:(UIViewController*)viewController animated:(BOOL)animated {
