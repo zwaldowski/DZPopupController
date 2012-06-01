@@ -147,23 +147,49 @@
 	return contentOverlayView_;
 }
 
-
-- (UINavigationController*)navigationController {
-	if (navController_ == nil) {
-		navController_ = [[UINavigationController alloc] initWithRootViewController: [UIViewController new]];
-		[navController_ setToolbarHidden:NO];
+- (void)setContentViewController:(UIViewController *)newController {
+	UIViewController *oldController = self.contentViewController;
+	if (oldController) {
+		[oldController willMoveToParentViewController: nil];
+		[oldController.view removeFromSuperview];
+		[oldController removeFromParentViewController];
 	}
-	return navController_;
+	
+	contentViewController_ = newController;
+	
+	if (newController) {
+		newController.view.frame = self.contentView.bounds;
+		newController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		[self.contentView addSubview: newController.view];
+		[self addChildViewController: newController];
+		[newController didMoveToParentViewController: self];
+	}
 }
 
-- (void)setContentViewController:(UIViewController *)contentViewController {
-	if (contentViewController_ != contentViewController) {
-		[[contentViewController view] removeFromSuperview];
-		contentViewController_ = contentViewController;
-		
-		NSArray *viewControllers = [NSArray arrayWithObject:contentViewController_];
-		[self.navigationController setViewControllers:viewControllers];
+- (void)setContentViewController:(UIViewController *)newController animated:(BOOL)animated {
+	if (!animated)
+		[self setContentViewController: newController];
+	
+	UIViewController *oldController = self.contentViewController;
+	
+	if (!oldController) {
+		[UIView transitionWithView: newController.view duration: (1./3.) options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
+			newController.view.frame = self.contentView.bounds;
+			newController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+			[self.contentView addSubview: newController.view];
+		} completion:^(BOOL finished) {
+			[self addChildViewController: newController];
+			[newController didMoveToParentViewController: self];
+		}];
+		return;
+	} else {
+		[self transitionFromViewController: oldController toViewController: newController duration: (1./3.) options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{} completion:^(BOOL finished) {
+			[oldController removeFromParentViewController];
+			[newController didMoveToParentViewController: self];
+		}];
 	}
+	
+	contentViewController_ = newController;
 }
 
 #pragma mark -
@@ -189,7 +215,7 @@
 	__weak CQMFloatingController *me = self;
 	[UIView animateWithDuration:(animated ? kAnimationDuration : 0)
 					 animations:
-	 ^(void) {
+	 ^{
 		 [me.view setAlpha:1.0f];
 	 }];
 }
@@ -221,26 +247,24 @@
 	
 	// Content
 	UIView *contentView = [self contentView];
-	CGRect contentFrame = CGRectMake(kFramePadding, 0,
-									 frameSize.width - kFramePadding * 2,
-									 frameSize.height - kFramePadding);
-	CGSize contentSize = contentFrame.size;
-	[contentView setFrame:contentFrame];
+	CGSize contentSize = CGSizeMake(frameSize.width - kFramePadding * 2,
+									frameSize.height - kFramePadding);
+	[contentView setFrame: (CGRect){{kFramePadding, 0}, contentSize}];
 	
-	// Navigation
-	UIView *navView = [self.navigationController view];
-	CGFloat navBarHeight = [self.navigationController.navigationBar frame].size.height;
-	[navView setFrame:CGRectMake(0, 0,
-								 contentSize.width, contentSize.height)];
-	[self.navigationController.navigationBar setFrame:CGRectMake(0, 0,
-																 contentSize.width, navBarHeight)];
+	// Navigation	
+	CGFloat navBarHeight = 0.0, toolbarHeight = 0.0;
+	if ([self.contentViewController isKindOfClass: [UINavigationController class]]) {
+		UINavigationController *navigationController = (id)self.contentViewController;
+		navBarHeight = navigationController.navigationBar.frame.size.height;
+		if (!navigationController.toolbarHidden)
+			toolbarHeight = navigationController.toolbar.frame.size.height;
+	}
 	
 	// Content overlay
 	UIView *contentOverlay = [self contentOverlayView];
 	CGFloat contentFrameWidth = [CQMFloatingContentOverlayView frameWidth];
-	CGFloat toolbarHeight = [self.navigationController.toolbar frame].size.height;
-	[contentOverlay setFrame:CGRectMake(contentFrame.origin.x - contentFrameWidth,
-										contentFrame.origin.y + navBarHeight - contentFrameWidth,
+	[contentOverlay setFrame:CGRectMake(kFramePadding - contentFrameWidth,
+										navBarHeight - contentFrameWidth,
 										contentSize.width  + contentFrameWidth * 2,
 										contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2)];
 	[contentOverlay.superview bringSubviewToFront:contentOverlay];
@@ -282,7 +306,6 @@
 	
 	[self.view addSubview:[self frameView]];
 	[self.frameView addSubview:[self contentView]];
-	[self.contentView addSubview:[self.navigationController view]];
 	[self.frameView addSubview:[self contentOverlayView]];
 }
 

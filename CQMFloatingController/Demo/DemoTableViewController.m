@@ -40,21 +40,6 @@
 
 @synthesize texts = _texts;
 
-#pragma mark - Properties
-
-- (NSArray *)texts {
-	if (!_texts) {
-		NSMutableArray *data = [NSMutableArray new];
-		
-		for (unichar ch = 'A'; ch <= 'Z'; ch++) {
-			[data addObject: [NSString stringWithFormat:@"%C%C%C", ch, ch, ch]];
-		}
-		
-		_texts = data;
-	}
-	return _texts;
-}
-
 #pragma mark - UITableViewController
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -94,7 +79,16 @@
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
+	
 	[self.navigationItem setTitle:kNavigationTitle];
+	
+	NSMutableArray *data = [NSMutableArray new];
+	
+	for (unichar ch = 'A'; ch <= 'Z'; ch++) {
+		[data addObject: [NSString stringWithFormat:@"%C%C%C", ch, ch, ch]];
+	}
+	
+	_texts = data;
 }
 
 
