@@ -44,23 +44,19 @@
 
 @interface CQMFloatingController()
 
-@property (nonatomic, readonly, strong) UIControl *maskControl;
 @property (nonatomic, readonly, strong) CQMFloatingFrameView *frameView;
 @property (nonatomic, readonly, strong) UIView *contentView;
 @property (nonatomic, readonly, strong) CQMFloatingContentOverlayView *contentOverlayView;
 @property (nonatomic, readonly, strong) UINavigationController *navigationController;
 @property (nonatomic, strong) UIImageView *shadowView;
-@property (atomic) BOOL presented;
 
 - (void)layoutFrameView;
-- (void)maskControlDidTouchUpInside:(id)sender;
 
 @end
 
 @implementation CQMFloatingController
 
-@synthesize presented = presented_, maskControl = maskControl_, frameView = frameView_, contentView = contentView_, contentOverlayView = contentOverlayView_, navigationController = navController_, contentViewController = contentViewController_, shadowView = shadowView_;
-
+@synthesize frameView = frameView_, contentView = contentView_, contentOverlayView = contentOverlayView_, navigationController = navController_, contentViewController = contentViewController_, shadowView = shadowView_;
 
 - (id)init {
 	if (self = [super init]) {
@@ -106,18 +102,6 @@
 	[self.frameView setBaseColor:frameColor];
 	[self.contentOverlayView setEdgeColor:frameColor];
 	[self.navigationController.navigationBar setTintColor:frameColor];
-}
-
-
-- (UIControl*)maskControl {
-	if (maskControl_ == nil) {
-		maskControl_ = [[UIControl alloc] init];
-		[maskControl_ setBackgroundColor:kDefaultMaskColor];
-		[maskControl_ addTarget:self
-						 action:@selector(maskControlDidTouchUpInside:)
-			   forControlEvents:UIControlEventTouchUpInside];
-	}
-	return maskControl_;
 }
 
 
@@ -200,11 +184,6 @@
 static char windowRetainCycle;
 
 - (void)presentWithContentViewController:(UIViewController*)viewController animated:(BOOL)animated {
-	if (self.presented)
-		return;
-	else
-		self.presented = YES;
-	
 	[self.view setAlpha:0];
 	
 	self.contentViewController = viewController;
@@ -262,7 +241,7 @@ static char windowRetainCycle;
 	if ([self.contentViewController isKindOfClass: [UINavigationController class]]) {
 		UINavigationController *navigationController = (id)self.contentViewController;
 		navBarHeight = navigationController.navigationBar.frame.size.height;
-		if (!navigationController.toolbarHidden)
+		if (!navigationController.toolbarHidden && navigationController.topViewController.toolbarItems.count)
 			toolbarHeight = navigationController.toolbar.frame.size.height;
 	}
 	
@@ -284,16 +263,6 @@ static char windowRetainCycle;
 	CGPathRelease(shadowPath);
 }
 
-
-#pragma mark -
-#pragma mark Actions
-
-
-- (void)maskControlDidTouchUpInside:(id)sender {
-	[self dismissAnimated:YES];
-}
-
-
 #pragma mark -
 #pragma mark UIViewController
 
@@ -301,14 +270,7 @@ static char windowRetainCycle;
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
-	[self.view setBackgroundColor:[UIColor clearColor]];
-	
-	UIView *maskControl = [self maskControl];
-	CGSize viewSize = [self.view frame].size;
-	[maskControl setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
-	[maskControl setFrame:CGRectMake(0, 0,
-									 viewSize.width, viewSize.height)];
-	[self.view addSubview:maskControl];
+	self.view.backgroundColor = kDefaultMaskColor;
 	
 	[self.view addSubview:[self frameView]];
 	[self.frameView addSubview:[self contentView]];
