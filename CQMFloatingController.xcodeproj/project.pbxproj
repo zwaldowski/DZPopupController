@@ -18,30 +18,15 @@
 		F5C422461560BF2300F7E3EE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5C422451560BF2300F7E3EE /* Foundation.framework */; };
 		F5C422481560BF2300F7E3EE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5C422471560BF2300F7E3EE /* CoreGraphics.framework */; };
 		F5C4224E1560BF2300F7E3EE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F5C4224C1560BF2300F7E3EE /* InfoPlist.strings */; };
-		F5C4225C1560BF2400F7E3EE /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5C4225B1560BF2400F7E3EE /* SenTestingKit.framework */; };
-		F5C4225D1560BF2400F7E3EE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5C422431560BF2300F7E3EE /* UIKit.framework */; };
-		F5C4225E1560BF2400F7E3EE /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5C422451560BF2300F7E3EE /* Foundation.framework */; };
-		F5C422661560BF2400F7E3EE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F5C422641560BF2400F7E3EE /* InfoPlist.strings */; };
-		F5C422691560BF2400F7E3EE /* CQMFloatingControllerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F5C422681560BF2400F7E3EE /* CQMFloatingControllerTests.m */; };
 		F5ED3EA315620A810058C7F1 /* CQMAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F5ED3EA015620A810058C7F1 /* CQMAppDelegate.m */; };
 		F5ED3EA415620A810058C7F1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F5ED3EA115620A810058C7F1 /* main.m */; };
 		F5ED3EA515620A810058C7F1 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = F5ED3EA215620A810058C7F1 /* MainWindow.xib */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		F5C4225F1560BF2400F7E3EE /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F5C422361560BF2300F7E3EE /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = F5C4223E1560BF2300F7E3EE;
-			remoteInfo = CQMFloatingController;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		F5455C8A156465C3009DD74D /* CQMFloatingNavigationBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CQMFloatingNavigationBar.h; sourceTree = "<group>"; };
 		F5455C8B156465C3009DD74D /* CQMFloatingNavigationBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CQMFloatingNavigationBar.m; sourceTree = "<group>"; };
-		F5455C8C156465C3009DD74D /* CQMPathUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; path = CQMPathUtilities.h; sourceTree = "<group>"; };
+		F5455C8C156465C3009DD74D /* CQMPathUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CQMPathUtilities.h; sourceTree = "<group>"; };
 		F5455C8D156465C3009DD74D /* CQMPathUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CQMPathUtilities.m; sourceTree = "<group>"; };
 		F54E329A15620EE70057A34F /* CQMFloatingFrameView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CQMFloatingFrameView.h; sourceTree = "<group>"; };
 		F54E329B15620EE70057A34F /* CQMFloatingFrameView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CQMFloatingFrameView.m; sourceTree = "<group>"; };
@@ -60,12 +45,6 @@
 		F5C4224B1560BF2300F7E3EE /* CQMFloatingController-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CQMFloatingController-Info.plist"; sourceTree = "<group>"; };
 		F5C4224D1560BF2300F7E3EE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F5C422511560BF2300F7E3EE /* CQMFloatingController-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "CQMFloatingController-Prefix.pch"; sourceTree = "<group>"; };
-		F5C4225A1560BF2400F7E3EE /* CQMFloatingControllerTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CQMFloatingControllerTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
-		F5C4225B1560BF2400F7E3EE /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
-		F5C422631560BF2400F7E3EE /* CQMFloatingControllerTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CQMFloatingControllerTests-Info.plist"; sourceTree = "<group>"; };
-		F5C422651560BF2400F7E3EE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		F5C422671560BF2400F7E3EE /* CQMFloatingControllerTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CQMFloatingControllerTests.h; sourceTree = "<group>"; };
-		F5C422681560BF2400F7E3EE /* CQMFloatingControllerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CQMFloatingControllerTests.m; sourceTree = "<group>"; };
 		F5ED3E9F15620A810058C7F1 /* CQMAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CQMAppDelegate.h; sourceTree = "<group>"; };
 		F5ED3EA015620A810058C7F1 /* CQMAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CQMAppDelegate.m; sourceTree = "<group>"; };
 		F5ED3EA115620A810058C7F1 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -80,16 +59,6 @@
 				F5C422441560BF2300F7E3EE /* UIKit.framework in Frameworks */,
 				F5C422461560BF2300F7E3EE /* Foundation.framework in Frameworks */,
 				F5C422481560BF2300F7E3EE /* CoreGraphics.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		F5C422561560BF2400F7E3EE /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F5C4225C1560BF2400F7E3EE /* SenTestingKit.framework in Frameworks */,
-				F5C4225D1560BF2400F7E3EE /* UIKit.framework in Frameworks */,
-				F5C4225E1560BF2400F7E3EE /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,7 +86,6 @@
 			isa = PBXGroup;
 			children = (
 				F5C422491560BF2300F7E3EE /* CQMFloatingController */,
-				F5C422611560BF2400F7E3EE /* CQMFloatingControllerTests */,
 				F5C422421560BF2300F7E3EE /* Frameworks */,
 				F5C422401560BF2300F7E3EE /* Products */,
 			);
@@ -127,7 +95,6 @@
 			isa = PBXGroup;
 			children = (
 				F5C4223F1560BF2300F7E3EE /* CQMFloatingController.app */,
-				F5C4225A1560BF2400F7E3EE /* CQMFloatingControllerTests.octest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -138,7 +105,6 @@
 				F5C422431560BF2300F7E3EE /* UIKit.framework */,
 				F5C422451560BF2300F7E3EE /* Foundation.framework */,
 				F5C422471560BF2300F7E3EE /* CoreGraphics.framework */,
-				F5C4225B1560BF2400F7E3EE /* SenTestingKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -159,25 +125,6 @@
 				F5C4224B1560BF2300F7E3EE /* CQMFloatingController-Info.plist */,
 				F5C4224C1560BF2300F7E3EE /* InfoPlist.strings */,
 				F5C422511560BF2300F7E3EE /* CQMFloatingController-Prefix.pch */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		F5C422611560BF2400F7E3EE /* CQMFloatingControllerTests */ = {
-			isa = PBXGroup;
-			children = (
-				F5C422671560BF2400F7E3EE /* CQMFloatingControllerTests.h */,
-				F5C422681560BF2400F7E3EE /* CQMFloatingControllerTests.m */,
-				F5C422621560BF2400F7E3EE /* Supporting Files */,
-			);
-			path = CQMFloatingControllerTests;
-			sourceTree = "<group>";
-		};
-		F5C422621560BF2400F7E3EE /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				F5C422631560BF2400F7E3EE /* CQMFloatingControllerTests-Info.plist */,
-				F5C422641560BF2400F7E3EE /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -217,25 +164,6 @@
 			productReference = F5C4223F1560BF2300F7E3EE /* CQMFloatingController.app */;
 			productType = "com.apple.product-type.application";
 		};
-		F5C422591560BF2400F7E3EE /* CQMFloatingControllerTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = F5C4226F1560BF2400F7E3EE /* Build configuration list for PBXNativeTarget "CQMFloatingControllerTests" */;
-			buildPhases = (
-				F5C422551560BF2400F7E3EE /* Sources */,
-				F5C422561560BF2400F7E3EE /* Frameworks */,
-				F5C422571560BF2400F7E3EE /* Resources */,
-				F5C422581560BF2400F7E3EE /* ShellScript */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				F5C422601560BF2400F7E3EE /* PBXTargetDependency */,
-			);
-			name = CQMFloatingControllerTests;
-			productName = CQMFloatingControllerTests;
-			productReference = F5C4225A1560BF2400F7E3EE /* CQMFloatingControllerTests.octest */;
-			productType = "com.apple.product-type.bundle";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -258,7 +186,6 @@
 			projectRoot = "";
 			targets = (
 				F5C4223E1560BF2300F7E3EE /* CQMFloatingController */,
-				F5C422591560BF2400F7E3EE /* CQMFloatingControllerTests */,
 			);
 		};
 /* End PBXProject section */
@@ -273,31 +200,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F5C422571560BF2400F7E3EE /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F5C422661560BF2400F7E3EE /* InfoPlist.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		F5C422581560BF2400F7E3EE /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F5C4223B1560BF2300F7E3EE /* Sources */ = {
@@ -316,37 +219,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		F5C422551560BF2400F7E3EE /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				F5C422691560BF2400F7E3EE /* CQMFloatingControllerTests.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		F5C422601560BF2400F7E3EE /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = F5C4223E1560BF2300F7E3EE /* CQMFloatingController */;
-			targetProxy = F5C4225F1560BF2400F7E3EE /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		F5C4224C1560BF2300F7E3EE /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
 				F5C4224D1560BF2300F7E3EE /* en */,
-			);
-			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-		F5C422641560BF2400F7E3EE /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				F5C422651560BF2400F7E3EE /* en */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
@@ -419,40 +298,6 @@
 			};
 			name = Release;
 		};
-		F5C422701560BF2400F7E3EE /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/CQMFloatingController.app/CQMFloatingController";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "CQMFloatingController/CQMFloatingController-Prefix.pch";
-				INFOPLIST_FILE = "CQMFloatingControllerTests/CQMFloatingControllerTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
-			};
-			name = Debug;
-		};
-		F5C422711560BF2400F7E3EE /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/CQMFloatingController.app/CQMFloatingController";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(DEVELOPER_LIBRARY_DIR)/Frameworks",
-				);
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "CQMFloatingController/CQMFloatingController-Prefix.pch";
-				INFOPLIST_FILE = "CQMFloatingControllerTests/CQMFloatingControllerTests-Info.plist";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -470,15 +315,6 @@
 			buildConfigurations = (
 				F5C4226D1560BF2400F7E3EE /* Debug */,
 				F5C4226E1560BF2400F7E3EE /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		F5C4226F1560BF2400F7E3EE /* Build configuration list for PBXNativeTarget "CQMFloatingControllerTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				F5C422701560BF2400F7E3EE /* Debug */,
-				F5C422711560BF2400F7E3EE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
