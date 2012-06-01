@@ -103,3 +103,9 @@ CGPathRef CQMPathCreateInvertedRoundingRect(CGRect rect, CGFloat blRadius, CGFlo
 	return path;
 }	
 						
+UIImage *CQMCreateBlankImage(void) {
+	UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
+	UIImage *ret = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	return ret;
+}

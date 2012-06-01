@@ -27,9 +27,7 @@
 #import "CQMFloatingController.h"
 #import "CQMFloatingContentOverlayView.h"
 #import "CQMFloatingFrameView.h"
-#import "CQMFloatingNavigationBar.h"
 #import "CQMPathUtilities.h"
-
 
 #define kDefaultMaskColor  [UIColor colorWithWhite:0 alpha:0.5]
 #define kDefaultFrameColor [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f]
@@ -143,33 +141,21 @@
 
 - (UINavigationController*)navigationController {
 	if (navController_ == nil) {
-		UIViewController *dummy = [[UIViewController alloc] init];
-		UINavigationController *navController = [[UINavigationController alloc] initWithRootViewController:dummy];
+		UIImage *blank = CQMCreateBlankImage();
+		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [self class], nil];
+		[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsDefault];
+		[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsLandscapePhone];
 		
-		// Archive navigation controller for changing navigationbar class
-		[navController navigationBar];
-		NSMutableData *data = [[NSMutableData alloc] init];
-		NSKeyedArchiver *archiver = [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
-		[archiver encodeObject:navController forKey:kRootKey];
-		[archiver finishEncoding];
-		
-		// Unarchive it with changing navigationbar class
-		NSKeyedUnarchiver *unarchiver = [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
-		[unarchiver setClass:[CQMFloatingNavigationBar class]
-				forClassName:NSStringFromClass([UINavigationBar class])];
-		navController_ = [unarchiver decodeObjectForKey:kRootKey];
-		
+		navController_ = [[UINavigationController alloc] initWithRootViewController: [UIViewController new]];
 	}
 	return navController_;
 }
-
 
 @synthesize shadowView = shadowView_;
 
 
 #pragma mark -
 #pragma mark Singleton
-
 
 + (CQMFloatingController*)sharedFloatingController {
 	static CQMFloatingController *instance;

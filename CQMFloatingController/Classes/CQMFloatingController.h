@@ -27,7 +27,7 @@
 
 @class CQMFloatingFrameView;
 
-@interface CQMFloatingController : UIViewController
+@interface CQMFloatingController : UIViewController <UIAppearanceContainer>
 
 @property (nonatomic) CGSize frameSize;
 @property (nonatomic, strong) UIColor *frameColor;
