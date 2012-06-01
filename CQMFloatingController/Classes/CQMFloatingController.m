@@ -48,7 +48,6 @@
 @property (nonatomic, readonly, strong) UIView *contentView;
 @property (nonatomic, readonly, strong) CQMFloatingContentOverlayView *contentOverlayView;
 @property (nonatomic, readonly, strong) UINavigationController *navigationController;
-@property (nonatomic, readonly, strong) UIViewController *contentViewController;
 @property (nonatomic, strong) UIImageView *shadowView;
 @property (atomic) BOOL presented;
 
@@ -59,7 +58,7 @@
 
 @implementation CQMFloatingController
 
-@synthesize presented = presented_, maskControl = maskControl_, frameView = frameView_, contentView = contentView_, contentOverlayView = contentOverlayView_, navigationController = navController_, contentViewController = contentViewController_;
+@synthesize presented = presented_, maskControl = maskControl_, frameView = frameView_, contentView = contentView_, contentOverlayView = contentOverlayView_, navigationController = navController_, contentViewController = contentViewController_, shadowView = shadowView_;
 
 
 - (id)init {
@@ -151,8 +150,15 @@
 	return navController_;
 }
 
-@synthesize shadowView = shadowView_;
-
+- (void)setContentViewController:(UIViewController *)contentViewController {
+	if (contentViewController_ != contentViewController) {
+		[[contentViewController view] removeFromSuperview];
+		contentViewController_ = contentViewController;
+		
+		NSArray *viewControllers = [NSArray arrayWithObject:contentViewController_];
+		[self.navigationController setViewControllers:viewControllers];
+	}
+}
 
 #pragma mark -
 #pragma mark Singleton
@@ -178,13 +184,7 @@
 	
 	[self.view setAlpha:0];
 	
-	if (contentViewController_ != viewController) {
-		[[contentViewController_ view] removeFromSuperview];
-		contentViewController_ = viewController;
-
-		NSArray *viewControllers = [NSArray arrayWithObject:contentViewController_];
-		[self.navigationController setViewControllers:viewControllers];
-	}
+	self.contentViewController = viewController;
 	
 	UIWindow *window = [[UIApplication sharedApplication] keyWindow];
 	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];

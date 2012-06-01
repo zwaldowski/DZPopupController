@@ -34,6 +34,8 @@
 
 + (CQMFloatingController*)sharedFloatingController;
 
+@property (nonatomic, strong) UIViewController *contentViewController;
+
 - (void)presentWithContentViewController:(UIViewController*)contentViewController animated:(BOOL)animated;
 - (void)dismissAnimated:(BOOL)animated;
 
