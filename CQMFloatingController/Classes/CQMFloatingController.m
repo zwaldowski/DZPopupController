@@ -24,6 +24,7 @@
 //
 
 #import <QuartzCore/QuartzCore.h>
+#import <objc/runtime.h>
 #import "CQMFloatingController.h"
 #import "CQMFloatingContentOverlayView.h"
 #import "CQMFloatingFrameView.h"
@@ -196,6 +197,7 @@
 
 #pragma mark -
 
+static char windowRetainCycle;
 
 - (void)presentWithContentViewController:(UIViewController*)viewController animated:(BOOL)animated {
 	if (self.presented)
@@ -211,6 +213,7 @@
 	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
 	[self.view setFrame:[window convertRect:appFrame fromView:nil]];
 	[window addSubview:[self view]];
+	objc_setAssociatedObject(window, &windowRetainCycle, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	
 	[self layoutFrameView];
 	
@@ -231,8 +234,9 @@
 		 if (!finished)
 			 return;
 		 
+		 UIWindow *window = self.view.window;
 		[self.view removeFromSuperview];
-		self.presented = NO;
+		objc_setAssociatedObject(window, &windowRetainCycle, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	 }];
 }
 
