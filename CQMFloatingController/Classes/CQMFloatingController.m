@@ -211,6 +211,13 @@ static char windowRetainCycle;
 	 }];
 }
 
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+	[super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
+	return YES;
+}
 
 - (void)layoutFrameView {
 	// Frame
@@ -225,8 +232,8 @@ static char windowRetainCycle;
 	// Content
 	UIView *contentView = [self contentView];
 	CGSize contentSize = CGSizeMake(frameSize.width - kFramePadding * 2,
-									frameSize.height - kFramePadding);
-	[contentView setFrame: (CGRect){{kFramePadding, 0}, contentSize}];
+									frameSize.height - kFramePadding * 2);
+	[contentView setFrame: (CGRect){{kFramePadding, kFramePadding}, contentSize}];
 	
 	// Navigation	
 	CGFloat navBarHeight = 0.0, toolbarHeight = 0.0;
@@ -241,7 +248,7 @@ static char windowRetainCycle;
 	UIView *contentOverlay = [self contentOverlayView];
 	CGFloat contentFrameWidth = [CQMFloatingContentOverlayView frameWidth];
 	[contentOverlay setFrame:CGRectMake(kFramePadding - contentFrameWidth,
-										navBarHeight - contentFrameWidth,
+										kFramePadding - navBarHeight - contentFrameWidth,
 										contentSize.width  + contentFrameWidth * 2,
 										contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2)];
 	[contentOverlay.superview bringSubviewToFront:contentOverlay];
