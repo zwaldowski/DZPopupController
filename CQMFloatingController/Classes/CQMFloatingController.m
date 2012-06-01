@@ -41,7 +41,7 @@
 @interface CQMFloatingController()
 
 @property (nonatomic, weak) CQMFloatingFrameView *frameView;
-@property (nonatomic, readonly, strong) UIView *contentView;
+@property (nonatomic, strong) UIView *contentView;
 @property (nonatomic, weak) CQMFloatingContentOverlayView *contentOverlayView;
 @property (nonatomic, strong) UIImageView *shadowView;
 
@@ -51,8 +51,12 @@
 
 @synthesize frameView, contentView = contentView_, contentOverlayView = _contentOverlayView, contentViewController = contentViewController_, shadowView = shadowView_, frameSize = _frameSize, frameColor = _frameColor;
 
-- (id)init {
-	if (self = [super init]) {
+- (id)initWithContentViewController:(UIViewController *)viewController {
+	if (self = [super initWithNibName:nil bundle:nil]) {
+		NSParameterAssert(viewController);
+		
+		contentViewController_ = viewController;
+		
 		static dispatch_once_t onceToken;
 		dispatch_once(&onceToken, ^{
 			UIImage *blank = CQMCreateBlankImage();
@@ -65,18 +69,41 @@
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsLandscapePhone];
 		});
+		
 		_frameSize = kDefaultFrameSize;
+		_frameColor = kDefaultFrameColor;
 		[self setFrameColor:kDefaultFrameColor];
+		
+		self.view.backgroundColor = kDefaultMaskColor;
+		
+		CQMFloatingFrameView *frame = [[CQMFloatingFrameView alloc] initWithFrame: CGRectMake(ceil((CGRectGetWidth(self.view.frame) - _frameSize.width) / 2), ceil((CGRectGetHeight(self.view.frame) - _frameSize.height) / 2), _frameSize.width, _frameSize.height)];
+		[self.frameView setBaseColor: _frameColor];
+		[self.view addSubview: frame];
+		self.frameView = frame;
+		
+		UIView *content = [UIView new];
+		content.clipsToBounds = YES;
+		content.layer.cornerRadius = 5.0f;
+		content.layer.masksToBounds = YES;
+		[frame addSubview: content];
+		self.contentView = content;
+		
+		viewController.view.frame = self.contentView.bounds;
+		viewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		[content addSubview: viewController.view];
+		[self addChildViewController: viewController];
+		[viewController didMoveToParentViewController: self];
+		
+		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] init];
+		[self.contentOverlayView setEdgeColor: _frameColor];
+		[frame addSubview: overlay];
+		self.contentOverlayView = overlay;
 	}
 	return self;
 }
 
-
-
-
 #pragma mark -
 #pragma mark Property
-
 
 - (void)setFrameSize:(CGSize)frameSize {
 	if (!CGSizeEqualToSize(_frameSize, frameSize)) {
@@ -103,69 +130,12 @@
 	}
 }
 
-- (UIView*)contentView {
-	if (contentView_ == nil) {
-		contentView_ = [[UIView alloc] init];
-		contentView_.clipsToBounds = YES;
-		contentView_.layer.cornerRadius = 5.0f;
-		contentView_.layer.masksToBounds = YES;
-	}
-	return contentView_;
-}
-
-- (void)setContentViewController:(UIViewController *)newController {
-	UIViewController *oldController = self.contentViewController;
-	if (oldController) {
-		[oldController willMoveToParentViewController: nil];
-		[oldController.view removeFromSuperview];
-		[oldController removeFromParentViewController];
-	}
-	
-	contentViewController_ = newController;
-	
-	if (newController) {
-		newController.view.frame = self.contentView.bounds;
-		newController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		[self.contentView addSubview: newController.view];
-		[self addChildViewController: newController];
-		[newController didMoveToParentViewController: self];
-	}
-}
-
-- (void)setContentViewController:(UIViewController *)newController animated:(BOOL)animated {
-	if (!animated)
-		[self setContentViewController: newController];
-	
-	UIViewController *oldController = self.contentViewController;
-	
-	if (!oldController) {
-		[UIView transitionWithView: newController.view duration: (1./3.) options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
-			newController.view.frame = self.contentView.bounds;
-			newController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-			[self.contentView addSubview: newController.view];
-		} completion:^(BOOL finished) {
-			[self addChildViewController: newController];
-			[newController didMoveToParentViewController: self];
-		}];
-		return;
-	} else {
-		[self transitionFromViewController: oldController toViewController: newController duration: (1./3.) options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{} completion:^(BOOL finished) {
-			[oldController removeFromParentViewController];
-			[newController didMoveToParentViewController: self];
-		}];
-	}
-	
-	contentViewController_ = newController;
-}
-
 #pragma mark -
 
 static char windowRetainCycle;
 
-- (void)presentWithContentViewController:(UIViewController*)viewController animated:(BOOL)animated {
+- (void)show {
 	[self.view setAlpha:0];
-	
-	self.contentViewController = viewController;
 	
 	UIWindow *window = [[UIApplication sharedApplication] keyWindow];
 	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
@@ -174,7 +144,7 @@ static char windowRetainCycle;
 	objc_setAssociatedObject(window, &windowRetainCycle, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	
 	__weak CQMFloatingController *me = self;
-	[UIView animateWithDuration:(animated ? kAnimationDuration : 0)
+	[UIView animateWithDuration: kAnimationDuration
 					 animations:
 	 ^{
 		 [me.view setAlpha:1.0f];
@@ -194,14 +164,6 @@ static char windowRetainCycle;
 		[self.view removeFromSuperview];
 		objc_setAssociatedObject(window, &windowRetainCycle, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	 }];
-}
-
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-	[super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
-	return YES;
 }
 
 #pragma mark -
@@ -231,25 +193,7 @@ static char windowRetainCycle;
 										kFramePadding - contentFrameWidth + navBarHeight ,
 										contentSize.width  + contentFrameWidth * 2,
 										contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2)];
-	[contentOverlay.superview bringSubviewToFront:contentOverlay];
 	
 }
-
-- (void)viewDidLoad {
-	[super viewDidLoad];
-	
-	self.view.backgroundColor = kDefaultMaskColor;
-	
-	CQMFloatingFrameView *frame = [[CQMFloatingFrameView alloc] initWithFrame: CGRectMake(ceil((CGRectGetWidth(self.view.frame) - _frameSize.width) / 2), ceil((CGRectGetHeight(self.view.frame) - _frameSize.height) / 2), _frameSize.width, _frameSize.height)];
-	[self.view addSubview: frame];
-	self.frameView = frame;
-	
-	[self.frameView addSubview:[self contentView]];
-	
-	CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: CGRectZero];
-	[frame addSubview: overlay];
-	self.contentOverlayView = overlay;
-}
-
 
 @end
