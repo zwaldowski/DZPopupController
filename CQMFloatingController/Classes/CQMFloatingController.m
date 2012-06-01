@@ -42,14 +42,14 @@
 
 @property (nonatomic, weak) CQMFloatingFrameView *frameView;
 @property (nonatomic, readonly, strong) UIView *contentView;
-@property (nonatomic, readonly, strong) CQMFloatingContentOverlayView *contentOverlayView;
+@property (nonatomic, weak) CQMFloatingContentOverlayView *contentOverlayView;
 @property (nonatomic, strong) UIImageView *shadowView;
 
 @end
 
 @implementation CQMFloatingController
 
-@synthesize frameView, contentView = contentView_, contentOverlayView = contentOverlayView_, contentViewController = contentViewController_, shadowView = shadowView_, frameSize = _frameSize;
+@synthesize frameView, contentView = contentView_, contentOverlayView = _contentOverlayView, contentViewController = contentViewController_, shadowView = shadowView_, frameSize = _frameSize, frameColor = _frameColor;
 
 - (id)init {
 	if (self = [super init]) {
@@ -82,7 +82,7 @@
 	if (!CGSizeEqualToSize(_frameSize, frameSize)) {
 		_frameSize = frameSize;
 		
-		if (self.frameView) {
+		if (self.isViewLoaded) {
 			CGRect frame = self.frameView.frame;
 			frame.size = frameSize;
 			self.frameView.frame = frame;
@@ -90,15 +90,17 @@
 	}
 }
 
-
-- (UIColor*)frameColor {
-	return [self.frameView baseColor];
-}
 - (void)setFrameColor:(UIColor*)frameColor {
-	[self.frameView setBaseColor:frameColor];
-	[self.contentOverlayView setEdgeColor:frameColor];
-	[self.frameView setNeedsDisplay];
-	[self.contentOverlayView setNeedsDisplay];
+	if (![_frameColor isEqual: frameColor]) {
+		_frameColor = frameColor;
+		
+		if (self.isViewLoaded) {
+			[self.frameView setBaseColor:frameColor];
+			[self.frameView setNeedsDisplay];
+			[self.contentOverlayView setEdgeColor:frameColor];
+			[self.contentOverlayView setNeedsDisplay];
+		}
+	}
 }
 
 - (UIView*)contentView {
@@ -109,14 +111,6 @@
 		contentView_.layer.masksToBounds = YES;
 	}
 	return contentView_;
-}
-
-
-- (CQMFloatingContentOverlayView*)contentOverlayView {
-	if (contentOverlayView_ == nil) {
-		contentOverlayView_ = [CQMFloatingContentOverlayView new];
-	}
-	return contentOverlayView_;
 }
 
 - (void)setContentViewController:(UIViewController *)newController {
@@ -231,8 +225,8 @@ static char windowRetainCycle;
 	}
 	
 	// Content overlay
-	UIView *contentOverlay = [self contentOverlayView];
-	CGFloat contentFrameWidth = [CQMFloatingContentOverlayView frameWidth];
+	UIView *contentOverlay = self.contentOverlayView;
+	CGFloat contentFrameWidth = [[contentOverlay class] frameWidth];
 	[contentOverlay setFrame:CGRectMake(kFramePadding - contentFrameWidth,
 										kFramePadding - contentFrameWidth + navBarHeight ,
 										contentSize.width  + contentFrameWidth * 2,
@@ -251,7 +245,10 @@ static char windowRetainCycle;
 	self.frameView = frame;
 	
 	[self.frameView addSubview:[self contentView]];
-	[self.frameView addSubview:[self contentOverlayView]];
+	
+	CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: CGRectZero];
+	[frame addSubview: overlay];
+	self.contentOverlayView = overlay;
 }
 
 
