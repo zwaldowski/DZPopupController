@@ -68,8 +68,10 @@
 			UIImage *blank = CQMCreateBlankImage();
 			id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [self class], nil];
 			id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [self class], nil];
+			[navigationBarAppearance setBarStyle: UIBarStyleBlack];
 			[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsDefault];
 			[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsLandscapePhone];
+			[toolbarAppearance setBarStyle: UIBarStyleBlack];
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsLandscapePhone];
 		});
