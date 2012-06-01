@@ -24,54 +24,18 @@
 //
 
 #import "CQMAppDelegate.h"
-#import "CQMFloatingController.h"
-#import "DemoTableViewController.h"
-
+#import "CQMViewController.h"
 
 @implementation CQMAppDelegate
 
-
-
-
-#pragma mark -
-#pragma mark Property
-
-
 @synthesize window = window_;
 
-
-#pragma mark -
-#pragma mark Actions
-
-
-- (IBAction)showButtonAction:(id)sender {
-	// To use CQMFloatingController:
-	
-	// 1. Prepare a content view controller
-	DemoTableViewController *demoViewController = [DemoTableViewController new];
-	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
-	contentViewController.toolbarHidden = NO;
-	
-	// 2. Get shared floating controller
-	CQMFloatingController *floatingController = [CQMFloatingController new];
-	
-	UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemFlexibleSpace target: nil action:NULL];
-	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh target: nil action:NULL];
-	UIBarButtonItem *share = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemAction target: nil action:NULL];
-	demoViewController.toolbarItems = [NSArray arrayWithObjects: refresh, space, share, nil];
-	demoViewController.hidesBottomBarWhenPushed = NO;
-	
-	// 3. Show floating controller with specified content
-	[floatingController presentWithContentViewController: contentViewController
-												animated:YES];
-}
-
-
-#pragma mark -
-#pragma mark UIApplicationDelegate
-
+#pragma mark - UIApplicationDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+	self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    // Override point for customization after application launch.
+	self.window.rootViewController = [[CQMViewController alloc] initWithNibName:@"CQMViewController" bundle:nil];
     [self.window makeKeyAndVisible];
     return YES;
 }
