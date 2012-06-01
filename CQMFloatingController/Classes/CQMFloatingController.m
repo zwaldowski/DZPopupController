@@ -40,19 +40,17 @@
 
 @interface CQMFloatingController()
 
-@property (nonatomic, readonly, strong) CQMFloatingFrameView *frameView;
+@property (nonatomic, weak) CQMFloatingFrameView *frameView;
 @property (nonatomic, readonly, strong) UIView *contentView;
 @property (nonatomic, readonly, strong) CQMFloatingContentOverlayView *contentOverlayView;
 @property (nonatomic, readonly, strong) UINavigationController *navigationController;
 @property (nonatomic, strong) UIImageView *shadowView;
 
-- (void)layoutFrameView;
-
 @end
 
 @implementation CQMFloatingController
 
-@synthesize frameView = frameView_, contentView = contentView_, contentOverlayView = contentOverlayView_, navigationController = navController_, contentViewController = contentViewController_, shadowView = shadowView_;
+@synthesize frameView, contentView = contentView_, contentOverlayView = contentOverlayView_, navigationController = navController_, contentViewController = contentViewController_, shadowView = shadowView_, frameSize = _frameSize;
 
 - (id)init {
 	if (self = [super init]) {
@@ -68,7 +66,7 @@
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsLandscapePhone];
 		});
-		[self setFrameSize:kDefaultFrameSize];
+		_frameSize = kDefaultFrameSize;
 		[self setFrameColor:kDefaultFrameColor];
 	}
 	return self;
@@ -81,13 +79,16 @@
 #pragma mark Property
 
 
-- (CGSize)frameSize {
-	return [self.frameView frame].size;
-}
 - (void)setFrameSize:(CGSize)frameSize {
-	CGRect frame = [self.frameView frame];
-	frame.size = frameSize;
-	[self.frameView setFrame:frame];
+	if (!CGSizeEqualToSize(_frameSize, frameSize)) {
+		_frameSize = frameSize;
+		
+		if (self.frameView) {
+			CGRect frame = self.frameView.frame;
+			frame.size = frameSize;
+			self.frameView.frame = frame;
+		}
+	}
 }
 
 
@@ -98,21 +99,16 @@
 	[self.frameView setBaseColor:frameColor];
 	[self.contentOverlayView setEdgeColor:frameColor];
 	[self.navigationController.navigationBar setTintColor:frameColor];
+	[self.frameView setNeedsDisplay];
+	[self.contentOverlayView setNeedsDisplay];
 }
-
-
-- (UIView*)frameView {
-	if (frameView_ == nil) {
-		frameView_ = [[CQMFloatingFrameView alloc] init];
-	}
-	return frameView_;
-}
-
 
 - (UIView*)contentView {
 	if (contentView_ == nil) {
 		contentView_ = [[UIView alloc] init];
-		[contentView_ setClipsToBounds:YES];
+		contentView_.clipsToBounds = YES;
+		contentView_.layer.cornerRadius = 5.0f;
+		contentView_.layer.masksToBounds = YES;
 	}
 	return contentView_;
 }
@@ -120,8 +116,7 @@
 
 - (CQMFloatingContentOverlayView*)contentOverlayView {
 	if (contentOverlayView_ == nil) {
-		contentOverlayView_ = [[CQMFloatingContentOverlayView alloc] init];
-		[contentOverlayView_ setUserInteractionEnabled:NO];
+		contentOverlayView_ = [CQMFloatingContentOverlayView new];
 	}
 	return contentOverlayView_;
 }
@@ -186,8 +181,6 @@ static char windowRetainCycle;
 	[window addSubview:[self view]];
 	objc_setAssociatedObject(window, &windowRetainCycle, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	
-	[self layoutFrameView];
-	
 	__weak CQMFloatingController *me = self;
 	[UIView animateWithDuration:(animated ? kAnimationDuration : 0)
 					 animations:
@@ -219,21 +212,16 @@ static char windowRetainCycle;
 	return YES;
 }
 
-- (void)layoutFrameView {
-	// Frame
-	UIView *frameView = [self frameView];
-	CGSize viewSize = [self.view frame].size;
-	CGSize frameSize = [frameView frame].size;
-	[frameView setFrame:CGRectMake(ceil((viewSize.width - frameSize.width) / 2),
-								   ceil((viewSize.height - frameSize.height) / 2),
-								   frameSize.width,
-								   frameSize.height)];
-	
+#pragma mark -
+#pragma mark UIViewController
+
+- (void)viewDidLayoutSubviews {
 	// Content
 	UIView *contentView = [self contentView];
-	CGSize contentSize = CGSizeMake(frameSize.width - kFramePadding * 2,
-									frameSize.height - kFramePadding * 2);
+	CGSize contentSize = CGSizeMake(self.frameView.frame.size.width - kFramePadding * 2,
+									self.frameView.frame.size.height - kFramePadding * 2);
 	[contentView setFrame: (CGRect){{kFramePadding, kFramePadding}, contentSize}];
+	
 	
 	// Navigation	
 	CGFloat navBarHeight = 0.0, toolbarHeight = 0.0;
@@ -248,22 +236,22 @@ static char windowRetainCycle;
 	UIView *contentOverlay = [self contentOverlayView];
 	CGFloat contentFrameWidth = [CQMFloatingContentOverlayView frameWidth];
 	[contentOverlay setFrame:CGRectMake(kFramePadding - contentFrameWidth,
-										kFramePadding - navBarHeight - contentFrameWidth,
+										kFramePadding - contentFrameWidth + navBarHeight ,
 										contentSize.width  + contentFrameWidth * 2,
 										contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2)];
 	[contentOverlay.superview bringSubviewToFront:contentOverlay];
+	
 }
-
-#pragma mark -
-#pragma mark UIViewController
-
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
 	self.view.backgroundColor = kDefaultMaskColor;
 	
-	[self.view addSubview:[self frameView]];
+	CQMFloatingFrameView *frame = [[CQMFloatingFrameView alloc] initWithFrame: CGRectMake(ceil((CGRectGetWidth(self.view.frame) - _frameSize.width) / 2), ceil((CGRectGetHeight(self.view.frame) - _frameSize.height) / 2), _frameSize.width, _frameSize.height)];
+	[self.view addSubview: frame];
+	self.frameView = frame;
+	
 	[self.frameView addSubview:[self contentView]];
 	[self.frameView addSubview:[self contentOverlayView]];
 }
