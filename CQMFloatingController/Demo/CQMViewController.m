@@ -47,10 +47,8 @@
 	// 1. Prepare a content view controller
 	DemoTableViewController *demoViewController = [DemoTableViewController new];
 	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
-	contentViewController.toolbarHidden = NO;
-	
-	// 2. Get shared floating controller
-	CQMFloatingController *floatingController = [CQMFloatingController new];
+	contentViewController.toolbarHidden = YES;
+	contentViewController.navigationBarHidden = YES;
 	
 	UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemFlexibleSpace target: nil action:NULL];
 	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh target: nil action:NULL];
@@ -58,9 +56,11 @@
 	demoViewController.toolbarItems = [NSArray arrayWithObjects: refresh, space, share, nil];
 	demoViewController.hidesBottomBarWhenPushed = NO;
 	
+	// 2. Get shared floating controller
+	CQMFloatingController *floatingController = [[CQMFloatingController alloc] initWithContentViewController: contentViewController];
+	
 	// 3. Show floating controller with specified content
-	[floatingController presentWithContentViewController: contentViewController
-												animated:YES];
+	[floatingController show];
 }
 
 @end
