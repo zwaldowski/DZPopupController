@@ -44,6 +44,8 @@
 @property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) CQMFloatingContentOverlayView *contentOverlayView;
 
+- (void)cqm_resizeContentOverlay;
+
 @end
 
 @implementation CQMFloatingController
@@ -76,14 +78,19 @@
 		frame.baseColor = _frameColor;
 		[self.view addSubview: frame];
 		self.frameView = frame;
+		
+		UIView *contentContainer = [[UIView alloc] initWithFrame: frame.bounds];
+		contentContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		contentContainer.clipsToBounds = YES;
+		contentContainer.layer.cornerRadius = 8.0f;
+		contentContainer.layer.masksToBounds = 8.0f;
+		[frame addSubview: contentContainer];
 				
 		// Content
 		UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, kFramePadding, kFramePadding)];
-		content.clipsToBounds = YES;
 		content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		content.layer.cornerRadius = 5.0f;
-		content.layer.masksToBounds = YES;
-		[frame addSubview: content];
+		[contentContainer addSubview: content];
 		self.contentView = content;
 		
 		viewController.view.frame = self.contentView.bounds;
@@ -93,17 +100,50 @@
 		[self addChildViewController: viewController];
 		[viewController didMoveToParentViewController: self];
 		
+		if ([viewController isKindOfClass: [UINavigationController class]]) {
+			UINavigationController *navigationController = (id)viewController;
+			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
+			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
+			
+			[self cqm_resizeContentOverlay];
+		}
+		
 		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] init];
 		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		overlay.edgeColor = _frameColor;
-		[frame addSubview: overlay];
+		[contentContainer addSubview: overlay];
 		self.contentOverlayView = overlay;
 	}
 	return self;
 }
 
+- (void)cqm_resizeContentOverlay {
+	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
+		return;
+	
+	CGSize contentSize = self.contentView.frame.size;
+	UINavigationController *navigationController = (id)self.contentViewController;
+	
+	// Navigation	
+	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height - 1,
+	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
+	
+	// Content overlay
+	UIView *contentOverlay = self.contentOverlayView;
+	CGFloat contentFrameWidth = [[contentOverlay class] frameWidth];
+	contentOverlay.frame = CGRectMake(kFramePadding - contentFrameWidth, kFramePadding - contentFrameWidth + navBarHeight, contentSize.width  + contentFrameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2);
+}
+
 #pragma mark -
 #pragma mark Property
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if ([object isEqual: self.contentViewController]) {
+		[self cqm_resizeContentOverlay];
+		return;
+	}
+	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
 
 - (void)setFrameSize:(CGSize)frameSize {
 	if (!CGSizeEqualToSize(_frameSize, frameSize)) {

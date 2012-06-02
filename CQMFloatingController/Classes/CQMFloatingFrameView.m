@@ -48,6 +48,7 @@
 		self.layer.shadowOffset = CGSizeMake(0, 2);
 		self.layer.shadowOpacity = 0.7;
 		self.layer.shadowRadius = 10;
+		self.layer.cornerRadius = kCornerRadius;
 		
 		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 		CFArrayRef colors = (__bridge_retained CFArrayRef)[[NSArray alloc] initWithObjects:
