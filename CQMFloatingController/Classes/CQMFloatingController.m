@@ -28,7 +28,6 @@
 #import "CQMFloatingController.h"
 #import "CQMFloatingContentOverlayView.h"
 #import "CQMFloatingFrameView.h"
-#import "CQMPathUtilities.h"
 
 #define kDefaultMaskColor  [UIColor colorWithWhite:0 alpha:0.5]
 #define kDefaultFrameColor [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f]
@@ -37,6 +36,12 @@
 #define kRootKey           @"root"
 #define kAnimationDuration 0.3f
 
+static inline UIImage *CQMCreateBlankImage(void) {
+	UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
+	UIImage *ret = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	return ret;
+}
 
 @interface CQMFloatingController()
 

@@ -25,7 +25,6 @@
 
 #import "CQMFloatingFrameView.h"
 #import <QuartzCore/QuartzCore.h>
-#import "CQMPathUtilities.h"
 
 #define kCornerRadius        8.0f
 #define kLightBorderWidth    1.0f

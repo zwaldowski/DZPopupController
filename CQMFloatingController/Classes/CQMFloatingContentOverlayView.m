@@ -24,7 +24,6 @@
 //
 
 #import "CQMFloatingContentOverlayView.h"
-#import "CQMPathUtilities.h"
 #import <QuartzCore/QuartzCore.h>
 
 #define kCornerRadius        5.0f
