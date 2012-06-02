@@ -27,7 +27,8 @@
 @interface CQMFloatingController : UIViewController <UIAppearanceContainer>
 
 - (id)initWithContentViewController:(UIViewController *)viewController;
-@property (nonatomic, strong, readonly) UIViewController *contentViewController;
+@property (nonatomic, strong) UIViewController *contentViewController;
+- (void)setContentViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
 @property (nonatomic) CGSize frameSize;
 @property (nonatomic, strong) UIColor *frameColor;

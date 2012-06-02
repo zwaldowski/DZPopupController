@@ -162,7 +162,9 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	return ret;
 }
 
-@interface CQMFloatingController()
+@interface CQMFloatingController () {
+	__weak UIViewController *_contentViewController;
+}
 
 @property (nonatomic, weak) CQMFloatingFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
@@ -177,7 +179,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 @synthesize frameView = _frameView;
 @synthesize contentView = _contentView;
 @synthesize contentOverlayView = _contentOverlayView;
-@synthesize contentViewController = _contentViewController;
 @synthesize frameSize = _frameSize;
 @synthesize frameColor = _frameColor;
 
@@ -222,12 +223,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[contentContainer addSubview: content];
 		self.contentView = content;
 		
-		viewController.view.frame = self.contentView.bounds;
-		viewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		[content addSubview: viewController.view];
-		_contentViewController = viewController;
-		[self addChildViewController: viewController];
-		[viewController didMoveToParentViewController: self];
+		self.contentViewController = viewController;
 		
 		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: CGRectZero];
 		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -246,6 +242,55 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		}
 	}
 	return self;
+}
+
+- (UIViewController *)contentViewController {
+	return _contentViewController;
+}
+
+- (void)setContentViewController:(UIViewController *)newController {
+	UIViewController *oldController = self.contentViewController;
+	if (oldController) {
+		[oldController willMoveToParentViewController: nil];
+		[oldController.view removeFromSuperview];
+		[oldController removeFromParentViewController];
+	}
+	
+	_contentViewController = newController;
+	
+	if (newController) {
+		newController.view.frame = self.contentView.bounds;
+		newController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		[self.contentView addSubview: newController.view];
+		[self addChildViewController: newController];
+		[newController didMoveToParentViewController: self];
+	}
+}
+
+- (void)setContentViewController:(UIViewController *)newController animated:(BOOL)animated {
+	if (!animated)
+		[self setContentViewController: newController];
+	
+	UIViewController *oldController = self.contentViewController;
+	
+	if (!oldController) {
+		[UIView transitionWithView: newController.view duration: (1./3.) options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
+			newController.view.frame = self.contentView.bounds;
+			newController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+			[self.contentView addSubview: newController.view];
+		} completion:^(BOOL finished) {
+			[self addChildViewController: newController];
+			[newController didMoveToParentViewController: self];
+		}];
+		return;
+	} else {
+		[self transitionFromViewController: oldController toViewController: newController duration: (1./3.) options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{} completion:^(BOOL finished) {
+			[oldController removeFromParentViewController];
+			[newController didMoveToParentViewController: self];
+		}];
+	}
+	
+	_contentViewController = newController;
 }
 
 - (void)setFrameSize:(CGSize)frameSize {
