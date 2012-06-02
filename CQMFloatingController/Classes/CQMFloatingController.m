@@ -41,15 +41,14 @@
 @interface CQMFloatingController()
 
 @property (nonatomic, weak) CQMFloatingFrameView *frameView;
-@property (nonatomic, strong) UIView *contentView;
+@property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) CQMFloatingContentOverlayView *contentOverlayView;
-@property (nonatomic, strong) UIImageView *shadowView;
 
 @end
 
 @implementation CQMFloatingController
 
-@synthesize frameView, contentView = contentView_, contentOverlayView = _contentOverlayView, contentViewController = contentViewController_, shadowView = shadowView_, frameSize = _frameSize, frameColor = _frameColor;
+@synthesize frameView, contentView = contentView_, contentOverlayView = _contentOverlayView, contentViewController = contentViewController_, frameSize = _frameSize, frameColor = _frameColor;
 
 - (id)initWithContentViewController:(UIViewController *)viewController {
 	if (self = [super initWithNibName:nil bundle:nil]) {
@@ -69,9 +68,7 @@
 		});
 		
 		_frameSize = kDefaultFrameSize;
-		_frameColor = kDefaultFrameColor;
-		[self setFrameColor:kDefaultFrameColor];
-		
+		self.frameColor = kDefaultFrameColor;
 		self.view.backgroundColor = kDefaultMaskColor;
 		
 		CQMFloatingFrameView *frame = [[CQMFloatingFrameView alloc] initWithFrame: CGRectMake(ceil((CGRectGetWidth(self.view.frame) - _frameSize.width) / 2), ceil((CGRectGetHeight(self.view.frame) - _frameSize.height) / 2), _frameSize.width, _frameSize.height)];
