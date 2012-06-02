@@ -55,8 +55,6 @@
 	if (self = [super initWithNibName:nil bundle:nil]) {
 		NSParameterAssert(viewController);
 		
-		contentViewController_ = viewController;
-		
 		static dispatch_once_t onceToken;
 		dispatch_once(&onceToken, ^{
 			UIImage *blank = CQMCreateBlankImage();
@@ -81,9 +79,11 @@
 		frame.baseColor = _frameColor;
 		[self.view addSubview: frame];
 		self.frameView = frame;
-		
-		UIView *content = [UIView new];
+				
+		// Content
+		UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, kFramePadding, kFramePadding)];
 		content.clipsToBounds = YES;
+		content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		content.layer.cornerRadius = 5.0f;
 		content.layer.masksToBounds = YES;
 		[frame addSubview: content];
@@ -92,11 +92,13 @@
 		viewController.view.frame = self.contentView.bounds;
 		viewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		[content addSubview: viewController.view];
+		contentViewController_ = viewController;
 		[self addChildViewController: viewController];
 		[viewController didMoveToParentViewController: self];
 		
 		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] init];
-		[self.contentOverlayView setEdgeColor: _frameColor];
+		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		overlay.edgeColor = _frameColor;
 		[frame addSubview: overlay];
 		self.contentOverlayView = overlay;
 	}
@@ -170,11 +172,7 @@ static char windowRetainCycle;
 
 - (void)viewDidLayoutSubviews {
 	// Content
-	UIView *contentView = [self contentView];
-	CGSize contentSize = CGSizeMake(self.frameView.frame.size.width - kFramePadding * 2,
-									self.frameView.frame.size.height - kFramePadding * 2);
-	[contentView setFrame: (CGRect){{kFramePadding, kFramePadding}, contentSize}];
-	
+	CGSize contentSize = self.contentView.frame.size;
 	
 	// Navigation	
 	CGFloat navBarHeight = 0.0, toolbarHeight = 0.0;
@@ -190,7 +188,7 @@ static char windowRetainCycle;
 	UIView *contentOverlay = self.contentOverlayView;
 	CGFloat contentFrameWidth = [[contentOverlay class] frameWidth];
 	[contentOverlay setFrame:CGRectMake(kFramePadding - contentFrameWidth,
-										kFramePadding - contentFrameWidth + navBarHeight ,
+										kFramePadding - contentFrameWidth + navBarHeight,
 										contentSize.width  + contentFrameWidth * 2,
 										contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2)];
 	
