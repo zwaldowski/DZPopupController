@@ -75,7 +75,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		});
 		
 		_frameSize = kDefaultFrameSize;
-		self.frameColor = kDefaultFrameColor;
+		_frameColor = kDefaultFrameColor;
 		self.view.backgroundColor = kDefaultMaskColor;
 		
 		CQMFloatingFrameView *frame = [[CQMFloatingFrameView alloc] initWithFrame: CGRectMake(ceil((CGRectGetWidth(self.view.frame) - _frameSize.width) / 2), ceil((CGRectGetHeight(self.view.frame) - _frameSize.height) / 2), _frameSize.width, _frameSize.height)];
@@ -117,7 +117,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		
 		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] init];
 		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		overlay.edgeColor = _frameColor;
+		overlay.baseColor = _frameColor;
 		[contentContainer addSubview: overlay];
 		self.contentOverlayView = overlay;
 	}
@@ -172,11 +172,9 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	if (!CGSizeEqualToSize(_frameSize, frameSize)) {
 		_frameSize = frameSize;
 		
-		if (self.isViewLoaded) {
-			CGRect frame = self.frameView.frame;
-			frame.size = frameSize;
-			self.frameView.frame = frame;
-		}
+		CGRect frame = self.frameView.frame;
+		frame.size = _frameSize;
+		self.frameView.frame = frame;
 	}
 }
 
@@ -184,12 +182,10 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	if (![_frameColor isEqual: frameColor]) {
 		_frameColor = frameColor;
 		
-		if (self.isViewLoaded) {
-			[self.frameView setBaseColor:frameColor];
-			[self.frameView setNeedsDisplay];
-			[self.contentOverlayView setEdgeColor:frameColor];
-			[self.contentOverlayView setNeedsDisplay];
-		}
+		self.frameView.baseColor = _frameColor;
+		self.contentOverlayView.baseColor = _frameColor;
+		[self.frameView setNeedsDisplay];
+		[self.contentOverlayView setNeedsDisplay];
 	}
 }
 

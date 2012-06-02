@@ -28,7 +28,7 @@
 
 @implementation CQMFloatingContentOverlayView
 
-@synthesize edgeColor = _edgeColor, filledCorners = _filledCorners;
+@synthesize baseColor = _baseColor, filledCorners = _filledCorners;
 
 - (id)init {
 	if (self = [super init]) {
@@ -63,7 +63,7 @@
 	[innerShadowRect setUsesEvenOddFillRule: YES];
 	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), frameWidth, [[UIColor colorWithWhite:0 alpha:0.8f] CGColor]);
 	[outerRect addClip];
-	[self.edgeColor setFill];
+	[self.baseColor setFill];
 	[innerShadowRect fill];
 	
 	CGContextRestoreGState(context);

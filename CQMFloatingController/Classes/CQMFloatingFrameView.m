@@ -26,9 +26,6 @@
 #import "CQMFloatingFrameView.h"
 #import <QuartzCore/QuartzCore.h>
 
-#define kStartHighlightColor [UIColor colorWithWhite:1.00f alpha:0.40f]
-#define kEndHighlightColor   [UIColor colorWithWhite:1.00f alpha:0.05f]
-
 @implementation CQMFloatingFrameView {
 	CGGradientRef _topGradient;
 	CGGradientRef _bottomGradient;
@@ -44,21 +41,24 @@
 		self.layer.shadowRadius = 10.0f;
 		self.layer.cornerRadius = 8.0f;
 		
+		CGColorRef startHighlight = [[UIColor colorWithWhite:1.00f alpha:0.40f] CGColor];
+		CGColorRef endHighlight = [[UIColor colorWithWhite:1.00f alpha:0.05f] CGColor];
+		
 		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 		CFArrayRef colors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
-														   (id)[kStartHighlightColor CGColor],
-														   (id)[kEndHighlightColor CGColor],
+														   (__bridge id)startHighlight,
+														   (__bridge id)endHighlight,
 														   nil];
-		CGFloat locations[] = {0, 1.0f};
-		_topGradient = CGGradientCreateWithColors(colorSpace, colors, locations);
+		CGFloat topLocations[] = {0, 1.0f};
+		_topGradient = CGGradientCreateWithColors(colorSpace, colors, topLocations);
 		CFRelease(colors);
 		colors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
 														   (id)[[UIColor clearColor] CGColor],
-														   (id)[kStartHighlightColor CGColor],
-														   (id)[kEndHighlightColor CGColor],
+														   (__bridge id)startHighlight,
+														   (__bridge id)endHighlight,
 														   nil];
-		CGFloat locations2[] = {0, 0.20f, 1.0f};
-		_bottomGradient = CGGradientCreateWithColors(colorSpace, colors, locations2);
+		CGFloat bottomLocations[] = {0, 0.20f, 1.0f};
+		_bottomGradient = CGGradientCreateWithColors(colorSpace, colors, bottomLocations);
 		CFRelease(colors);
 		CGColorSpaceRelease(colorSpace);
 	}
