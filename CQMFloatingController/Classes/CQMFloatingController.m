@@ -253,6 +253,13 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	return self;
 }
 
+- (void)dealloc {
+	if (self.contentViewController && [self.contentViewController isKindOfClass: [UINavigationController class]]) {
+		[self.contentViewController removeObserver: self forKeyPath: @"toolbar.bounds"];
+		[self.contentViewController removeObserver: self forKeyPath: @"navigationBar.bounds"];
+	}
+}
+
 - (UIViewController *)contentViewController {
 	return _contentViewController;
 }
