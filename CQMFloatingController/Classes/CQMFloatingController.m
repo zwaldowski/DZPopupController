@@ -77,7 +77,8 @@
 		self.view.backgroundColor = kDefaultMaskColor;
 		
 		CQMFloatingFrameView *frame = [[CQMFloatingFrameView alloc] initWithFrame: CGRectMake(ceil((CGRectGetWidth(self.view.frame) - _frameSize.width) / 2), ceil((CGRectGetHeight(self.view.frame) - _frameSize.height) / 2), _frameSize.width, _frameSize.height)];
-		[self.frameView setBaseColor: _frameColor];
+		frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		frame.baseColor = _frameColor;
 		[self.view addSubview: frame];
 		self.frameView = frame;
 		
@@ -135,20 +136,18 @@
 static char windowRetainCycle;
 
 - (void)show {
-	[self.view setAlpha:0];
+	self.view.alpha = 0.0f;
 	
 	UIWindow *window = [[UIApplication sharedApplication] keyWindow];
 	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
 	[self.view setFrame:[window convertRect:appFrame fromView:nil]];
 	[window addSubview:[self view]];
+	
 	objc_setAssociatedObject(window, &windowRetainCycle, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	
-	__weak CQMFloatingController *me = self;
-	[UIView animateWithDuration: kAnimationDuration
-					 animations:
-	 ^{
-		 [me.view setAlpha:1.0f];
-	 }];
+	[UIView animateWithDuration: kAnimationDuration animations: ^{
+		 self.view.alpha = 1.0f;
+	}];
 }
 
 

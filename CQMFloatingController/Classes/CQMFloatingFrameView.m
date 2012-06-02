@@ -43,7 +43,6 @@
 
 - (id)initWithFrame:(CGRect)frame {
 	if (self = [super initWithFrame: frame]) {
-		self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		self.backgroundColor = [UIColor clearColor];
 		self.layer.shadowColor = [[UIColor blackColor] CGColor];
 		self.layer.shadowOffset = CGSizeMake(0, 2);
