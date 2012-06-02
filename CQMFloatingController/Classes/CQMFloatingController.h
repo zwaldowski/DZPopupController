@@ -33,7 +33,10 @@
 @property (nonatomic) CGSize frameSize;
 @property (nonatomic, strong) UIColor *frameColor;
 
-- (void)show;
-- (void)hide;
+- (IBAction)show;
+- (IBAction)hide;
+
+- (void)showWithCompletion:(void(^)(void))block;
+- (void)hideWithCompletion:(void(^)(void))block;
 
 @end

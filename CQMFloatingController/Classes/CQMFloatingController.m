@@ -163,6 +163,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 }
 
 @interface CQMFloatingController () {
+	UIStatusBarStyle _backupStyle;
 	__weak UIViewController *_contentViewController;
 }
 
@@ -316,9 +317,11 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 static char windowRetainCycle;
 
-- (void)show {
-	self.view.alpha = 0.0f;
-	
+- (IBAction)show {
+	[self showWithCompletion:NULL];
+}
+
+- (void)showWithCompletion:(void(^)(void))block {
 	UIWindow *window = [[UIApplication sharedApplication] keyWindow];
 	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
 	[self.view setFrame:[window convertRect:appFrame fromView:nil]];
@@ -326,22 +329,73 @@ static char windowRetainCycle;
 	
 	objc_setAssociatedObject(window, &windowRetainCycle, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	
-	[UIView animateWithDuration: 1./3. animations: ^{
-		 self.view.alpha = 1.0f;
-	}];
+	_backupStyle = [[UIApplication sharedApplication] statusBarStyle];
+	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
+	
+	CABasicAnimation *alpha = [CABasicAnimation animationWithKeyPath:@"opacity"];
+	alpha.fromValue = [NSNumber numberWithDouble:0.0];
+	alpha.toValue = [NSNumber numberWithDouble:1.0];
+	alpha.timingFunction = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseOut];
+	alpha.duration = (1./3.);
+	
+	CAKeyframeAnimation *scale = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
+	scale.duration = 0.7f;
+	scale.keyTimes = [NSArray arrayWithObjects:
+					  [NSNumber numberWithDouble:0.0],
+					  [NSNumber numberWithDouble:0.5],
+					  [NSNumber numberWithDouble:(2.0f/3.0f)],
+					  [NSNumber numberWithDouble:(5.0f/6.0f)],
+					  [NSNumber numberWithDouble:1.0f],
+					  nil];
+	scale.values = [NSArray arrayWithObjects:
+					[NSNumber numberWithFloat:0.00001],
+					[NSNumber numberWithFloat:1.05],
+					[NSNumber numberWithFloat:0.95],
+					[NSNumber numberWithFloat:1.02],
+					[NSNumber numberWithFloat:1.00],
+					nil];
+	
+	CAMediaTimingFunction *easeIn = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseIn];
+	CAMediaTimingFunction *easeOut = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseOut];
+	scale.timingFunctions = [NSArray arrayWithObjects: easeIn, easeOut, easeIn, easeOut, nil];
+	
+	[CATransaction begin];
+	[CATransaction setCompletionBlock: block];
+	[self.view.layer addAnimation:alpha forKey: nil];
+	[self.frameView.layer addAnimation:scale forKey: nil];
+	[CATransaction commit];
 }
 
 - (void)hide {
-	[UIView animateWithDuration: 1./3. animations: ^{
-		self.view.alpha = 0.0f;
-	} completion: ^(BOOL finished){
-		 if (!finished)
-			 return;
-		 
+	[self hideWithCompletion:NULL];
+}
+
+- (void)hideWithCompletion:(void (^)(void))block {
+	[[UIApplication sharedApplication] setStatusBarStyle: _backupStyle animated:YES];
+	
+	CABasicAnimation *alpha = [CABasicAnimation animationWithKeyPath:@"opacity"];
+	alpha.toValue = [NSNumber numberWithDouble:0.0];
+	
+	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+	scale.toValue = [NSNumber numberWithDouble:0.00001];
+	
+	alpha.fillMode = scale.fillMode = kCAFillModeBackwards;
+	
+	[CATransaction begin];
+	[CATransaction setAnimationTimingFunction: [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseIn]];
+	[CATransaction setAnimationDuration: (1./3.)];
+	[CATransaction setCompletionBlock: ^{		
+		if (block)
+			block();
+		
 		UIWindow *window = self.view.window;
 		[self.view removeFromSuperview];
 		objc_setAssociatedObject(window, &windowRetainCycle, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-	 }];
+
+	}];
+	[self.frameView.layer addAnimation:scale forKey: nil];
+	[self.view.layer addAnimation:alpha forKey: nil];
+	[CATransaction commit];
 }
 
 - (void)cqm_resizeContentOverlay {

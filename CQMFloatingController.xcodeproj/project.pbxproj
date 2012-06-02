@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		6C6BB32D15788BAB0001113B /* CQMViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C6BB32B15788BAA0001113B /* CQMViewController.m */; };
 		6C6BB32E15788BAB0001113B /* CQMViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C6BB32C15788BAA0001113B /* CQMViewController.xib */; };
+		6C6BB346157A99E00001113B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C6BB345157A99E00001113B /* QuartzCore.framework */; };
 		F54E32A715620EE70057A34F /* CQMFloatingController.m in Sources */ = {isa = PBXBuildFile; fileRef = F54E329D15620EE70057A34F /* CQMFloatingController.m */; };
 		F54E32B0156271030057A34F /* DemoTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F54E32AF156271030057A34F /* DemoTableViewController.m */; };
 		F54E32B3156273780057A34F /* DemoDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F54E32B2156273780057A34F /* DemoDetailViewController.m */; };
@@ -24,6 +25,7 @@
 		6C6BB32A15788BAA0001113B /* CQMViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CQMViewController.h; sourceTree = "<group>"; };
 		6C6BB32B15788BAA0001113B /* CQMViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CQMViewController.m; sourceTree = "<group>"; };
 		6C6BB32C15788BAA0001113B /* CQMViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CQMViewController.xib; sourceTree = "<group>"; };
+		6C6BB345157A99E00001113B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		F54E329C15620EE70057A34F /* CQMFloatingController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CQMFloatingController.h; sourceTree = "<group>"; };
 		F54E329D15620EE70057A34F /* CQMFloatingController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CQMFloatingController.m; sourceTree = "<group>"; };
 		F54E32AE156271030057A34F /* DemoTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DemoTableViewController.h; sourceTree = "<group>"; };
@@ -47,6 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6C6BB346157A99E00001113B /* QuartzCore.framework in Frameworks */,
 				F5C422441560BF2300F7E3EE /* UIKit.framework in Frameworks */,
 				F5C422461560BF2300F7E3EE /* Foundation.framework in Frameworks */,
 				F5C422481560BF2300F7E3EE /* CoreGraphics.framework in Frameworks */,
@@ -85,6 +88,7 @@
 		F5C422421560BF2300F7E3EE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6C6BB345157A99E00001113B /* QuartzCore.framework */,
 				F5C422431560BF2300F7E3EE /* UIKit.framework */,
 				F5C422451560BF2300F7E3EE /* Foundation.framework */,
 				F5C422471560BF2300F7E3EE /* CoreGraphics.framework */,
