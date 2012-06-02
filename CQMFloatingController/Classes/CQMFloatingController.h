@@ -31,8 +31,7 @@
 @property (nonatomic) CGSize frameSize;
 @property (nonatomic, strong) UIColor *frameColor;
 
-
 - (void)show;
-- (void)dismissAnimated:(BOOL)animated;
+- (void)hide;
 
 @end

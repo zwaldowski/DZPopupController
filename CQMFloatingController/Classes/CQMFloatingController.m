@@ -152,16 +152,14 @@ static char windowRetainCycle;
 	}];
 }
 
-
-- (void)dismissAnimated:(BOOL)animated {
-	[UIView animateWithDuration: (animated ? kAnimationDuration : 0)
-					 animations: ^{
-		[self.view setAlpha:0];
-	 } completion: ^(BOOL finished){
+- (void)hide {
+	[UIView animateWithDuration: kAnimationDuration animations: ^{
+		self.view.alpha = 0.0f;
+	} completion: ^(BOOL finished){
 		 if (!finished)
 			 return;
 		 
-		 UIWindow *window = self.view.window;
+		UIWindow *window = self.view.window;
 		[self.view removeFromSuperview];
 		objc_setAssociatedObject(window, &windowRetainCycle, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	 }];
