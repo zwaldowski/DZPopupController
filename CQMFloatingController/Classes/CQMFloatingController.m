@@ -180,7 +180,8 @@ static char windowRetainCycle;
 	CGFloat navBarHeight = 0.0, toolbarHeight = 0.0;
 	if ([self.contentViewController isKindOfClass: [UINavigationController class]]) {
 		UINavigationController *navigationController = (id)self.contentViewController;
-		navBarHeight = navigationController.navigationBar.frame.size.height;
+		if (!navigationController.navigationBarHidden)
+			navBarHeight = navigationController.navigationBar.frame.size.height;
 		if (!navigationController.toolbarHidden && navigationController.topViewController.toolbarItems.count)
 			toolbarHeight = navigationController.toolbar.frame.size.height;
 	}
