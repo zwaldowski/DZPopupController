@@ -26,6 +26,7 @@
 @interface CQMFloatingContentOverlayView : UIView
 
 @property (nonatomic, strong) UIColor *edgeColor;
+@property (nonatomic) UIRectCorner filledCorners;
 
 + (CGFloat)frameWidth;
 

@@ -43,6 +43,7 @@
 		self.layer.masksToBounds = YES;
 		self.backgroundColor = [UIColor clearColor];
 		self.userInteractionEnabled = NO;
+		self.contentMode = UIViewContentModeRedraw;
 	}
 	return self;
 }
@@ -62,13 +63,13 @@
 	
 	CGContextSaveGState(context);
 	
-	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRect:rect];
-	UIBezierPath *roundRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
+	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: self.filledCorners cornerRadii: CGSizeMake(radius, radius)];
+	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
 	UIBezierPath *innerShadowRect = [outerRect copy];
-	[innerShadowRect appendPath: roundRect];
+	[innerShadowRect appendPath: innerRect];
 	[innerShadowRect setUsesEvenOddFillRule: YES];
 	CGContextSetShadowWithColor(context, kShadowOffset, kShadowBlur, [kShadowColor CGColor]);
-	[roundRect addClip];
+	[outerRect addClip];
 	[self.edgeColor setFill];
 	[innerShadowRect fill];
 	

@@ -129,9 +129,19 @@
 	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
 	
 	// Content overlay
-	UIView *contentOverlay = self.contentOverlayView;
+	CQMFloatingContentOverlayView *contentOverlay = self.contentOverlayView;
+	
+	UIRectCorner corners = 0;
+	if (!navigationController.navigationBarHidden)
+		corners |= UIRectCornerTopLeft | UIRectCornerTopRight;
+	if (!navigationController.toolbarHidden)
+		corners |= UIRectCornerBottomLeft | UIRectCornerBottomRight;
+	contentOverlay.filledCorners = corners;
+	
 	CGFloat contentFrameWidth = [[contentOverlay class] frameWidth];
-	contentOverlay.frame = CGRectMake(kFramePadding - contentFrameWidth, kFramePadding - contentFrameWidth + navBarHeight, contentSize.width  + contentFrameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2);
+	[UIView transitionWithView: contentOverlay duration: 0.0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionOverrideInheritedDuration | UIViewAnimationOptionTransitionCrossDissolve animations:^{
+		contentOverlay.frame = CGRectMake(kFramePadding - contentFrameWidth, kFramePadding - contentFrameWidth + navBarHeight, contentSize.width  + contentFrameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2);
+	} completion: NULL];
 }
 
 #pragma mark -
