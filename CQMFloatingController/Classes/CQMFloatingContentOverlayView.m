@@ -26,19 +26,13 @@
 #import "CQMFloatingContentOverlayView.h"
 #import <QuartzCore/QuartzCore.h>
 
-#define kCornerRadius        5.0f
-#define kShadowOffset        CGSizeMake(0, 1.0f)
-#define kShadowBlur          3.0f
-#define kShadowColor         [UIColor colorWithWhite:0 alpha:0.8f]
-
-
 @implementation CQMFloatingContentOverlayView
 
-@synthesize edgeColor = _edgeColor;
+@synthesize edgeColor = _edgeColor, filledCorners = _filledCorners;
 
 - (id)init {
 	if (self = [super init]) {
-		self.layer.cornerRadius = kCornerRadius;
+		self.layer.cornerRadius = 5.0f;
 		self.layer.masksToBounds = YES;
 		self.backgroundColor = [UIColor clearColor];
 		self.userInteractionEnabled = NO;
@@ -50,24 +44,24 @@
 #pragma mark - Properties
 
 + (CGFloat)frameWidth {
-	return kShadowBlur;
+	return 3.0f;
 }
 
 #pragma mark - UIView
 
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
-	const CGFloat radius = kCornerRadius;
-	const CGFloat frameWidth = kShadowBlur;
+	const CGFloat radius = self.layer.cornerRadius;
+	const CGFloat frameWidth = [[self class] frameWidth];
 	
 	CGContextSaveGState(context);
 	
-	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: self.filledCorners cornerRadii: CGSizeMake(radius, radius)];
+	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth - 2, frameWidth - 2) byRoundingCorners: self.filledCorners cornerRadii: CGSizeMake(radius + 2, radius + 2)];
 	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
 	UIBezierPath *innerShadowRect = [outerRect copy];
 	[innerShadowRect appendPath: innerRect];
 	[innerShadowRect setUsesEvenOddFillRule: YES];
-	CGContextSetShadowWithColor(context, kShadowOffset, kShadowBlur, [kShadowColor CGColor]);
+	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), frameWidth, [[UIColor colorWithWhite:0 alpha:0.8f] CGColor]);
 	[outerRect addClip];
 	[self.edgeColor setFill];
 	[innerShadowRect fill];
