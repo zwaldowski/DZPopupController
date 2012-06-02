@@ -55,7 +55,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 @implementation CQMFloatingController
 
-@synthesize frameView, contentView = contentView_, contentOverlayView = _contentOverlayView, contentViewController = contentViewController_, frameSize = _frameSize, frameColor = _frameColor;
+@synthesize frameView = _frameView, contentView = contentView_, contentOverlayView = _contentOverlayView, contentViewController = contentViewController_, frameSize = _frameSize, frameColor = _frameColor;
 
 - (id)initWithContentViewController:(UIViewController *)viewController {
 	if (self = [super initWithNibName:nil bundle:nil]) {
@@ -108,7 +108,9 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		if ([viewController isKindOfClass: [UINavigationController class]]) {
 			UINavigationController *navigationController = (id)viewController;
 			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
-			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
+			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
+			
+			self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
 			
 			[self cqm_resizeContentOverlay];
 		}
@@ -144,9 +146,9 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	contentOverlay.filledCorners = corners;
 	
 	CGFloat contentFrameWidth = [[contentOverlay class] frameWidth];
-	[UIView transitionWithView: contentOverlay duration: 0.0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionOverrideInheritedDuration | UIViewAnimationOptionTransitionCrossDissolve animations:^{
+	[UIView animateWithDuration: 0.0 animations:^{
 		contentOverlay.frame = CGRectMake(kFramePadding - contentFrameWidth, kFramePadding - contentFrameWidth + navBarHeight, contentSize.width  + contentFrameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2);
-	} completion: NULL];
+	}];
 }
 
 #pragma mark -
@@ -155,6 +157,12 @@ static inline UIImage *CQMCreateBlankImage(void) {
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	if ([object isEqual: self.contentViewController]) {
 		[self cqm_resizeContentOverlay];
+
+		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, ([object isToolbarHidden] ? kAnimationDuration : 0) * NSEC_PER_SEC);
+		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+			self.frameView.drawsBottomHighlight = (![object isToolbarHidden]);
+		});
+		
 		return;
 	}
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
@@ -215,33 +223,6 @@ static char windowRetainCycle;
 		[self.view removeFromSuperview];
 		objc_setAssociatedObject(window, &windowRetainCycle, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	 }];
-}
-
-#pragma mark -
-#pragma mark UIViewController
-
-- (void)viewDidLayoutSubviews {
-	// Content
-	CGSize contentSize = self.contentView.frame.size;
-	
-	// Navigation	
-	CGFloat navBarHeight = 0.0, toolbarHeight = 0.0;
-	if ([self.contentViewController isKindOfClass: [UINavigationController class]]) {
-		UINavigationController *navigationController = (id)self.contentViewController;
-		if (!navigationController.navigationBarHidden)
-			navBarHeight = navigationController.navigationBar.frame.size.height;
-		if (!navigationController.toolbarHidden && navigationController.topViewController.toolbarItems.count)
-			toolbarHeight = navigationController.toolbar.frame.size.height;
-	}
-	
-	// Content overlay
-	UIView *contentOverlay = self.contentOverlayView;
-	CGFloat contentFrameWidth = [[contentOverlay class] frameWidth];
-	[contentOverlay setFrame:CGRectMake(kFramePadding - contentFrameWidth,
-										kFramePadding - contentFrameWidth + navBarHeight,
-										contentSize.width  + contentFrameWidth * 2,
-										contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2)];
-	
 }
 
 @end
