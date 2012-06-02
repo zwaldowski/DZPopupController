@@ -210,6 +210,14 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[self.view addSubview: frame];
 		self.frameView = frame;
 		
+		UIButton *closeButton = [UIButton buttonWithType: UIButtonTypeCustom];
+		closeButton.frame = CGRectMake(-20, -20, 44, 44);
+		[closeButton setImage: [UIImage imageNamed:@"close.png"] forState: UIControlStateNormal];
+		[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
+		closeButton.layer.shadowOffset = CGSizeMake(0,4);
+		closeButton.layer.shadowOpacity = 0.3;
+		[frame addSubview: closeButton];
+		
 		UIView *contentContainer = [[UIView alloc] initWithFrame: frame.bounds];
 		contentContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		contentContainer.clipsToBounds = YES;
@@ -437,6 +445,10 @@ static char windowRetainCycle;
 		return;
 	}
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
+
+- (void)closePressed:(UIButton *)closeButton {
+	[self hide];
 }
 
 @end
