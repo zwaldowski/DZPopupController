@@ -69,6 +69,7 @@
 	[innerShadowRect setUsesEvenOddFillRule: YES];
 	CGContextSetShadowWithColor(context, kShadowOffset, kShadowBlur, [kShadowColor CGColor]);
 	[roundRect addClip];
+	[self.edgeColor setFill];
 	[innerShadowRect fill];
 	
 	CGContextRestoreGState(context);
