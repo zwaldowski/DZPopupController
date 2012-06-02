@@ -47,8 +47,8 @@
 	// 1. Prepare a content view controller
 	DemoTableViewController *demoViewController = [DemoTableViewController new];
 	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
-	contentViewController.toolbarHidden = YES;
-	contentViewController.navigationBarHidden = YES;
+	contentViewController.toolbarHidden = NO;
+	//contentViewController.navigationBarHidden = YES;
 	
 	UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemFlexibleSpace target: nil action:NULL];
 	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh target: nil action:NULL];
