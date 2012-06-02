@@ -26,5 +26,6 @@
 @interface CQMFloatingFrameView : UIView
 
 @property (nonatomic, strong) UIColor *baseColor;
+@property (nonatomic) BOOL drawsBottomHighlight;
 
 @end

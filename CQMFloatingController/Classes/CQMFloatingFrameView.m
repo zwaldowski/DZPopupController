@@ -26,36 +26,39 @@
 #import "CQMFloatingFrameView.h"
 #import <QuartzCore/QuartzCore.h>
 
-#define kCornerRadius        8.0f
-#define kLightBorderWidth    1.0f
-#define kHighlightHeight     22.0f
-#define kHighlightMargin     1.0f
-#define kLightBorderColor    [UIColor colorWithWhite:1.00f alpha:0.10f]
 #define kStartHighlightColor [UIColor colorWithWhite:1.00f alpha:0.40f]
 #define kEndHighlightColor   [UIColor colorWithWhite:1.00f alpha:0.05f]
 
 @implementation CQMFloatingFrameView {
-	CGGradientRef _gradient;
+	CGGradientRef _topGradient;
+	CGGradientRef _bottomGradient;
 }
 
-@synthesize baseColor = _baseColor;
+@synthesize baseColor = _baseColor, drawsBottomHighlight = _drawsBottomHighlight;
 
 - (id)initWithFrame:(CGRect)frame {
 	if (self = [super initWithFrame: frame]) {
 		self.backgroundColor = [UIColor clearColor];
-		self.layer.shadowColor = [[UIColor blackColor] CGColor];
 		self.layer.shadowOffset = CGSizeMake(0, 2);
-		self.layer.shadowOpacity = 0.7;
-		self.layer.shadowRadius = 10;
-		self.layer.cornerRadius = kCornerRadius;
+		self.layer.shadowOpacity = 0.7f;
+		self.layer.shadowRadius = 10.0f;
+		self.layer.cornerRadius = 8.0f;
 		
 		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-		CFArrayRef colors = (__bridge_retained CFArrayRef)[[NSArray alloc] initWithObjects:
+		CFArrayRef colors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
 														   (id)[kStartHighlightColor CGColor],
 														   (id)[kEndHighlightColor CGColor],
 														   nil];
 		CGFloat locations[] = {0, 1.0f};
-		_gradient = CGGradientCreateWithColors(colorSpace, colors, locations);
+		_topGradient = CGGradientCreateWithColors(colorSpace, colors, locations);
+		CFRelease(colors);
+		colors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
+														   (id)[[UIColor clearColor] CGColor],
+														   (id)[kStartHighlightColor CGColor],
+														   (id)[kEndHighlightColor CGColor],
+														   nil];
+		CGFloat locations2[] = {0, 0.20f, 1.0f};
+		_bottomGradient = CGGradientCreateWithColors(colorSpace, colors, locations2);
 		CFRelease(colors);
 		CGColorSpaceRelease(colorSpace);
 	}
@@ -63,39 +66,53 @@
 }
 
 - (void)dealloc {
-	CGGradientRelease(_gradient);
+	CGGradientRelease(_topGradient);
+	CGGradientRelease(_bottomGradient);
+}
+
+- (void)setDrawsBottomHighlight:(BOOL)drawsBottomHighlight {
+	_drawsBottomHighlight = drawsBottomHighlight;
+	[self setNeedsDisplay];
 }
 
 #pragma mark - UIView
 
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
-	const CGFloat radius = kCornerRadius;
+	const CGFloat radius = 8.0f;
 	
 	// Light border
-	[kLightBorderColor setFill];
-	[[UIBezierPath bezierPathWithRoundedRect: self.bounds cornerRadius: radius + kLightBorderWidth] fill];
+	[[UIColor colorWithWhite:1.00f alpha:0.10f] setFill];
+	[[UIBezierPath bezierPathWithRoundedRect: self.bounds cornerRadius: radius + 1.0f] fill];
 	
 	// Base
 	[self.baseColor setFill];
-	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, kLightBorderWidth, kLightBorderWidth) cornerRadius: radius] fill];
+	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: radius] fill];
 	
 	// Highlight
-	CGFloat highlightMargin = kLightBorderWidth + kHighlightMargin;
-	CGRect highlightRect = CGRectMake(highlightMargin, highlightMargin,
-									  CGRectGetWidth(rect) - highlightMargin * 2,
-									  kHighlightHeight);
-	CGFloat highlightRadius = radius - kHighlightMargin;
+	CGRect highlightRect = CGRectMake(2.0f, 2.0f, CGRectGetWidth(rect) - 4.0f, 26.0f);
+	CGSize highlightRadii = CGSizeMake(radius - 1.0f, radius - 1.0f);
 	
 	CGContextSaveGState(context);
 	
-	[[UIBezierPath bezierPathWithRoundedRect: highlightRect byRoundingCorners: UIRectCornerTopLeft|UIRectCornerTopRight cornerRadii:CGSizeMake(highlightRadius, highlightRadius)] addClip];
-	CGContextDrawLinearGradient(context, _gradient, CGPointZero, CGPointMake(0, kHighlightHeight), 0);
+	[[UIBezierPath bezierPathWithRoundedRect: highlightRect byRoundingCorners: UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii: highlightRadii] addClip];
+	CGContextDrawLinearGradient(context, _topGradient, CGPointMake(0, 2.0f), CGPointMake(0, 26.0f), 0);
+	
 	CGContextRestoreGState(context);
+	
+	if (self.drawsBottomHighlight) {
+		CGContextSaveGState(context);
+		
+		CGRect bottomHighlightRect = CGRectMake(4.0f, CGRectGetMaxY(rect) - 55.0f, CGRectGetWidth(rect) - 8.0f, 30.0f);
+		
+		[[UIBezierPath bezierPathWithRect: bottomHighlightRect] addClip];
+		CGContextDrawLinearGradient(context, _bottomGradient, CGPointMake(2.0f, CGRectGetMinY(bottomHighlightRect)), CGPointMake(2.0f, CGRectGetMaxY(bottomHighlightRect)), 0);
+		CGContextRestoreGState(context);
+	}
 }
 
 - (void)layoutSubviews {
-	self.layer.shadowPath = [[UIBezierPath bezierPathWithRoundedRect:self.bounds cornerRadius: kCornerRadius] CGPath];
+	self.layer.shadowPath = [[UIBezierPath bezierPathWithRoundedRect: self.bounds cornerRadius: 8.0f] CGPath];
 }
 
 @end
