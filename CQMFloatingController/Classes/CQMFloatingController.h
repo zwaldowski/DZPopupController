@@ -1,7 +1,8 @@
 //
 // CQMFloatingController.h
-// Created by cocopon on 2011/05/19.
+// CQMFloatingController
 //
+// Created by cocopon on 2011/05/19.
 // Copyright (c) 2012 cocopon <cocopon@me.com>
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy

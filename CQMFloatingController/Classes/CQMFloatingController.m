@@ -1,40 +1,159 @@
 //
 // CQMFloatingController.m
-// Created by cocopon on 2011/05/19.
-//
-// Copyright (c) 2012 cocopon <cocopon@me.com>
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to
-// deal in the Software without restriction, including without limitation the
-// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-// sell copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+// CQMFloatingController
 //
 
+#import "CQMFloatingController.h"
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
-#import "CQMFloatingController.h"
-#import "CQMFloatingContentOverlayView.h"
-#import "CQMFloatingFrameView.h"
 
-#define kDefaultMaskColor  [UIColor colorWithWhite:0 alpha:0.5]
-#define kDefaultFrameColor [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f]
-#define kDefaultFrameSize  CGSizeMake(320 - 66, 460 - 66)
-#define kFramePadding      5.0f
-#define kRootKey           @"root"
-#define kAnimationDuration 0.3f
+#pragma mark -
+
+@interface CQMFloatingFrameView : UIView
+
+@property (nonatomic, strong) UIColor *baseColor;
+@property (nonatomic) BOOL drawsBottomHighlight;
+
+@end
+
+@implementation CQMFloatingFrameView {
+	CGGradientRef _topGradient;
+	CGGradientRef _bottomGradient;
+}
+
+@synthesize baseColor = _baseColor;
+@synthesize drawsBottomHighlight = _drawsBottomHighlight;
+
+- (id)initWithFrame:(CGRect)frame {
+	if (self = [super initWithFrame: frame]) {
+		self.backgroundColor = [UIColor clearColor];
+		self.layer.shadowOffset = CGSizeMake(0, 2);
+		self.layer.shadowOpacity = 0.7f;
+		self.layer.shadowRadius = 10.0f;
+		self.layer.cornerRadius = 8.0f;
+		
+		CGColorRef startHighlight = [[UIColor colorWithWhite:1.00f alpha:0.40f] CGColor];
+		CGColorRef endHighlight = [[UIColor colorWithWhite:1.00f alpha:0.05f] CGColor];
+		
+		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+		CFArrayRef colors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
+														   (__bridge id)startHighlight,
+														   (__bridge id)endHighlight,
+														   nil];
+		CGFloat topLocations[] = {0, 1.0f};
+		_topGradient = CGGradientCreateWithColors(colorSpace, colors, topLocations);
+		CFRelease(colors);
+		colors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
+												(id)[[UIColor clearColor] CGColor],
+												(__bridge id)startHighlight,
+												(__bridge id)endHighlight,
+												nil];
+		CGFloat bottomLocations[] = {0, 0.20f, 1.0f};
+		_bottomGradient = CGGradientCreateWithColors(colorSpace, colors, bottomLocations);
+		CFRelease(colors);
+		CGColorSpaceRelease(colorSpace);
+	}
+	return self;
+}
+
+- (void)dealloc {
+	CGGradientRelease(_topGradient);
+	CGGradientRelease(_bottomGradient);
+}
+
+- (void)layoutSubviews {
+	self.layer.shadowPath = [[UIBezierPath bezierPathWithRoundedRect: self.bounds cornerRadius: 8.0f] CGPath];
+}
+
+- (void)drawRect:(CGRect)rect {
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	const CGFloat radius = 8.0f;
+	
+	// Light border
+	[[UIColor colorWithWhite:1.00f alpha:0.10f] setFill];
+	[[UIBezierPath bezierPathWithRoundedRect: self.bounds cornerRadius: radius + 1.0f] fill];
+	
+	// Base
+	[self.baseColor setFill];
+	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: radius] fill];
+	
+	// Highlight
+	CGRect highlightRect = CGRectMake(2.0f, 2.0f, CGRectGetWidth(rect) - 4.0f, 26.0f);
+	CGSize highlightRadii = CGSizeMake(radius - 1.0f, radius - 1.0f);
+	
+	CGContextSaveGState(context);
+	
+	[[UIBezierPath bezierPathWithRoundedRect: highlightRect byRoundingCorners: UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii: highlightRadii] addClip];
+	CGContextDrawLinearGradient(context, _topGradient, CGPointMake(0, 2.0f), CGPointMake(0, 26.0f), 0);
+	
+	CGContextRestoreGState(context);
+	
+	if (self.drawsBottomHighlight) {
+		CGContextSaveGState(context);
+		
+		CGRect bottomHighlightRect = CGRectMake(4.0f, CGRectGetMaxY(rect) - 55.0f, CGRectGetWidth(rect) - 8.0f, 30.0f);
+		
+		[[UIBezierPath bezierPathWithRect: bottomHighlightRect] addClip];
+		CGContextDrawLinearGradient(context, _bottomGradient, CGPointMake(2.0f, CGRectGetMinY(bottomHighlightRect)), CGPointMake(2.0f, CGRectGetMaxY(bottomHighlightRect)), 0);
+		CGContextRestoreGState(context);
+	}
+}
+
+- (void)setDrawsBottomHighlight:(BOOL)drawsBottomHighlight {
+	_drawsBottomHighlight = drawsBottomHighlight;
+	[self setNeedsDisplay];
+}
+
+@end
+
+#pragma mark -
+
+@interface CQMFloatingContentOverlayView : UIView
+
+@property (nonatomic, strong) UIColor *baseColor;
+@property (nonatomic) UIRectCorner filledCorners;
+
+@end
+
+@implementation CQMFloatingContentOverlayView
+
+@synthesize baseColor = _baseColor;
+@synthesize filledCorners = _filledCorners;
+
+- (id)initWithFrame:(CGRect)frame {
+	if (self = [super initWithFrame:frame]) {
+		self.layer.cornerRadius = 5.0f;
+		self.layer.masksToBounds = YES;
+		self.backgroundColor = [UIColor clearColor];
+		self.userInteractionEnabled = NO;
+		self.contentMode = UIViewContentModeRedraw;
+	}
+	return self;
+}
+
+- (void)drawRect:(CGRect)rect {
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	const CGFloat radius = self.layer.cornerRadius;
+	const CGFloat frameWidth = 3.0f;
+	
+	CGContextSaveGState(context);
+	
+	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth - 2, frameWidth - 2) byRoundingCorners: self.filledCorners cornerRadii: CGSizeMake(radius + 2, radius + 2)];
+	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
+	UIBezierPath *innerShadowRect = [outerRect copy];
+	[innerShadowRect appendPath: innerRect];
+	[innerShadowRect setUsesEvenOddFillRule: YES];
+	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), frameWidth, [[UIColor colorWithWhite:0 alpha:0.8f] CGColor]);
+	[outerRect addClip];
+	[self.baseColor setFill];
+	[innerShadowRect fill];
+	
+	CGContextRestoreGState(context);
+}
+
+@end
+
+#pragma mark -
 
 static inline UIImage *CQMCreateBlankImage(void) {
 	UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
@@ -55,7 +174,12 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 @implementation CQMFloatingController
 
-@synthesize frameView = _frameView, contentView = contentView_, contentOverlayView = _contentOverlayView, contentViewController = contentViewController_, frameSize = _frameSize, frameColor = _frameColor;
+@synthesize frameView = _frameView;
+@synthesize contentView = _contentView;
+@synthesize contentOverlayView = _contentOverlayView;
+@synthesize contentViewController = _contentViewController;
+@synthesize frameSize = _frameSize;
+@synthesize frameColor = _frameColor;
 
 - (id)initWithContentViewController:(UIViewController *)viewController {
 	if (self = [super initWithNibName:nil bundle:nil]) {
@@ -74,9 +198,9 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsLandscapePhone];
 		});
 		
-		_frameSize = kDefaultFrameSize;
-		_frameColor = kDefaultFrameColor;
-		self.view.backgroundColor = kDefaultMaskColor;
+		_frameSize = CGSizeMake(254, 394);
+		_frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
+		self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:0.5];
 		
 		CQMFloatingFrameView *frame = [[CQMFloatingFrameView alloc] initWithFrame: CGRectMake(ceil((CGRectGetWidth(self.view.frame) - _frameSize.width) / 2), ceil((CGRectGetHeight(self.view.frame) - _frameSize.height) / 2), _frameSize.width, _frameSize.height)];
 		frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -92,7 +216,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[frame addSubview: contentContainer];
 				
 		// Content
-		UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, kFramePadding, kFramePadding)];
+		UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 5.0f, 5.0f)];
 		content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		content.layer.cornerRadius = 5.0f;
 		[contentContainer addSubview: content];
@@ -101,9 +225,15 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		viewController.view.frame = self.contentView.bounds;
 		viewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		[content addSubview: viewController.view];
-		contentViewController_ = viewController;
+		_contentViewController = viewController;
 		[self addChildViewController: viewController];
 		[viewController didMoveToParentViewController: self];
+		
+		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: CGRectZero];
+		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		overlay.baseColor = _frameColor;
+		[contentContainer addSubview: overlay];
+		self.contentOverlayView = overlay;
 		
 		if ([viewController isKindOfClass: [UINavigationController class]]) {
 			UINavigationController *navigationController = (id)viewController;
@@ -114,58 +244,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			
 			[self cqm_resizeContentOverlay];
 		}
-		
-		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] init];
-		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		overlay.baseColor = _frameColor;
-		[contentContainer addSubview: overlay];
-		self.contentOverlayView = overlay;
 	}
 	return self;
-}
-
-- (void)cqm_resizeContentOverlay {
-	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
-		return;
-	
-	CGSize contentSize = self.contentView.frame.size;
-	UINavigationController *navigationController = (id)self.contentViewController;
-	
-	// Navigation	
-	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height - 1,
-	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
-	
-	// Content overlay
-	CQMFloatingContentOverlayView *contentOverlay = self.contentOverlayView;
-	
-	UIRectCorner corners = 0;
-	if (!navigationController.navigationBarHidden)
-		corners |= UIRectCornerTopLeft | UIRectCornerTopRight;
-	if (!navigationController.toolbarHidden)
-		corners |= UIRectCornerBottomLeft | UIRectCornerBottomRight;
-	contentOverlay.filledCorners = corners;
-	
-	CGFloat contentFrameWidth = [[contentOverlay class] frameWidth];
-	[UIView animateWithDuration: 0.0 animations:^{
-		contentOverlay.frame = CGRectMake(kFramePadding - contentFrameWidth, kFramePadding - contentFrameWidth + navBarHeight, contentSize.width  + contentFrameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + contentFrameWidth * 2);
-	}];
-}
-
-#pragma mark -
-#pragma mark Property
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-	if ([object isEqual: self.contentViewController]) {
-		[self cqm_resizeContentOverlay];
-
-		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, ([object isToolbarHidden] ? kAnimationDuration : 0) * NSEC_PER_SEC);
-		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-			self.frameView.drawsBottomHighlight = (![object isToolbarHidden]);
-		});
-		
-		return;
-	}
-	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
 - (void)setFrameSize:(CGSize)frameSize {
@@ -189,8 +269,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	}
 }
 
-#pragma mark -
-
 static char windowRetainCycle;
 
 - (void)show {
@@ -203,13 +281,13 @@ static char windowRetainCycle;
 	
 	objc_setAssociatedObject(window, &windowRetainCycle, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	
-	[UIView animateWithDuration: kAnimationDuration animations: ^{
+	[UIView animateWithDuration: 1./3. animations: ^{
 		 self.view.alpha = 1.0f;
 	}];
 }
 
 - (void)hide {
-	[UIView animateWithDuration: kAnimationDuration animations: ^{
+	[UIView animateWithDuration: 1./3. animations: ^{
 		self.view.alpha = 0.0f;
 	} completion: ^(BOOL finished){
 		 if (!finished)
@@ -219,6 +297,47 @@ static char windowRetainCycle;
 		[self.view removeFromSuperview];
 		objc_setAssociatedObject(window, &windowRetainCycle, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	 }];
+}
+
+- (void)cqm_resizeContentOverlay {
+	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
+		return;
+	
+	CGSize contentSize = self.contentView.frame.size;
+	UINavigationController *navigationController = (id)self.contentViewController;
+	
+	// Navigation	
+	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height - 1,
+	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
+	
+	// Content overlay
+	CQMFloatingContentOverlayView *contentOverlay = self.contentOverlayView;
+	
+	UIRectCorner corners = 0;
+	if (!navigationController.navigationBarHidden)
+		corners |= UIRectCornerTopLeft | UIRectCornerTopRight;
+	if (!navigationController.toolbarHidden)
+		corners |= UIRectCornerBottomLeft | UIRectCornerBottomRight;
+	contentOverlay.filledCorners = corners;
+	
+	const CGFloat frameWidth = 3.0f;
+	[UIView animateWithDuration: 0.0 animations:^{
+		contentOverlay.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
+	}];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if ([object isEqual: self.contentViewController]) {
+		[self cqm_resizeContentOverlay];
+		
+		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, ([object isToolbarHidden] ? 1./3. : 0) * NSEC_PER_SEC);
+		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+			self.frameView.drawsBottomHighlight = (![object isToolbarHidden]);
+		});
+		
+		return;
+	}
+	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
 @end
