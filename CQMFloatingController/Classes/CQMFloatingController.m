@@ -24,50 +24,45 @@
 @synthesize baseColor = _baseColor;
 @synthesize drawsBottomHighlight = _drawsBottomHighlight;
 
-- (id)initWithFrame:(CGRect)frame {
-	if (self = [super initWithFrame: frame]) {
-		self.backgroundColor = [UIColor clearColor];
-		self.layer.shadowOffset = CGSizeMake(0, 2);
-		self.layer.shadowOpacity = 0.7f;
-		self.layer.shadowRadius = 10.0f;
-		self.layer.cornerRadius = 8.0f;
-		
-		CGColorRef startHighlight = [[UIColor colorWithWhite:1.00f alpha:0.40f] CGColor];
-		CGColorRef endHighlight = [[UIColor colorWithWhite:1.00f alpha:0.05f] CGColor];
-		
-		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-		CFArrayRef colors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
-														   (__bridge id)startHighlight,
-														   (__bridge id)endHighlight,
-														   nil];
-		CGFloat topLocations[] = {0, 1.0f};
-		_topGradient = CGGradientCreateWithColors(colorSpace, colors, topLocations);
-		CFRelease(colors);
-		colors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
-												(id)[[UIColor clearColor] CGColor],
-												(__bridge id)startHighlight,
-												(__bridge id)endHighlight,
-												nil];
-		CGFloat bottomLocations[] = {0, 0.20f, 1.0f};
-		_bottomGradient = CGGradientCreateWithColors(colorSpace, colors, bottomLocations);
-		CFRelease(colors);
-		CGColorSpaceRelease(colorSpace);
-	}
-	return self;
-}
-
 - (void)dealloc {
-	CGGradientRelease(_topGradient);
-	CGGradientRelease(_bottomGradient);
-}
-
-- (void)layoutSubviews {
-	self.layer.shadowPath = [[UIBezierPath bezierPathWithRoundedRect: self.bounds cornerRadius: 8.0f] CGPath];
+	if (_topGradient)
+		CGGradientRelease(_topGradient); _topGradient = nil;
+	if (_bottomGradient)
+		CGGradientRelease(_bottomGradient); _bottomGradient = nil;
 }
 
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	const CGFloat radius = 8.0f;
+	
+	// Create gradients
+	if (!_topGradient || !_bottomGradient) {
+		CGColorRef startHighlight = [[UIColor colorWithWhite:1.00f alpha:0.40f] CGColor];
+		CGColorRef endHighlight = [[UIColor colorWithWhite:1.00f alpha:0.05f] CGColor];
+		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+		
+		CFArrayRef topColors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
+														   (__bridge id)startHighlight,
+														   (__bridge id)endHighlight,
+														   nil];
+		CGFloat topLocations[] = {0, 1.0f};
+		_topGradient = CGGradientCreateWithColors(colorSpace, topColors, topLocations);
+		CFRelease(topColors);
+		
+		CFArrayRef bottomColors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
+												(id)[[UIColor clearColor] CGColor],
+												(__bridge id)startHighlight,
+												(__bridge id)endHighlight,
+												nil];
+		CGFloat bottomLocations[] = {0, 0.20f, 1.0f};
+		_bottomGradient = CGGradientCreateWithColors(colorSpace, bottomColors, bottomLocations);
+		CFRelease(bottomColors);
+		
+		CGColorSpaceRelease(colorSpace);
+	}
+	
+	// Shadow location
+	self.layer.shadowPath = [[UIBezierPath bezierPathWithRoundedRect: self.bounds cornerRadius: 8.0f] CGPath];
 	
 	// Light border
 	[[UIColor colorWithWhite:1.00f alpha:0.10f] setFill];
@@ -99,11 +94,6 @@
 	}
 }
 
-- (void)setDrawsBottomHighlight:(BOOL)drawsBottomHighlight {
-	_drawsBottomHighlight = drawsBottomHighlight;
-	[self setNeedsDisplay];
-}
-
 @end
 
 #pragma mark -
@@ -120,33 +110,24 @@
 @synthesize baseColor = _baseColor;
 @synthesize filledCorners = _filledCorners;
 
-- (id)initWithFrame:(CGRect)frame {
-	if (self = [super initWithFrame:frame]) {
-		self.layer.cornerRadius = 5.0f;
-		self.layer.masksToBounds = YES;
-		self.backgroundColor = [UIColor clearColor];
-		self.userInteractionEnabled = NO;
-		self.contentMode = UIViewContentModeRedraw;
-	}
-	return self;
-}
-
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	const CGFloat radius = self.layer.cornerRadius;
 	const CGFloat frameWidth = 3.0f;
 	
-	CGContextSaveGState(context);
-	
 	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth - 2, frameWidth - 2) byRoundingCorners: self.filledCorners cornerRadii: CGSizeMake(radius + 2, radius + 2)];
 	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
-	UIBezierPath *innerShadowRect = [outerRect copy];
-	[innerShadowRect appendPath: innerRect];
-	[innerShadowRect setUsesEvenOddFillRule: YES];
+	UIBezierPath *fillRect = [outerRect copy];
+	[fillRect appendPath: innerRect];
+	[fillRect setUsesEvenOddFillRule: YES];
+	
+	CGContextSaveGState(context);
+	
 	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), frameWidth, [[UIColor colorWithWhite:0 alpha:0.8f] CGColor]);
+	
 	[outerRect addClip];
 	[self.baseColor setFill];
-	[innerShadowRect fill];
+	[fillRect fill];
 	
 	CGContextRestoreGState(context);
 }
@@ -206,7 +187,13 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		
 		CQMFloatingFrameView *frame = [[CQMFloatingFrameView alloc] initWithFrame: CGRectMake(ceil((CGRectGetWidth(self.view.frame) - _frameSize.width) / 2), ceil((CGRectGetHeight(self.view.frame) - _frameSize.height) / 2), _frameSize.width, _frameSize.height)];
 		frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		frame.backgroundColor = [UIColor clearColor];
+		frame.contentMode = UIViewContentModeRedraw;
 		frame.baseColor = _frameColor;
+		frame.layer.cornerRadius = 8.0f;
+		frame.layer.shadowOffset = CGSizeMake(0, 2);
+		frame.layer.shadowOpacity = 0.7f;
+		frame.layer.shadowRadius = 10.0f;
 		[self.view addSubview: frame];
 		self.frameView = frame;
 		
@@ -236,7 +223,12 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		
 		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: CGRectZero];
 		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+		overlay.backgroundColor = [UIColor clearColor];
+		overlay.contentMode = UIViewContentModeRedraw;
+		overlay.userInteractionEnabled = NO;
 		overlay.baseColor = _frameColor;
+		overlay.layer.cornerRadius = 5.0f;
+		overlay.layer.masksToBounds = YES;
 		[contentContainer addSubview: overlay];
 		self.contentOverlayView = overlay;
 		
@@ -246,6 +238,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
 			
 			self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
+			[self.frameView setNeedsDisplay];
 			
 			[self cqm_resizeContentOverlay];
 		}
@@ -447,6 +440,7 @@ static char windowRetainCycle;
 		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, ([object isToolbarHidden] ? 1./3. : 0) * NSEC_PER_SEC);
 		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
 			self.frameView.drawsBottomHighlight = (![object isToolbarHidden]);
+			[self.frameView setNeedsDisplay];
 		});
 		
 		return;
