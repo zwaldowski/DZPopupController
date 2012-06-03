@@ -245,25 +245,31 @@ static inline UIImage *CQMCreateBlankImage(void) {
 }
 
 - (void)setContentViewController:(UIViewController *)newController {
+	[self setContentViewController: newController animated: NO];
+}
+
+- (void)setContentViewController:(UIViewController *)newController animated:(BOOL)animated {
 	UIViewController *oldController = self.contentViewController;
+	
 	if (oldController) {
 		if ([oldController isKindOfClass: [UINavigationController class]]) {
 			[oldController removeObserver: self forKeyPath: @"toolbar.bounds"];
 			[oldController removeObserver: self forKeyPath: @"navigationBar.bounds"];
 		}
 		
-		[oldController willMoveToParentViewController: nil];
-		[oldController.view removeFromSuperview];
-		[oldController removeFromParentViewController];
+		if (!animated) {
+			[oldController willMoveToParentViewController: nil];
+			[oldController.view removeFromSuperview];
+			[oldController removeFromParentViewController];
+		}
 	}
 	
 	_contentViewController = newController;
 	
-	if (newController) {
-		newController.view.frame = self.contentView.bounds;
-		newController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		[self.contentView addSubview: newController.view];
-		[self addChildViewController: newController];
+	if (!newController)
+		return;
+	
+	void (^addObservers)(void) = ^{
 		[newController didMoveToParentViewController: self];
 		
 		if ([newController isKindOfClass: [UINavigationController class]]) {
@@ -272,37 +278,31 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
 			
 			self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
-			[self.frameView setNeedsDisplay];
-			
-			[self resizeContentOverlay];
+		} else {
+			self.frameView.drawsBottomHighlight = NO;
 		}
-	}
-}
-
-- (void)setContentViewController:(UIViewController *)newController animated:(BOOL)animated {
-	if (!animated)
-		[self setContentViewController: newController];
-	
-	UIViewController *oldController = self.contentViewController;
+		
+		[self.frameView setNeedsDisplay];
+		[self resizeContentOverlay];
+	};
 	
 	if (!oldController) {
-		[UIView transitionWithView: newController.view duration: (1./3.) options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
+		[UIView transitionWithView: self.contentView duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
 			newController.view.frame = self.contentView.bounds;
 			newController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 			[self.contentView addSubview: newController.view];
 		} completion:^(BOOL finished) {
 			[self addChildViewController: newController];
-			[newController didMoveToParentViewController: self];
+			
+			addObservers();
 		}];
-		return;
 	} else {
-		[self transitionFromViewController: oldController toViewController: newController duration: (1./3.) options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{} completion:^(BOOL finished) {
+		[self transitionFromViewController: oldController toViewController: newController duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{} completion:^(BOOL finished) {
 			[oldController removeFromParentViewController];
-			[newController didMoveToParentViewController: self];
+			
+			addObservers();
 		}];
 	}
-	
-	_contentViewController = newController;
 }
 
 - (void)setFrameSize:(CGSize)frameSize {
@@ -315,27 +315,42 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	
 	_frameSize = frameSize;
 	
-	[UIView animateWithDuration: animated ? 1./3. : 0 delay: 0 options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionLayoutSubviews animations: ^{
+	[UIView animateWithDuration: animated ? 1./3. : 0 delay: 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionLayoutSubviews animations: ^{
 		CGFloat insetX = floor(CGRectGetMidX(self.view.bounds) - _frameSize.width / 2), insetY = floor(CGRectGetMidY(self.view.bounds) - _frameSize.height / 2);
 		self.frameView.frame = CGRectInset(self.view.bounds, insetX, insetY);
 	} completion: NULL];
 }
 
 - (void)setFrameColor:(UIColor*)frameColor {
-	if (![_frameColor isEqual: frameColor]) {
-		_frameColor = frameColor;
-		
+	[self setFrameColor: frameColor animated: NO];
+}
+
+- (void)setFrameColor:(UIColor*)frameColor animated:(BOOL)animated {
+	if ([_frameColor isEqual: frameColor])
+		return;
+	
+	_frameColor = frameColor;
+	
+	[UIView transitionWithView: self.frameView duration: animated ? 1./3. : 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionCrossDissolve animations: ^{
 		self.frameView.baseColor = _frameColor;
 		self.contentOverlayView.baseColor = _frameColor;
 		[self.frameView setNeedsDisplay];
 		[self.contentOverlayView setNeedsDisplay];
-	}
+	} completion: NULL];
+}
+
+- (BOOL)isVisible {
+	return !!self.view.superview;
 }
 
 static char windowRetainCycle;
 
 - (IBAction)present {
 	[self presentWithCompletion: NULL];
+}
+
+- (void)dismiss {
+	[self dismissWithCompletion: NULL];
 }
 
 - (void)presentWithCompletion:(void (^)(void))block {
@@ -383,10 +398,6 @@ static char windowRetainCycle;
 	[CATransaction commit];
 }
 
-- (void)dismiss {
-	[self dismissWithCompletion: NULL];
-}
-
 - (void)dismissWithCompletion:(void (^)(void))block {
 	[[UIApplication sharedApplication] setStatusBarStyle: _backupStyle animated:YES];
 	
@@ -414,6 +425,8 @@ static char windowRetainCycle;
 	[self.view.layer addAnimation:alpha forKey: nil];
 	[CATransaction commit];
 }
+
+#pragma mark -
 
 - (void)resizeContentOverlay {
 	if (![self.contentViewController isKindOfClass: [UINavigationController class]])

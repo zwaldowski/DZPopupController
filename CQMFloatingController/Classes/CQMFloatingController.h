@@ -34,9 +34,10 @@
 @property (nonatomic) CGSize frameSize;
 - (void)setFrameSize:(CGSize)frameSize animated:(BOOL)animated;
 
-@property (nonatomic, readonly, getter = isVisible) BOOL visible;
-
 @property (nonatomic, strong) UIColor *frameColor;
+- (void)setFrameColor:(UIColor*)frameColor animated:(BOOL)animated;
+
+@property (nonatomic, readonly, getter = isVisible) BOOL visible;
 
 - (IBAction)present;
 - (IBAction)dismiss;
