@@ -219,8 +219,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[contentContainer addSubview: content];
 		self.contentView = content;
 		
-		self.contentViewController = viewController;
-		
 		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: CGRectZero];
 		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		overlay.backgroundColor = [UIColor clearColor];
@@ -232,25 +230,13 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[contentContainer addSubview: overlay];
 		self.contentOverlayView = overlay;
 		
-		if ([viewController isKindOfClass: [UINavigationController class]]) {
-			UINavigationController *navigationController = (id)viewController;
-			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
-			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
-			
-			self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
-			[self.frameView setNeedsDisplay];
-			
-			[self cqm_resizeContentOverlay];
-		}
+		self.contentViewController = viewController;
 	}
 	return self;
 }
 
 - (void)dealloc {
-	if (self.contentViewController && [self.contentViewController isKindOfClass: [UINavigationController class]]) {
-		[self.contentViewController removeObserver: self forKeyPath: @"toolbar.bounds"];
-		[self.contentViewController removeObserver: self forKeyPath: @"navigationBar.bounds"];
-	}
+	self.contentViewController = nil;
 }
 
 - (UIViewController *)contentViewController {
@@ -260,6 +246,11 @@ static inline UIImage *CQMCreateBlankImage(void) {
 - (void)setContentViewController:(UIViewController *)newController {
 	UIViewController *oldController = self.contentViewController;
 	if (oldController) {
+		if ([oldController isKindOfClass: [UINavigationController class]]) {
+			[oldController removeObserver: self forKeyPath: @"toolbar.bounds"];
+			[oldController removeObserver: self forKeyPath: @"navigationBar.bounds"];
+		}
+		
 		[oldController willMoveToParentViewController: nil];
 		[oldController.view removeFromSuperview];
 		[oldController removeFromParentViewController];
@@ -273,6 +264,17 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[self.contentView addSubview: newController.view];
 		[self addChildViewController: newController];
 		[newController didMoveToParentViewController: self];
+		
+		if ([newController isKindOfClass: [UINavigationController class]]) {
+			UINavigationController *navigationController = (id)newController;
+			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
+			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
+			
+			self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
+			[self.frameView setNeedsDisplay];
+			
+			[self cqm_resizeContentOverlay];
+		}
 	}
 }
 
