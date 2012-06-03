@@ -181,21 +181,20 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsLandscapePhone];
 		});
 		
-		_frameSize = CGSizeMake(254, 394);
-		_frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
 		self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:0.5];
 		
-		CQMFloatingFrameView *frame = [[CQMFloatingFrameView alloc] initWithFrame: CGRectMake(ceil((CGRectGetWidth(self.view.frame) - _frameSize.width) / 2), ceil((CGRectGetHeight(self.view.frame) - _frameSize.height) / 2), _frameSize.width, _frameSize.height)];
+		CQMFloatingFrameView *frame = [CQMFloatingFrameView new];
 		frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		frame.backgroundColor = [UIColor clearColor];
 		frame.contentMode = UIViewContentModeRedraw;
-		frame.baseColor = _frameColor;
 		frame.layer.cornerRadius = 8.0f;
 		frame.layer.shadowOffset = CGSizeMake(0, 2);
 		frame.layer.shadowOpacity = 0.7f;
 		frame.layer.shadowRadius = 10.0f;
 		[self.view addSubview: frame];
 		self.frameView = frame;
+		
+		self.frameSize = CGSizeMake(254, 394);
 		
 		UIView *contentContainer = [[UIView alloc] initWithFrame: frame.bounds];
 		contentContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -211,12 +210,11 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[contentContainer addSubview: content];
 		self.contentView = content;
 		
-		CQMFloatingContentOverlayView *overlay = [CQMFloatingContentOverlayView new];
+		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: content.bounds];
 		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		overlay.backgroundColor = [UIColor clearColor];
 		overlay.contentMode = UIViewContentModeRedraw;
 		overlay.userInteractionEnabled = NO;
-		overlay.baseColor = _frameColor;
 		overlay.layer.cornerRadius = 5.0f;
 		overlay.layer.masksToBounds = YES;
 		[contentContainer addSubview: overlay];
@@ -230,6 +228,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		closeButton.layer.shadowOffset = CGSizeMake(0,4);
 		closeButton.layer.shadowOpacity = 0.3;
 		[frame addSubview: closeButton];
+		
+		self.frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
 		
 		self.contentViewController = viewController;
 	}
@@ -306,23 +306,18 @@ static inline UIImage *CQMCreateBlankImage(void) {
 }
 
 - (void)setFrameSize:(CGSize)frameSize {
-	if (!CGSizeEqualToSize(_frameSize, frameSize)) {
-		_frameSize = frameSize;
-		
-		CGRect frame = self.frameView.frame;
-		frame.size = _frameSize;
-		self.frameView.frame = frame;
-	}
+	[self setFrameSize: frameSize animated: NO];
 }
 
 - (void)setFrameSize:(CGSize)frameSize animated:(BOOL)animated {
-	if (!animated) {
-		[self setFrameSize: frameSize];
+	if (CGSizeEqualToSize(_frameSize, frameSize))
 		return;
-	}
 	
-	[UIView animateWithDuration: (1./3.) delay: 0 options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionLayoutSubviews animations: ^{
-		[self setFrameSize: frameSize];
+	_frameSize = frameSize;
+	
+	[UIView animateWithDuration: animated ? 1./3. : 0 delay: 0 options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionLayoutSubviews animations: ^{
+		CGFloat insetX = floor(CGRectGetMidX(self.view.bounds) - _frameSize.width / 2), insetY = floor(CGRectGetMidY(self.view.bounds) - _frameSize.height / 2);
+		self.frameView.frame = CGRectInset(self.view.bounds, insetX, insetY);
 	} completion: NULL];
 }
 
