@@ -148,6 +148,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	__weak UIViewController *_contentViewController;
 }
 
+@property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, weak) CQMFloatingFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) CQMFloatingContentOverlayView *contentOverlayView;
@@ -158,6 +159,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 @implementation CQMFloatingController
 
+@synthesize window = _window;
 @synthesize frameView = _frameView;
 @synthesize contentView = _contentView;
 @synthesize contentOverlayView = _contentOverlayView;
@@ -181,7 +183,12 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsLandscapePhone];
 		});
 		
-		self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:0.5];
+		UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+		window.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
+		window.windowLevel = UIWindowLevelNormal;
+		window.userInteractionEnabled = NO;
+		window.hidden = YES;
+		self.window = window;
 		
 		CQMFloatingFrameView *frame = [CQMFloatingFrameView new];
 		frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -206,7 +213,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		// Content
 		UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 5.0f, 5.0f)];
 		content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		content.layer.cornerRadius = 5.0f;
 		[contentContainer addSubview: content];
 		self.contentView = content;
 		
@@ -238,6 +244,23 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 - (void)dealloc {
 	self.contentViewController = nil;
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+	return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown) && [[[[UIApplication sharedApplication] keyWindow] rootViewController] shouldAutorotateToInterfaceOrientation: interfaceOrientation];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+	[super viewWillAppear: animated];
+	
+	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(orientationDidChange:) name: UIApplicationDidChangeStatusBarOrientationNotification object: nil];
+	[self resizeContentOverlay];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+	[super viewWillDisappear: animated];
+	
+	[[NSNotificationCenter defaultCenter] removeObserver: self name: UIApplicationDidChangeStatusBarOrientationNotification object: nil];
 }
 
 - (UIViewController *)contentViewController {
@@ -343,8 +366,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	return !!self.view.superview;
 }
 
-static char windowRetainCycle;
-
 - (IBAction)present {
 	[self presentWithCompletion: NULL];
 }
@@ -354,12 +375,11 @@ static char windowRetainCycle;
 }
 
 - (void)presentWithCompletion:(void (^)(void))block {
-	UIWindow *window = [[UIApplication sharedApplication] keyWindow];
-	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
-	[self.view setFrame:[window convertRect:appFrame fromView:nil]];
-	[window addSubview:[self view]];
+	self.window.rootViewController = self;
+	self.view.userInteractionEnabled = NO;
 	
-	objc_setAssociatedObject(window, &windowRetainCycle, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	self.window.hidden = NO;
+	self.window.userInteractionEnabled = YES;
 	
 	_backupStyle = [[UIApplication sharedApplication] statusBarStyle];
 	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
@@ -392,38 +412,34 @@ static char windowRetainCycle;
 	scale.timingFunctions = [NSArray arrayWithObjects: easeIn, easeOut, easeIn, easeOut, nil];
 	
 	[CATransaction begin];
-	[CATransaction setCompletionBlock: block];
-	[self.view.layer addAnimation:alpha forKey: nil];
-	[self.frameView.layer addAnimation:scale forKey: nil];
+	[CATransaction setCompletionBlock: ^{
+		self.view.userInteractionEnabled = YES;
+		
+		if (block)
+			block();
+	}];
+	[self.window.layer addAnimation:alpha forKey: nil];
+	[self.view.layer addAnimation:scale forKey: nil];
 	[CATransaction commit];
 }
 
 - (void)dismissWithCompletion:(void (^)(void))block {
+	self.view.userInteractionEnabled = NO;
+	
 	[[UIApplication sharedApplication] setStatusBarStyle: _backupStyle animated:YES];
 	
-	CABasicAnimation *alpha = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	alpha.toValue = [NSNumber numberWithDouble:0.0];
-	
-	CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
-	scale.toValue = [NSNumber numberWithDouble:0.00001];
-	
-	alpha.fillMode = scale.fillMode = kCAFillModeBackwards;
-	
-	[CATransaction begin];
-	[CATransaction setAnimationTimingFunction: [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseIn]];
-	[CATransaction setAnimationDuration: (1./3.)];
-	[CATransaction setCompletionBlock: ^{		
+	[UIView animateWithDuration: (1./3.) delay: 0.0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent animations:^{
+		self.window.alpha = 0.0001;
+		self.view.transform = CGAffineTransformMakeScale(0.00001, 0.00001);
+	} completion:^(BOOL finished) {
 		if (block)
 			block();
 		
-		UIWindow *window = self.view.window;
-		[self.view removeFromSuperview];
-		objc_setAssociatedObject(window, &windowRetainCycle, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-
+		self.view.userInteractionEnabled = YES;
+		self.window.hidden = YES;
+		self.window.userInteractionEnabled = NO;
+		self.window.rootViewController = nil;
 	}];
-	[self.frameView.layer addAnimation:scale forKey: nil];
-	[self.view.layer addAnimation:alpha forKey: nil];
-	[CATransaction commit];
 }
 
 #pragma mark -
@@ -472,6 +488,10 @@ static char windowRetainCycle;
 
 - (void)closePressed:(UIButton *)closeButton {
 	[self dismissWithCompletion: NULL];
+}
+
+- (void) orientationDidChange: (NSNotification *) note {
+	self.window.frame = [[UIScreen mainScreen] bounds];
 }
 
 @end
