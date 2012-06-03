@@ -152,7 +152,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 @property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) CQMFloatingContentOverlayView *contentOverlayView;
 
-- (void)cqm_resizeContentOverlay;
+- (void)resizeContentOverlay;
 
 @end
 
@@ -274,7 +274,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
 			[self.frameView setNeedsDisplay];
 			
-			[self cqm_resizeContentOverlay];
+			[self resizeContentOverlay];
 		}
 	}
 }
@@ -415,7 +415,7 @@ static char windowRetainCycle;
 	[CATransaction commit];
 }
 
-- (void)cqm_resizeContentOverlay {
+- (void)resizeContentOverlay {
 	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
 		return;
 	
@@ -444,7 +444,7 @@ static char windowRetainCycle;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	if ([object isEqual: self.contentViewController]) {
-		[self cqm_resizeContentOverlay];
+		[self resizeContentOverlay];
 		
 		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, ([object isToolbarHidden] ? 1./3. : 0) * NSEC_PER_SEC);
 		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
