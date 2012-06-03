@@ -70,7 +70,7 @@
 	NSString *text = [self.texts objectAtIndex:[indexPath row]];
 	detailViewController.title = text;
 	detailViewController.textLabel.text = text;
-	detailViewController.hidesBottomBarWhenPushed = YES;
+	detailViewController.hidesBottomBarWhenPushed = NO;
 	[self.navigationController pushViewController:detailViewController animated:YES];
 }
 

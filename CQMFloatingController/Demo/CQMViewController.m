@@ -60,7 +60,7 @@
 	CQMFloatingController *floatingController = [[CQMFloatingController alloc] initWithContentViewController: contentViewController];
 	
 	// 3. Show floating controller with specified content
-	[floatingController show];
+	[floatingController present];
 }
 
 @end

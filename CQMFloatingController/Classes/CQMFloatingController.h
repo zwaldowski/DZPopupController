@@ -27,16 +27,21 @@
 @interface CQMFloatingController : UIViewController <UIAppearanceContainer>
 
 - (id)initWithContentViewController:(UIViewController *)viewController;
+
 @property (nonatomic, strong) UIViewController *contentViewController;
 - (void)setContentViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
 @property (nonatomic) CGSize frameSize;
+- (void)setFrameSize:(CGSize)frameSize animated:(BOOL)animated;
+
+@property (nonatomic, readonly, getter = isVisible) BOOL visible;
+
 @property (nonatomic, strong) UIColor *frameColor;
 
-- (IBAction)show;
-- (IBAction)hide;
+- (IBAction)present;
+- (IBAction)dismiss;
 
-- (void)showWithCompletion:(void(^)(void))block;
-- (void)hideWithCompletion:(void(^)(void))block;
+- (void)presentWithCompletion:(void(^)(void))block;
+- (void)dismissWithCompletion:(void(^)(void))block;
 
 @end

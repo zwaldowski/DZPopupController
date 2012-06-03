@@ -315,6 +315,17 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	}
 }
 
+- (void)setFrameSize:(CGSize)frameSize animated:(BOOL)animated {
+	if (!animated) {
+		[self setFrameSize: frameSize];
+		return;
+	}
+	
+	[UIView animateWithDuration: (1./3.) delay: 0 options: UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionLayoutSubviews animations: ^{
+		[self setFrameSize: frameSize];
+	} completion: NULL];
+}
+
 - (void)setFrameColor:(UIColor*)frameColor {
 	if (![_frameColor isEqual: frameColor]) {
 		_frameColor = frameColor;
@@ -328,11 +339,11 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 static char windowRetainCycle;
 
-- (IBAction)show {
-	[self showWithCompletion:NULL];
+- (IBAction)present {
+	[self presentWithCompletion: NULL];
 }
 
-- (void)showWithCompletion:(void(^)(void))block {
+- (void)presentWithCompletion:(void (^)(void))block {
 	UIWindow *window = [[UIApplication sharedApplication] keyWindow];
 	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
 	[self.view setFrame:[window convertRect:appFrame fromView:nil]];
@@ -377,11 +388,11 @@ static char windowRetainCycle;
 	[CATransaction commit];
 }
 
-- (void)hide {
-	[self hideWithCompletion:NULL];
+- (void)dismiss {
+	[self dismissWithCompletion: NULL];
 }
 
-- (void)hideWithCompletion:(void (^)(void))block {
+- (void)dismissWithCompletion:(void (^)(void))block {
 	[[UIApplication sharedApplication] setStatusBarStyle: _backupStyle animated:YES];
 	
 	CABasicAnimation *alpha = [CABasicAnimation animationWithKeyPath:@"opacity"];
@@ -452,7 +463,7 @@ static char windowRetainCycle;
 }
 
 - (void)closePressed:(UIButton *)closeButton {
-	[self hide];
+	[self dismissWithCompletion: NULL];
 }
 
 @end
