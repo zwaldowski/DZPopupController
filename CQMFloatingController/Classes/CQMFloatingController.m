@@ -197,14 +197,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[self.view addSubview: frame];
 		self.frameView = frame;
 		
-		UIButton *closeButton = [UIButton buttonWithType: UIButtonTypeCustom];
-		closeButton.frame = CGRectMake(-20, -20, 44, 44);
-		[closeButton setImage: [UIImage imageNamed:@"close.png"] forState: UIControlStateNormal];
-		[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
-		closeButton.layer.shadowOffset = CGSizeMake(0,4);
-		closeButton.layer.shadowOpacity = 0.3;
-		[frame addSubview: closeButton];
-		
 		UIView *contentContainer = [[UIView alloc] initWithFrame: frame.bounds];
 		contentContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		contentContainer.clipsToBounds = YES;
@@ -219,7 +211,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[contentContainer addSubview: content];
 		self.contentView = content;
 		
-		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: CGRectZero];
+		CQMFloatingContentOverlayView *overlay = [CQMFloatingContentOverlayView new];
 		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		overlay.backgroundColor = [UIColor clearColor];
 		overlay.contentMode = UIViewContentModeRedraw;
@@ -229,6 +221,15 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		overlay.layer.masksToBounds = YES;
 		[contentContainer addSubview: overlay];
 		self.contentOverlayView = overlay;
+		
+		UIButton *closeButton = [UIButton buttonWithType: UIButtonTypeCustom];
+		closeButton.frame = CGRectMake(-20, -20, 44, 44);
+		[closeButton setImage: [UIImage imageNamed:@"close.png"] forState: UIControlStateNormal];
+		[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
+		closeButton.layer.shadowColor = [[UIColor blackColor] CGColor];
+		closeButton.layer.shadowOffset = CGSizeMake(0,4);
+		closeButton.layer.shadowOpacity = 0.3;
+		[frame addSubview: closeButton];
 		
 		self.contentViewController = viewController;
 	}
