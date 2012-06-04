@@ -299,7 +299,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	return self;
 }
 
-- (void)dealloc {
+- (void)viewDidUnload {
+	[super viewDidUnload];
 	self.contentViewController = nil;
 }
 
