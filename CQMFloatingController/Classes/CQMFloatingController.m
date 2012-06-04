@@ -13,6 +13,7 @@
 
 @property (nonatomic, strong) UIColor *baseColor;
 @property (nonatomic) BOOL drawsBottomHighlight;
+@property (nonatomic) UIBarMetrics barMetrics;
 
 @end
 
@@ -23,6 +24,7 @@
 
 @synthesize baseColor = _baseColor;
 @synthesize drawsBottomHighlight = _drawsBottomHighlight;
+@synthesize barMetrics = _barMetrics;
 
 - (void)dealloc {
 	if (_topGradient)
@@ -73,20 +75,24 @@
 	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: radius] fill];
 	
 	// Highlight
-	CGRect highlightRect = CGRectMake(2.0f, 2.0f, CGRectGetWidth(rect) - 4.0f, 26.0f);
+	CGFloat topHighlightHeight = self.barMetrics == UIBarMetricsDefault ? 26.0f : 21.0f;
+	
+	CGRect highlightRect = CGRectMake(2.0f, 2.0f, CGRectGetWidth(rect) - 4.0f, topHighlightHeight);
 	CGSize highlightRadii = CGSizeMake(radius - 1.0f, radius - 1.0f);
 	
 	CGContextSaveGState(context);
 	
 	[[UIBezierPath bezierPathWithRoundedRect: highlightRect byRoundingCorners: UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii: highlightRadii] addClip];
-	CGContextDrawLinearGradient(context, _topGradient, CGPointMake(0, 2.0f), CGPointMake(0, 26.0f), 0);
+	CGContextDrawLinearGradient(context, _topGradient, CGPointMake(0, 2.0f), CGPointMake(0, topHighlightHeight), 0);
 	
 	CGContextRestoreGState(context);
 	
 	if (self.drawsBottomHighlight) {
 		CGContextSaveGState(context);
 		
-		CGRect bottomHighlightRect = CGRectMake(4.0f, CGRectGetMaxY(rect) - 55.0f, CGRectGetWidth(rect) - 8.0f, 30.0f);
+		CGFloat bottomHighlightHeight = self.barMetrics == UIBarMetricsDefault ? 28.0f : 20.0f;
+		
+		CGRect bottomHighlightRect = CGRectMake(4.0f, CGRectGetMaxY(rect) - bottomHighlightHeight * 2, CGRectGetWidth(rect) - 8.0f, bottomHighlightHeight);
 		
 		[[UIBezierPath bezierPathWithRect: bottomHighlightRect] addClip];
 		CGContextDrawLinearGradient(context, _bottomGradient, CGPointMake(2.0f, CGRectGetMinY(bottomHighlightRect)), CGPointMake(2.0f, CGRectGetMaxY(bottomHighlightRect)), 0);
@@ -238,7 +244,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		
 		UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 		window.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
-		window.windowLevel = UIWindowLevelNormal;
+		window.windowLevel = UIWindowLevelAlert;
 		window.userInteractionEnabled = NO;
 		window.hidden = YES;
 		self.window = window;
@@ -270,12 +276,10 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		self.contentView = content;
 		
 		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: content.bounds];
-		overlay.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		overlay.backgroundColor = [UIColor clearColor];
 		overlay.contentMode = UIViewContentModeRedraw;
 		overlay.userInteractionEnabled = NO;
 		overlay.layer.cornerRadius = 5.0f;
-		overlay.layer.masksToBounds = YES;
 		[contentContainer addSubview: overlay];
 		self.contentOverlayView = overlay;
 		
@@ -287,7 +291,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		closeButton.layer.shadowColor = [[UIColor blackColor] CGColor];
 		closeButton.layer.shadowOffset = CGSizeMake(0,4);
 		closeButton.layer.shadowOpacity = 0.3;
-		closeButton.layer.cornerRadius = 10.0f;
+		closeButton.layer.cornerRadius = 11.0f;
 		closeButton.backgroundColor = [UIColor clearColor];
 		closeButton.showsTouchWhenHighlighted = YES;
 		[frame addSubview: closeButton];
@@ -299,26 +303,35 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	return self;
 }
 
-- (void)viewDidUnload {
-	[super viewDidUnload];
+- (void)dealloc {
 	self.contentViewController = nil;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown) && [[[[UIApplication sharedApplication] keyWindow] rootViewController] shouldAutorotateToInterfaceOrientation: interfaceOrientation];
+	return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+}
+
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+	[super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
+	self.frameView.barMetrics = UIInterfaceOrientationIsLandscape(toInterfaceOrientation) ? UIBarMetricsLandscapePhone : UIBarMetricsDefault;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
 	[super viewWillAppear: animated];
 	
-	[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(orientationDidChange:) name: UIApplicationDidChangeStatusBarOrientationNotification object: nil];
+	//[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(orientationDidChange:) name: UIApplicationDidChangeStatusBarOrientationNotification object: nil];
 	[self resizeContentOverlay];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
 	[super viewWillDisappear: animated];
 	
-	[[NSNotificationCenter defaultCenter] removeObserver: self name: UIApplicationDidChangeStatusBarOrientationNotification object: nil];
+	//[[NSNotificationCenter defaultCenter] removeObserver: self name: UIApplicationDidChangeStatusBarOrientationNotification object: nil];
+}
+
+- (void)viewDidLayoutSubviews {
+	[super viewDidLayoutSubviews];
+	[self resizeContentOverlay];
 }
 
 - (UIViewController *)contentViewController {
@@ -370,7 +383,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	if (!oldController) {
 		[UIView transitionWithView: self.contentView duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
 			newController.view.frame = self.contentView.bounds;
-			newController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 			[self.contentView addSubview: newController.view];
 		} completion:^(BOOL finished) {
 			[self addChildViewController: newController];
@@ -471,6 +483,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	
 	[CATransaction begin];
 	[CATransaction setCompletionBlock: ^{
+		[self.window makeKeyAndVisible];
+		
 		self.view.userInteractionEnabled = YES;
 		
 		if (block)
@@ -488,7 +502,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	
 	[UIView animateWithDuration: (1./3.) delay: 0.0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent animations:^{
 		self.window.alpha = 0.0001;
-		self.view.transform = CGAffineTransformMakeScale(0.00001, 0.00001);
+		self.view.transform = CGAffineTransformScale(self.view.transform, 0.00001, 0.00001);
 	} completion:^(BOOL finished) {
 		if (block)
 			block();
@@ -524,9 +538,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	contentOverlay.filledCorners = corners;
 	
 	const CGFloat frameWidth = 3.0f;
-	[UIView animateWithDuration: 0.0 animations:^{
-		contentOverlay.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
-	}];
+	contentOverlay.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -546,10 +558,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 - (void)closePressed:(UIButton *)closeButton {
 	[self dismissWithCompletion: NULL];
-}
-
-- (void) orientationDidChange: (NSNotification *) note {
-	self.window.frame = [[UIScreen mainScreen] bounds];
 }
 
 @end
