@@ -136,6 +136,59 @@
 
 #pragma mark -
 
+@interface CQMFloatingCloseButton : UIButton
+
+@end
+
+@implementation CQMFloatingCloseButton
+
+- (void)drawRect:(CGRect)rect
+{
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	
+	CGContextFillEllipseInRect(context, rect);
+	
+	CGFloat w = CGRectGetWidth(rect) - 4;
+	CGAffineTransform xTransform = CGAffineTransformMakeScale(0.01 * w, 0.01 * w);
+	CGAffineTransform translation = CGAffineTransformMakeTranslation(2, 2);
+	[[UIColor whiteColor] setFill];
+	
+	UIBezierPath* leftCross = [UIBezierPath bezierPath];
+	
+	[leftCross moveToPoint: CGPointMake(25, 36)];
+	[leftCross addCurveToPoint: CGPointMake(25, 25) controlPoint1: CGPointMake(22, 33) controlPoint2: CGPointMake(22, 28)];
+	[leftCross addCurveToPoint: CGPointMake(36, 25) controlPoint1: CGPointMake(28, 22) controlPoint2: CGPointMake(33, 22)];
+	[leftCross addLineToPoint: CGPointMake(75, 64)];
+	[leftCross addCurveToPoint: CGPointMake(75, 75) controlPoint1: CGPointMake(78, 67) controlPoint2: CGPointMake(78, 72)];
+	[leftCross addCurveToPoint: CGPointMake(64, 75) controlPoint1: CGPointMake(72, 78) controlPoint2: CGPointMake(67, 78)];
+	[leftCross addLineToPoint: CGPointMake(25, 36)];
+	[leftCross closePath];
+	
+	UIBezierPath* rightCross = [UIBezierPath bezierPath];
+	
+	[rightCross moveToPoint: CGPointMake(75, 36)];
+	[rightCross addCurveToPoint: CGPointMake(75, 25) controlPoint1: CGPointMake(78, 33) controlPoint2: CGPointMake(78, 28)];
+	[rightCross addCurveToPoint: CGPointMake(64, 25) controlPoint1: CGPointMake(72, 22) controlPoint2: CGPointMake(67, 22)];
+	[rightCross addLineToPoint: CGPointMake(25, 64)];
+	[rightCross addCurveToPoint: CGPointMake(25, 75) controlPoint1: CGPointMake(22, 67) controlPoint2: CGPointMake(22, 72)];
+	[rightCross addCurveToPoint: CGPointMake(36, 75) controlPoint1: CGPointMake(28, 78) controlPoint2: CGPointMake(33, 78)];
+	[rightCross addLineToPoint: CGPointMake(75, 36)];
+	[rightCross closePath];
+	
+	[leftCross applyTransform:xTransform];
+	[rightCross applyTransform:xTransform];
+	
+	[leftCross applyTransform:translation];
+	[rightCross applyTransform:translation];
+	
+	[leftCross fill];
+	[rightCross fill];
+}
+
+@end
+
+#pragma mark -
+
 static inline UIImage *CQMCreateBlankImage(void) {
 	UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
 	UIImage *ret = UIGraphicsGetImageFromCurrentImageContext();
@@ -226,13 +279,17 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[contentContainer addSubview: overlay];
 		self.contentOverlayView = overlay;
 		
-		UIButton *closeButton = [UIButton buttonWithType: UIButtonTypeCustom];
-		closeButton.frame = CGRectMake(-20, -20, 44, 44);
-		[closeButton setImage: [UIImage imageNamed:@"close.png"] forState: UIControlStateNormal];
+		UIButton *closeButton = [CQMFloatingCloseButton buttonWithType: UIButtonTypeCustom];
+		closeButton.frame = CGRectMake(-8, -8, 22, 22);
 		[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
+		closeButton.layer.borderColor = [[UIColor whiteColor] CGColor];
+		closeButton.layer.borderWidth = 2.0f;
 		closeButton.layer.shadowColor = [[UIColor blackColor] CGColor];
 		closeButton.layer.shadowOffset = CGSizeMake(0,4);
 		closeButton.layer.shadowOpacity = 0.3;
+		closeButton.layer.cornerRadius = 10.0f;
+		closeButton.backgroundColor = [UIColor clearColor];
+		closeButton.showsTouchWhenHighlighted = YES;
 		[frame addSubview: closeButton];
 		
 		self.frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
