@@ -279,7 +279,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	contentContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	contentContainer.clipsToBounds = YES;
 	contentContainer.layer.cornerRadius = 8.0f;
-	contentContainer.layer.masksToBounds = 8.0f;
+	contentContainer.layer.masksToBounds = YES;
 	[frame addSubview: contentContainer];
 	
 	// Content
