@@ -75,12 +75,10 @@
 	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: radius] fill];
 	
 	// Highlight
+	CGContextSaveGState(context);
 	CGFloat topHighlightHeight = self.barMetrics == UIBarMetricsDefault ? 26.0f : 21.0f;
-	
 	CGRect highlightRect = CGRectMake(2.0f, 2.0f, CGRectGetWidth(rect) - 4.0f, topHighlightHeight);
 	CGSize highlightRadii = CGSizeMake(radius - 1.0f, radius - 1.0f);
-	
-	CGContextSaveGState(context);
 	
 	[[UIBezierPath bezierPathWithRoundedRect: highlightRect byRoundingCorners: UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii: highlightRadii] addClip];
 	CGContextDrawLinearGradient(context, _topGradient, CGPointMake(0, 2.0f), CGPointMake(0, topHighlightHeight), 0);
@@ -91,7 +89,6 @@
 		CGContextSaveGState(context);
 		
 		CGFloat bottomHighlightHeight = self.barMetrics == UIBarMetricsDefault ? 28.0f : 20.0f;
-		
 		CGRect bottomHighlightRect = CGRectMake(4.0f, CGRectGetMaxY(rect) - bottomHighlightHeight * 2, CGRectGetWidth(rect) - 8.0f, bottomHighlightHeight);
 		
 		[[UIBezierPath bezierPathWithRect: bottomHighlightRect] addClip];
@@ -121,7 +118,7 @@
 	const CGFloat radius = self.layer.cornerRadius;
 	const CGFloat frameWidth = 3.0f;
 	
-	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth - 2, frameWidth - 2) byRoundingCorners: self.filledCorners cornerRadii: CGSizeMake(radius + 2, radius + 2)];
+	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth - 3, frameWidth - 3) byRoundingCorners: self.filledCorners cornerRadii: CGSizeMake(radius+3, radius+3)];
 	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
 	UIBezierPath *fillRect = [outerRect copy];
 	[fillRect appendPath: innerRect];
@@ -129,7 +126,7 @@
 	
 	CGContextSaveGState(context);
 	
-	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), frameWidth, [[UIColor colorWithWhite:0 alpha:0.8f] CGColor]);
+	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), radius, [[UIColor colorWithWhite:0 alpha:0.8f] CGColor]);
 	
 	[outerRect addClip];
 	[self.baseColor setFill];
@@ -314,19 +311,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
 	[super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
 	self.frameView.barMetrics = UIInterfaceOrientationIsLandscape(toInterfaceOrientation) ? UIBarMetricsLandscapePhone : UIBarMetricsDefault;
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-	[super viewWillAppear: animated];
-	
-	//[[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(orientationDidChange:) name: UIApplicationDidChangeStatusBarOrientationNotification object: nil];
-	[self resizeContentOverlay];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-	[super viewWillDisappear: animated];
-	
-	//[[NSNotificationCenter defaultCenter] removeObserver: self name: UIApplicationDidChangeStatusBarOrientationNotification object: nil];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -526,6 +510,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	// Navigation	
 	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height - 1,
 	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
+	
+	self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
 	
 	// Content overlay
 	CQMFloatingContentOverlayView *contentOverlay = self.contentOverlayView;
