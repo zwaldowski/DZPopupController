@@ -1,19 +1,12 @@
-CQMFloatingController
-=====================
+DZPopupController
+=================
 
 
 Overview
 --------
-CQMFloatingController is a floating UI component with navigation bar.
-You can push/pop a content view controller on it.
+DZPopupController is a floating UI component. It is a modal, iPhone-only controller resembling a mix between `UIPopoverController` crossed with `UIAlertView`.
 
-This component is ported from [Calqum](http://www.dotapon.sakura.ne.jp/apps/calqum2/index_en.html), customizable calculator for iPhone.
-
-
-Features
---------
-- The appearance looks good in UIKit standard
-- Customizable frame color
+This component is based on [CQMFloatingController](https://github.com/cocopon/CQMFloatingController), ported from [Calqum](http://www.dotapon.sakura.ne.jp/apps/calqum2/index_en.html), a customizable calculator for iPhone.
 
 
 Screenshots
@@ -24,30 +17,33 @@ Screenshots
 
 How to Use
 ----------
-1. Add all files in `CQMFloatingController/Classes` to your project
+1. Add `DZPopupController.h` and `DZPopupController.m` to your project
 2. Write code as below:
 
 ```Objective-C
 // Import a required class
-#import "CQMFloatingController.h"
+#import "DZPopupController.h"
 
 - (void)show {
-    // Prepare content view controller
-    SomeViewController *viewController = [[[SomeViewController alloc] init] autorelease];
-
-    // Get shared floating controller, and customize if needed
-    CQMFloatingController *floatingController = [CQMFloatingController sharedFloatingController];
-    [floatingController setFrameColor:[UIColor orangeColor]];
-        
-    // Show floating controller with content
-    [floatingController presentWithContentViewController:viewController
-                                                animated:YES];
+    SomeViewController *viewController = [SomeViewController new];
+    DZPopupController *popupController = [[DZPopupController alloc] initWithContentViewController: viewController];
+    popupController.frameColor = [UIColor orangeColor];
+    [popupController present];
 }
 ```
 
 
 License
 -------
-MIT License.
-See LICENSE.txt for more information.
+
+Copyright (c) 2012 Zachary Waldowski <zwaldowski@gmail.com> and cocopon <cocopon@me.com>.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+All of the code included in BlocksKit is licensed either under BSD or MIT, or is otherwise in the public domain. You can use BlocksKit in any project, public or private, with or without attribution.
+
 
