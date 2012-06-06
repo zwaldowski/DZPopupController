@@ -202,15 +202,13 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	return ret;
 }
 
-@interface DZPopupController () {
-	UIStatusBarStyle _backupStyle;
-	__weak UIViewController *_contentViewController;
-}
+@interface DZPopupController ()
 
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) DZPopupControllerInsetView *contentOverlayView;
+@property (nonatomic) UIStatusBarStyle backupStatusBarStyle;
 
 - (void)resizeContentOverlay;
 
@@ -219,11 +217,15 @@ static inline UIImage *CQMCreateBlankImage(void) {
 @implementation DZPopupController
 
 @synthesize window = _window;
+@synthesize contentViewController = _contentViewController;
 @synthesize frameView = _frameView;
 @synthesize contentView = _contentView;
 @synthesize contentOverlayView = _contentOverlayView;
 @synthesize frameSize = _frameSize;
 @synthesize frameColor = _frameColor;
+@synthesize backupStatusBarStyle = _backupStatusBarStyle;
+
+#pragma mark - Setup and teardown
 
 - (id)initWithContentViewController:(UIViewController *)viewController {
 	if (self = [super initWithNibName:nil bundle:nil]) {
@@ -241,6 +243,9 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
 			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsLandscapePhone];
 		});
+
+		_frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
+		_frameSize = CGSizeMake(254, 394);
 		
 		UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 		window.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
@@ -249,63 +254,71 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		window.hidden = YES;
 		self.window = window;
 		
-		DZPopupControllerFrameView *frame = [DZPopupControllerFrameView new];
-		frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		frame.backgroundColor = [UIColor clearColor];
-		frame.contentMode = UIViewContentModeRedraw;
-		frame.layer.cornerRadius = 8.0f;
-		frame.layer.shadowOffset = CGSizeMake(0, 2);
-		frame.layer.shadowOpacity = 0.7f;
-		frame.layer.shadowRadius = 10.0f;
-		[self.view addSubview: frame];
-		self.frameView = frame;
-		
-		self.frameSize = CGSizeMake(254, 394);
-		
-		UIView *contentContainer = [[UIView alloc] initWithFrame: frame.bounds];
-		contentContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		contentContainer.clipsToBounds = YES;
-		contentContainer.layer.cornerRadius = 8.0f;
-		contentContainer.layer.masksToBounds = 8.0f;
-		[frame addSubview: contentContainer];
-				
-		// Content
-		UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 5.0f, 5.0f)];
-		content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-		[contentContainer addSubview: content];
-		self.contentView = content;
-		
-		DZPopupControllerInsetView *overlay = [[DZPopupControllerInsetView alloc] initWithFrame: content.bounds];
-		overlay.backgroundColor = [UIColor clearColor];
-		overlay.contentMode = UIViewContentModeRedraw;
-		overlay.userInteractionEnabled = NO;
-		overlay.layer.cornerRadius = 5.0f;
-		[contentContainer addSubview: overlay];
-		self.contentOverlayView = overlay;
-		
-		UIButton *closeButton = [DZPopupControllerCloseButton buttonWithType: UIButtonTypeCustom];
-		closeButton.frame = CGRectMake(-8, -8, 22, 22);
-		[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
-		closeButton.layer.borderColor = [[UIColor whiteColor] CGColor];
-		closeButton.layer.borderWidth = 2.0f;
-		closeButton.layer.shadowColor = [[UIColor blackColor] CGColor];
-		closeButton.layer.shadowOffset = CGSizeMake(0,4);
-		closeButton.layer.shadowOpacity = 0.3;
-		closeButton.layer.cornerRadius = 11.0f;
-		closeButton.backgroundColor = [UIColor clearColor];
-		closeButton.showsTouchWhenHighlighted = YES;
-		[frame addSubview: closeButton];
-		
-		self.frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
-		
 		self.contentViewController = viewController;
 	}
 	return self;
 }
 
+- (void)viewDidLoad {
+	[super viewDidLoad];
+		
+	CGFloat insetX = floor(CGRectGetMidX(self.view.bounds) - _frameSize.width / 2), insetY = floor(CGRectGetMidY(self.view.bounds) - _frameSize.height / 2);
+	DZPopupControllerFrameView *frame = [[DZPopupControllerFrameView alloc] initWithFrame: CGRectInset(self.view.bounds, insetX, insetY)];
+	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	frame.backgroundColor = [UIColor clearColor];
+	frame.contentMode = UIViewContentModeRedraw;
+	frame.layer.cornerRadius = 8.0f;
+	frame.layer.shadowOffset = CGSizeMake(0, 2);
+	frame.layer.shadowOpacity = 0.7f;
+	frame.layer.shadowRadius = 10.0f;
+	frame.baseColor = _frameColor;
+	[self.view addSubview: frame];
+	self.frameView = frame;
+	
+	UIView *contentContainer = [[UIView alloc] initWithFrame: frame.bounds];
+	contentContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	contentContainer.clipsToBounds = YES;
+	contentContainer.layer.cornerRadius = 8.0f;
+	contentContainer.layer.masksToBounds = 8.0f;
+	[frame addSubview: contentContainer];
+	
+	// Content
+	UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 5.0f, 5.0f)];
+	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	[contentContainer addSubview: content];
+	self.contentView = content;
+	
+	DZPopupControllerInsetView *overlay = [[DZPopupControllerInsetView alloc] initWithFrame: content.bounds];
+	overlay.backgroundColor = [UIColor clearColor];
+	overlay.contentMode = UIViewContentModeRedraw;
+	overlay.userInteractionEnabled = NO;
+	overlay.layer.cornerRadius = 5.0f;
+	overlay.baseColor = _frameColor;
+	[contentContainer addSubview: overlay];
+	self.contentOverlayView = overlay;
+	
+	UIButton *closeButton = [DZPopupControllerCloseButton buttonWithType: UIButtonTypeCustom];
+	closeButton.frame = CGRectMake(-8, -8, 22, 22);
+	[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
+	closeButton.layer.borderColor = [[UIColor whiteColor] CGColor];
+	closeButton.layer.borderWidth = 2.0f;
+	closeButton.layer.shadowColor = [[UIColor blackColor] CGColor];
+	closeButton.layer.shadowOffset = CGSizeMake(0,4);
+	closeButton.layer.shadowOpacity = 0.3;
+	closeButton.layer.cornerRadius = 11.0f;
+	closeButton.backgroundColor = [UIColor clearColor];
+	closeButton.showsTouchWhenHighlighted = YES;
+	[frame addSubview: closeButton];
+	
+	if (!_contentViewController.view.superview)
+		self.contentViewController = _contentViewController;
+}
+
 - (void)dealloc {
 	self.contentViewController = nil;
 }
+
+#pragma mark - UIViewController
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
@@ -321,6 +334,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	[self resizeContentOverlay];
 }
 
+#pragma mark - Properties
+
 - (UIViewController *)contentViewController {
 	return _contentViewController;
 }
@@ -332,7 +347,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 - (void)setContentViewController:(UIViewController *)newController animated:(BOOL)animated {
 	UIViewController *oldController = self.contentViewController;
 	
-	if (oldController) {
+	if (oldController && oldController.view.superview) {
 		if ([oldController isKindOfClass: [UINavigationController class]]) {
 			[oldController removeObserver: self forKeyPath: @"toolbar.bounds"];
 			[oldController removeObserver: self forKeyPath: @"navigationBar.bounds"];
@@ -347,7 +362,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	
 	_contentViewController = newController;
 	
-	if (!newController)
+	if (!newController || !self.isViewLoaded)
 		return;
 	
 	void (^addObservers)(void) = ^{
@@ -376,6 +391,12 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			
 			addObservers();
 		}];
+	} else if (!oldController.view.superview) {
+		newController.view.frame = self.contentView.bounds;
+		[self.contentView addSubview: newController.view];
+		[self addChildViewController: newController];
+		
+		addObservers();
 	} else {
 		[self transitionFromViewController: oldController toViewController: newController duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{} completion:^(BOOL finished) {
 			[oldController removeFromParentViewController];
@@ -394,6 +415,9 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		return;
 	
 	_frameSize = frameSize;
+	
+	if (!self.isViewLoaded)
+		return;
 	
 	[UIView animateWithDuration: animated ? 1./3. : 0 delay: 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionLayoutSubviews animations: ^{
 		CGFloat insetX = floor(CGRectGetMidX(self.view.bounds) - _frameSize.width / 2), insetY = floor(CGRectGetMidY(self.view.bounds) - _frameSize.height / 2);
@@ -423,6 +447,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	return !!self.view.superview;
 }
 
+#pragma mark - Actions
+
 - (IBAction)present {
 	[self presentWithCompletion: NULL];
 }
@@ -438,7 +464,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	self.window.hidden = NO;
 	self.window.userInteractionEnabled = YES;
 	
-	_backupStyle = [[UIApplication sharedApplication] statusBarStyle];
+	self.backupStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
 	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
 	
 	CABasicAnimation *alpha = [CABasicAnimation animationWithKeyPath:@"opacity"];
@@ -485,7 +511,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 - (void)dismissWithCompletion:(void (^)(void))block {
 	self.view.userInteractionEnabled = NO;
 	
-	[[UIApplication sharedApplication] setStatusBarStyle: _backupStyle animated:YES];
+	[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
 	
 	[UIView animateWithDuration: (1./3.) delay: 0.0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent animations:^{
 		self.window.alpha = 0.0001;
@@ -501,7 +527,22 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	}];
 }
 
-#pragma mark -
+#pragma mark - Internal
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if ([object isEqual: self.contentViewController]) {
+		[self resizeContentOverlay];
+		
+		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, ([object isToolbarHidden] ? 1./3. : 0) * NSEC_PER_SEC);
+		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+			self.frameView.drawsBottomHighlight = (![object isToolbarHidden]);
+			[self.frameView setNeedsDisplay];
+		});
+		
+		return;
+	}
+	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
 
 - (void)resizeContentOverlay {
 	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
@@ -528,21 +569,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	
 	const CGFloat frameWidth = 3.0f;
 	contentOverlay.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-	if ([object isEqual: self.contentViewController]) {
-		[self resizeContentOverlay];
-		
-		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, ([object isToolbarHidden] ? 1./3. : 0) * NSEC_PER_SEC);
-		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-			self.frameView.drawsBottomHighlight = (![object isToolbarHidden]);
-			[self.frameView setNeedsDisplay];
-		});
-		
-		return;
-	}
-	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
 - (void)closePressed:(UIButton *)closeButton {
