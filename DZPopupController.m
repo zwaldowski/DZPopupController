@@ -1,15 +1,18 @@
 //
-// CQMFloatingController.m
-// CQMFloatingController
+//  DZPopupController.m
+//  DZPopupControllerDemo
+//
+//  Created by cocopon on 5/14/12. Modified by Zachary Waldowski.
+//  Copyright (c) 2012 cocopon. All rights reserved.
+//  Copyright (c) 2012 Dizzy Technology. All rights reserved.
 //
 
-#import "CQMFloatingController.h"
+#import "DZPopupController.h"
 #import <QuartzCore/QuartzCore.h>
-#import <objc/runtime.h>
 
 #pragma mark -
 
-@interface CQMFloatingFrameView : UIView
+@interface DZPopupControllerFrameView : UIView
 
 @property (nonatomic, strong) UIColor *baseColor;
 @property (nonatomic) BOOL drawsBottomHighlight;
@@ -17,7 +20,7 @@
 
 @end
 
-@implementation CQMFloatingFrameView {
+@implementation DZPopupControllerFrameView {
 	CGGradientRef _topGradient;
 	CGGradientRef _bottomGradient;
 }
@@ -101,14 +104,14 @@
 
 #pragma mark -
 
-@interface CQMFloatingContentOverlayView : UIView
+@interface DZPopupControllerInsetView : UIView
 
 @property (nonatomic, strong) UIColor *baseColor;
 @property (nonatomic) UIRectCorner filledCorners;
 
 @end
 
-@implementation CQMFloatingContentOverlayView
+@implementation DZPopupControllerInsetView
 
 @synthesize baseColor = _baseColor;
 @synthesize filledCorners = _filledCorners;
@@ -139,11 +142,11 @@
 
 #pragma mark -
 
-@interface CQMFloatingCloseButton : UIButton
+@interface DZPopupControllerCloseButton : UIButton
 
 @end
 
-@implementation CQMFloatingCloseButton
+@implementation DZPopupControllerCloseButton
 
 - (void)drawRect:(CGRect)rect
 {
@@ -199,21 +202,21 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	return ret;
 }
 
-@interface CQMFloatingController () {
+@interface DZPopupController () {
 	UIStatusBarStyle _backupStyle;
 	__weak UIViewController *_contentViewController;
 }
 
 @property (nonatomic, strong) UIWindow *window;
-@property (nonatomic, weak) CQMFloatingFrameView *frameView;
+@property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
-@property (nonatomic, weak) CQMFloatingContentOverlayView *contentOverlayView;
+@property (nonatomic, weak) DZPopupControllerInsetView *contentOverlayView;
 
 - (void)resizeContentOverlay;
 
 @end
 
-@implementation CQMFloatingController
+@implementation DZPopupController
 
 @synthesize window = _window;
 @synthesize frameView = _frameView;
@@ -246,7 +249,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		window.hidden = YES;
 		self.window = window;
 		
-		CQMFloatingFrameView *frame = [CQMFloatingFrameView new];
+		DZPopupControllerFrameView *frame = [DZPopupControllerFrameView new];
 		frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 		frame.backgroundColor = [UIColor clearColor];
 		frame.contentMode = UIViewContentModeRedraw;
@@ -272,7 +275,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[contentContainer addSubview: content];
 		self.contentView = content;
 		
-		CQMFloatingContentOverlayView *overlay = [[CQMFloatingContentOverlayView alloc] initWithFrame: content.bounds];
+		DZPopupControllerInsetView *overlay = [[DZPopupControllerInsetView alloc] initWithFrame: content.bounds];
 		overlay.backgroundColor = [UIColor clearColor];
 		overlay.contentMode = UIViewContentModeRedraw;
 		overlay.userInteractionEnabled = NO;
@@ -280,7 +283,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[contentContainer addSubview: overlay];
 		self.contentOverlayView = overlay;
 		
-		UIButton *closeButton = [CQMFloatingCloseButton buttonWithType: UIButtonTypeCustom];
+		UIButton *closeButton = [DZPopupControllerCloseButton buttonWithType: UIButtonTypeCustom];
 		closeButton.frame = CGRectMake(-8, -8, 22, 22);
 		[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
 		closeButton.layer.borderColor = [[UIColor whiteColor] CGColor];
@@ -514,7 +517,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
 	
 	// Content overlay
-	CQMFloatingContentOverlayView *contentOverlay = self.contentOverlayView;
+	DZPopupControllerInsetView *contentOverlay = self.contentOverlayView;
 	
 	UIRectCorner corners = 0;
 	if (!navigationController.navigationBarHidden)

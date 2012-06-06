@@ -1,42 +1,25 @@
 //
-// DemoTableViewController.m
-// Created by cocopon on 2012/05/15.
+//  DZDemoTableViewController.m
+//  DZPopupControllerDemo
 //
-// Copyright (c) 2012 cocopon <cocopon@me.com>
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to
-// deal in the Software without restriction, including without limitation the
-// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-// sell copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+//  Created by cocopon on 5/14/12. Modified by Zachary Waldowski.
+//  Copyright (c) 2012 cocopon. All rights reserved.
+//  Copyright (c) 2012 Dizzy Technology. All rights reserved.
 //
 
-#import "DemoTableViewController.h"
-#import "DemoDetailViewController.h"
-
+#import "DZDemoTableViewController.h"
+#import "DZDemoDetailViewController.h"
 
 #define kCellIdentifier  @"UITableViewCell"
 #define kNavigationTitle @"Demo"
 
-@interface DemoTableViewController()
+@interface DZDemoTableViewController()
 
 @property (nonatomic, readonly, strong) NSArray *texts;
 
 @end
 
-@implementation DemoTableViewController
+@implementation DZDemoTableViewController
 
 @synthesize texts = _texts;
 
@@ -66,7 +49,7 @@
 	[tableView deselectRowAtIndexPath:indexPath
 							 animated:YES];
 	
-	DemoDetailViewController *detailViewController = [[DemoDetailViewController alloc] init];
+	DZDemoDetailViewController *detailViewController = [DZDemoDetailViewController new];
 	NSString *text = [self.texts objectAtIndex:[indexPath row]];
 	detailViewController.title = text;
 	detailViewController.textLabel.text = text;
@@ -82,7 +65,7 @@
 	
 	[self.navigationItem setTitle:kNavigationTitle];
 	
-	NSMutableArray *data = [NSMutableArray new];
+	NSMutableArray *data = [NSMutableArray array];
 	
 	for (unichar ch = 'A'; ch <= 'Z'; ch++) {
 		[data addObject: [NSString stringWithFormat:@"%C%C%C", ch, ch, ch]];

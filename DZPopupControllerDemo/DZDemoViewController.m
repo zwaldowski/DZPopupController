@@ -1,16 +1,17 @@
 //
-//  CQMViewController.m
-//  CQMFloatingController
+//  DZDemoViewController.m
+//  DZPopupControllerDemo
 //
-//  Created by Zachary Waldowski on 6/1/12.
-//
+//  Created by cocopon on 5/14/12. Modified by Zachary Waldowski.
+//  Copyright (c) 2012 cocopon. All rights reserved.
+//  Copyright (c) 2012 Dizzy Technology. All rights reserved.
 //
 
-#import "CQMViewController.h"
-#import "CQMFloatingController.h"
-#import "DemoTableViewController.h"
+#import "DZDemoViewController.h"
+#import "DZPopupController.h"
+#import "DZDemoTableViewController.h"
 
-@implementation CQMViewController
+@implementation DZDemoViewController
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -42,10 +43,10 @@
 
 
 - (IBAction)showButtonAction:(id)sender {
-	// To use CQMFloatingController:
+	// To use DZPopupController:
 	
 	// 1. Prepare a content view controller
-	DemoTableViewController *demoViewController = [DemoTableViewController new];
+	DZDemoTableViewController *demoViewController = [DZDemoTableViewController new];
 	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
 	contentViewController.toolbarHidden = NO;
 	//contentViewController.navigationBarHidden = YES;
@@ -57,7 +58,7 @@
 	demoViewController.hidesBottomBarWhenPushed = NO;
 	
 	// 2. Get shared floating controller
-	CQMFloatingController *floatingController = [[CQMFloatingController alloc] initWithContentViewController: contentViewController];
+	DZPopupController *floatingController = [[DZPopupController alloc] initWithContentViewController: contentViewController];
 	
 	// 3. Show floating controller with specified content
 	[floatingController present];
