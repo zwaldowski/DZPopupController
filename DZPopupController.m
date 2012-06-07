@@ -274,17 +274,11 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	[self.view addSubview: frame];
 	self.frameView = frame;
 	
-	UIView *contentContainer = [[UIView alloc] initWithFrame: frame.bounds];
-	contentContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-	contentContainer.clipsToBounds = YES;
-	contentContainer.layer.cornerRadius = 8.0f;
-	contentContainer.layer.masksToBounds = YES;
-	[frame addSubview: contentContainer];
-	
 	// Content
-	UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 5.0f, 5.0f)];
+	UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.frame, 5.0f, 5.0f)];
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-	[contentContainer addSubview: content];
+	content.layer.cornerRadius = 8.0f;
+	[self.view addSubview: content];
 	self.contentView = content;
 	
 	DZPopupControllerInsetView *overlay = [DZPopupControllerInsetView new];
@@ -292,7 +286,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	overlay.contentMode = UIViewContentModeRedraw;
 	overlay.userInteractionEnabled = NO;
 	overlay.baseColor = _frameColor;
-	[contentContainer addSubview: overlay];
+	[self.view addSubview: overlay];
 	self.contentOverlayView = overlay;
 
 	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(0, 0, 22, 22)];
@@ -336,6 +330,11 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	closeFrame.origin.y = frame.origin.y - 8;
 	self.closeButton.frame = closeFrame;
 	
+	// Content overlay
+	DZPopupControllerInsetView *contentOverlay = self.contentOverlayView;
+
+	[contentOverlay.superview bringSubviewToFront: contentOverlay];
+
 	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
 		return;
 		
@@ -348,12 +347,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	
 	self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
 	
-	// Content overlay
-	DZPopupControllerInsetView *contentOverlay = self.contentOverlayView;
-	
 	const CGFloat frameWidth = 3.0f;
-	contentOverlay.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
-	[contentOverlay.superview bringSubviewToFront: contentOverlay];
+	contentOverlay.frame = CGRectMake(frame.origin.x + 5.0f - frameWidth, frame.origin.y + 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
 }
 
 #pragma mark - Properties
@@ -394,6 +389,9 @@ static inline UIImage *CQMCreateBlankImage(void) {
 			UINavigationController *navigationController = (id)newController;
 			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
 			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
+			
+			navigationController.toolbar.clipsToBounds = YES;
+			navigationController.navigationBar.clipsToBounds = YES;
 			
 			self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
 		} else {
