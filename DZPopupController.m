@@ -206,9 +206,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) DZPopupControllerInsetView *contentOverlayView;
+@property (nonatomic, weak) DZPopupControllerCloseButton *closeButton;
 @property (nonatomic) UIStatusBarStyle backupStatusBarStyle;
-
-- (void)resizeContentOverlay;
 
 @end
 
@@ -219,9 +218,11 @@ static inline UIImage *CQMCreateBlankImage(void) {
 @synthesize frameView = _frameView;
 @synthesize contentView = _contentView;
 @synthesize contentOverlayView = _contentOverlayView;
+@synthesize closeButton = _closeButton;
+@synthesize backupStatusBarStyle = _backupStatusBarStyle;
+
 @synthesize frameSize = _frameSize;
 @synthesize frameColor = _frameColor;
-@synthesize backupStatusBarStyle = _backupStatusBarStyle;
 
 #pragma mark - Setup and teardown
 
@@ -293,19 +294,18 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	overlay.baseColor = _frameColor;
 	[contentContainer addSubview: overlay];
 	self.contentOverlayView = overlay;
-	
-	UIButton *closeButton = [DZPopupControllerCloseButton buttonWithType: UIButtonTypeCustom];
-	closeButton.frame = CGRectMake(-8, -8, 22, 22);
-	[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
+
+	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(0, 0, 22, 22)];
 	closeButton.layer.borderColor = [[UIColor whiteColor] CGColor];
 	closeButton.layer.borderWidth = 2.0f;
 	closeButton.layer.shadowColor = [[UIColor blackColor] CGColor];
 	closeButton.layer.shadowOffset = CGSizeMake(0,4);
 	closeButton.layer.shadowOpacity = 0.3;
 	closeButton.layer.cornerRadius = 11.0f;
-	closeButton.backgroundColor = [UIColor clearColor];
 	closeButton.showsTouchWhenHighlighted = YES;
-	[frame addSubview: closeButton];
+	[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
+	_closeButton = closeButton;
+	[self.view addSubview: closeButton];
 	
 	if (!_contentViewController.view.superview)
 		self.contentViewController = _contentViewController;
@@ -328,7 +328,32 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 - (void)viewDidLayoutSubviews {
 	[super viewDidLayoutSubviews];
-	[self resizeContentOverlay];
+	
+	CGRect frame = self.frameView.frame;
+	
+	CGRect closeFrame = self.closeButton.frame;
+	closeFrame.origin.x = frame.origin.x - 8;
+	closeFrame.origin.y = frame.origin.y - 8;
+	self.closeButton.frame = closeFrame;
+	
+	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
+		return;
+		
+	CGSize contentSize = self.contentView.frame.size;
+	UINavigationController *navigationController = (id)self.contentViewController;
+	
+	// Navigation	
+	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height,
+	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
+	
+	self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
+	
+	// Content overlay
+	DZPopupControllerInsetView *contentOverlay = self.contentOverlayView;
+	
+	const CGFloat frameWidth = 3.0f;
+	contentOverlay.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
+	[contentOverlay.superview bringSubviewToFront: contentOverlay];
 }
 
 #pragma mark - Properties
@@ -376,7 +401,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		}
 		
 		[self.frameView setNeedsDisplay];
-		[self resizeContentOverlay];
+		[self.view setNeedsLayout];
 	};
 	
 	if (!oldController) {
@@ -528,7 +553,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	if ([object isEqual: self.contentViewController]) {
-		[self resizeContentOverlay];
+		[self.view setNeedsLayout];
 		
 		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, ([object isToolbarHidden] ? 1./3. : 0) * NSEC_PER_SEC);
 		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
@@ -539,27 +564,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		return;
 	}
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-}
-
-- (void)resizeContentOverlay {
-	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
-		return;
-	
-	CGSize contentSize = self.contentView.frame.size;
-	UINavigationController *navigationController = (id)self.contentViewController;
-	
-	// Navigation	
-	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height,
-	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
-	
-	self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
-	
-	// Content overlay
-	DZPopupControllerInsetView *contentOverlay = self.contentOverlayView;
-	
-	const CGFloat frameWidth = 3.0f;
-	contentOverlay.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
-	[contentOverlay.superview bringSubviewToFront: contentOverlay];
 }
 
 - (void)closePressed:(UIButton *)closeButton {
