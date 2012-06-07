@@ -107,21 +107,19 @@
 @interface DZPopupControllerInsetView : UIView
 
 @property (nonatomic, strong) UIColor *baseColor;
-@property (nonatomic) UIRectCorner filledCorners;
 
 @end
 
 @implementation DZPopupControllerInsetView
 
 @synthesize baseColor = _baseColor;
-@synthesize filledCorners = _filledCorners;
 
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
-	const CGFloat radius = self.layer.cornerRadius;
+	const CGFloat radius = 5.0f;
 	const CGFloat frameWidth = 3.0f;
 	
-	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth - 3, frameWidth - 3) byRoundingCorners: self.filledCorners cornerRadii: CGSizeMake(radius+3, radius+3)];
+	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: UIRectCornerAllCorners cornerRadii: CGSizeMake(radius+3, radius+3)];
 	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
 	UIBezierPath *fillRect = [outerRect copy];
 	[fillRect appendPath: innerRect];
@@ -288,11 +286,10 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	[contentContainer addSubview: content];
 	self.contentView = content;
 	
-	DZPopupControllerInsetView *overlay = [[DZPopupControllerInsetView alloc] initWithFrame: content.bounds];
+	DZPopupControllerInsetView *overlay = [DZPopupControllerInsetView new];
 	overlay.backgroundColor = [UIColor clearColor];
 	overlay.contentMode = UIViewContentModeRedraw;
 	overlay.userInteractionEnabled = NO;
-	overlay.layer.cornerRadius = 5.0f;
 	overlay.baseColor = _frameColor;
 	[contentContainer addSubview: overlay];
 	self.contentOverlayView = overlay;
@@ -552,7 +549,7 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	UINavigationController *navigationController = (id)self.contentViewController;
 	
 	// Navigation	
-	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height - 1,
+	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height,
 	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
 	
 	self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
@@ -560,15 +557,9 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	// Content overlay
 	DZPopupControllerInsetView *contentOverlay = self.contentOverlayView;
 	
-	UIRectCorner corners = 0;
-	if (!navigationController.navigationBarHidden)
-		corners |= UIRectCornerTopLeft | UIRectCornerTopRight;
-	if (!navigationController.toolbarHidden)
-		corners |= UIRectCornerBottomLeft | UIRectCornerBottomRight;
-	contentOverlay.filledCorners = corners;
-	
 	const CGFloat frameWidth = 3.0f;
 	contentOverlay.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
+	[contentOverlay.superview bringSubviewToFront: contentOverlay];
 }
 
 - (void)closePressed:(UIButton *)closeButton {
