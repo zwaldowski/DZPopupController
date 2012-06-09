@@ -19,6 +19,10 @@
 
 @synthesize textLabel = _textLabel;
 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
+	return YES;
+}
+
 #pragma mark - Properties
 
 - (UILabel*)textLabel {

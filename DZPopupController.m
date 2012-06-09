@@ -311,7 +311,12 @@ static inline UIImage *CQMCreateBlankImage(void) {
 #pragma mark - UIViewController
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown) && [self.contentViewController shouldAutorotateToInterfaceOrientation: YES];
+	BOOL should = (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+	
+	if (self.contentViewController)
+		should &= [self.contentViewController shouldAutorotateToInterfaceOrientation: interfaceOrientation];
+	
+	return should;
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
