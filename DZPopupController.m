@@ -204,9 +204,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
-@property (nonatomic, weak) UIView *contentView;
-@property (nonatomic, weak) DZPopupControllerInsetView *contentOverlayView;
-@property (nonatomic, weak) DZPopupControllerCloseButton *closeButton;
 @property (nonatomic) UIStatusBarStyle backupStatusBarStyle;
 
 @end
@@ -216,15 +213,15 @@ static inline UIImage *CQMCreateBlankImage(void) {
 @synthesize window = _window;
 @synthesize contentViewController = _contentViewController;
 @synthesize frameView = _frameView;
-@synthesize contentView = _contentView;
-@synthesize contentOverlayView = _contentOverlayView;
-@synthesize closeButton = _closeButton;
 @synthesize backupStatusBarStyle = _backupStatusBarStyle;
 
 @synthesize frameSize = _frameSize;
 @synthesize frameColor = _frameColor;
 
 #pragma mark - Setup and teardown
+
+static const NSInteger kContentViewTag = 'CNTN';
+static const NSInteger kContentInsetTag = 'OVRL';
 
 - (id)initWithContentViewController:(UIViewController *)viewController {
 	if (self = [super initWithNibName:nil bundle:nil]) {
@@ -272,16 +269,16 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 5.0f, 5.0f)];
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	content.layer.cornerRadius = 8.0f;
+	content.tag = kContentViewTag;
 	[frame addSubview: content];
-	self.contentView = content;
 	
 	DZPopupControllerInsetView *overlay = [DZPopupControllerInsetView new];
 	overlay.backgroundColor = [UIColor clearColor];
 	overlay.contentMode = UIViewContentModeRedraw;
 	overlay.userInteractionEnabled = NO;
 	overlay.baseColor = _frameColor;
+	overlay.tag = kContentInsetTag;
 	[frame addSubview: overlay];
-	self.contentOverlayView = overlay;
 
 	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-8, -8, 22, 22)];
 	closeButton.layer.borderColor = [[UIColor whiteColor] CGColor];
@@ -293,7 +290,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	closeButton.showsTouchWhenHighlighted = YES;
 	[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
 	[frame addSubview: closeButton];
-	self.closeButton = closeButton;
 	
 	if (!_contentViewController.view.superview)
 		self.contentViewController = _contentViewController;
@@ -324,8 +320,10 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	
 	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
 		return;
+	
+	UIView *contentView = [self.view viewWithTag: kContentViewTag];
 		
-	CGSize contentSize = self.contentView.frame.size;
+	CGSize contentSize = contentView.frame.size;
 	UINavigationController *navigationController = (id)self.contentViewController;
 	
 	// Navigation	
@@ -334,11 +332,11 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	
 	self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
 	
-	// Content overlay
-	DZPopupControllerInsetView *contentOverlay = self.contentOverlayView;
+	// Content inset
+	UIView *contentInset = [self.view viewWithTag:kContentInsetTag];
 	
 	const CGFloat frameWidth = 3.0f;
-	contentOverlay.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
+	contentInset.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
 }
 
 #pragma mark - Properties
@@ -392,18 +390,20 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		[self.view setNeedsLayout];
 	};
 	
+	UIView *contentView = [self.view viewWithTag:kContentViewTag];
+	
 	if (!oldController) {
-		[UIView transitionWithView: self.contentView duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
-			newController.view.frame = self.contentView.bounds;
-			[self.contentView addSubview: newController.view];
+		[UIView transitionWithView: contentView duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
+			newController.view.frame = contentView.bounds;
+			[contentView addSubview: newController.view];
 		} completion:^(BOOL finished) {
 			[self addChildViewController: newController];
 			
 			addObservers();
 		}];
 	} else if (!oldController.view.superview) {
-		newController.view.frame = self.contentView.bounds;
-		[self.contentView addSubview: newController.view];
+		newController.view.frame = contentView.bounds;
+		[contentView addSubview: newController.view];
 		[self addChildViewController: newController];
 		
 		addObservers();
@@ -446,9 +446,10 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	
 	[UIView transitionWithView: self.frameView duration: animated ? 1./3. : 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionCrossDissolve animations: ^{
 		self.frameView.baseColor = _frameColor;
-		self.contentOverlayView.baseColor = _frameColor;
 		[self.frameView setNeedsDisplay];
-		[self.contentOverlayView setNeedsDisplay];
+		UIView *contentInsetView = [self.view viewWithTag: kContentInsetTag];
+		[(id)contentInsetView setBaseColor: _frameColor];
+		[contentInsetView setNeedsDisplay];
 	} completion: NULL];
 }
 
