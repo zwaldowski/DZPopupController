@@ -246,13 +246,6 @@ static inline UIImage *CQMCreateBlankImage(void) {
 		_frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
 		_frameSize = CGSizeMake(254, 394);
 		
-		UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-		window.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
-		window.windowLevel = UIWindowLevelAlert;
-		window.userInteractionEnabled = NO;
-		window.hidden = YES;
-		self.window = window;
-		
 		self.contentViewController = viewController;
 	}
 	return self;
@@ -260,6 +253,8 @@ static inline UIImage *CQMCreateBlankImage(void) {
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
+	
+	self.view.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
 		
 	DZPopupControllerFrameView *frame = [[DZPopupControllerFrameView alloc] initWithFrame: (CGRect){{ floor(CGRectGetMidX(self.view.bounds) - self.frameSize.width / 2), floor(CGRectGetMidY(self.view.bounds) - self.frameSize.height / 2) }, self.frameSize }];
 	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -472,11 +467,12 @@ static inline UIImage *CQMCreateBlankImage(void) {
 }
 
 - (void)presentWithCompletion:(void (^)(void))block {
-	self.window.rootViewController = self;
-	self.view.userInteractionEnabled = NO;
-	
-	self.window.hidden = NO;
-	self.window.userInteractionEnabled = YES;
+	UIWindow *window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+	window.backgroundColor = [UIColor clearColor];
+	window.windowLevel = UIWindowLevelAlert;
+	window.rootViewController = self;
+	[window makeKeyAndVisible];
+	self.window = window;
 	
 	self.backupStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
 	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
@@ -509,35 +505,24 @@ static inline UIImage *CQMCreateBlankImage(void) {
 	scale.timingFunctions = [NSArray arrayWithObjects: easeIn, easeOut, easeIn, easeOut, nil];
 	
 	[CATransaction begin];
-	[CATransaction setCompletionBlock: ^{
-		[self.window makeKeyAndVisible];
-		
-		self.view.userInteractionEnabled = YES;
-		
-		if (block)
-			block();
-	}];
-	[self.window.layer addAnimation:alpha forKey: nil];
-	[self.view.layer addAnimation:scale forKey: nil];
+	[CATransaction setCompletionBlock: block];
+	[self.view.layer addAnimation:alpha forKey: nil];
+	[self.frameView.layer addAnimation:scale forKey: nil];
 	[CATransaction commit];
 }
 
 - (void)dismissWithCompletion:(void (^)(void))block {
-	self.view.userInteractionEnabled = NO;
-	
 	[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
 	
 	[UIView animateWithDuration: (1./3.) delay: 0.0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent animations:^{
-		self.window.alpha = 0.0001;
-		self.view.transform = CGAffineTransformScale(self.view.transform, 0.00001, 0.00001);
+		self.view.alpha = 0.0001;
+		self.frameView.transform = CGAffineTransformScale(self.frameView.transform, 0.00001, 0.00001);
 	} completion:^(BOOL finished) {
 		if (block)
 			block();
 		
-		self.view.userInteractionEnabled = YES;
-		self.window.hidden = YES;
-		self.window.userInteractionEnabled = NO;
 		self.window.rootViewController = nil;
+		self.window = nil;
 	}];
 }
 
