@@ -15,89 +15,16 @@
 @interface DZPopupControllerFrameView : UIView
 
 @property (nonatomic, strong) UIColor *baseColor;
-@property (nonatomic) BOOL drawsBottomHighlight;
-@property (nonatomic) UIBarMetrics barMetrics;
 
 @end
 
-@implementation DZPopupControllerFrameView {
-	CGGradientRef _topGradient;
-	CGGradientRef _bottomGradient;
-}
+@implementation DZPopupControllerFrameView
 
 @synthesize baseColor = _baseColor;
-@synthesize drawsBottomHighlight = _drawsBottomHighlight;
-@synthesize barMetrics = _barMetrics;
-
-- (void)dealloc {
-	if (_topGradient)
-		CGGradientRelease(_topGradient); _topGradient = nil;
-	if (_bottomGradient)
-		CGGradientRelease(_bottomGradient); _bottomGradient = nil;
-}
 
 - (void)drawRect:(CGRect)rect {
-	CGContextRef context = UIGraphicsGetCurrentContext();
-	const CGFloat radius = 8.0f;
-	
-	// Create gradients
-	if (!_topGradient || !_bottomGradient) {
-		CGColorRef startHighlight = [[UIColor colorWithWhite:1.00f alpha:0.40f] CGColor];
-		CGColorRef endHighlight = [[UIColor colorWithWhite:1.00f alpha:0.05f] CGColor];
-		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-		
-		CFArrayRef topColors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
-														   (__bridge id)startHighlight,
-														   (__bridge id)endHighlight,
-														   nil];
-		CGFloat topLocations[] = {0, 1.0f};
-		_topGradient = CGGradientCreateWithColors(colorSpace, topColors, topLocations);
-		CFRelease(topColors);
-		
-		CFArrayRef bottomColors = (__bridge_retained CFArrayRef)[NSArray arrayWithObjects:
-												(id)[[UIColor clearColor] CGColor],
-												(__bridge id)startHighlight,
-												(__bridge id)endHighlight,
-												nil];
-		CGFloat bottomLocations[] = {0, 0.20f, 1.0f};
-		_bottomGradient = CGGradientCreateWithColors(colorSpace, bottomColors, bottomLocations);
-		CFRelease(bottomColors);
-		
-		CGColorSpaceRelease(colorSpace);
-	}
-	
-	// Shadow location
-	self.layer.shadowPath = [[UIBezierPath bezierPathWithRoundedRect: self.bounds cornerRadius: 8.0f] CGPath];
-	
-	// Light border
-	[[UIColor colorWithWhite:1.00f alpha:0.10f] setFill];
-	[[UIBezierPath bezierPathWithRoundedRect: self.bounds cornerRadius: radius + 1.0f] fill];
-	
-	// Base
 	[self.baseColor setFill];
-	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: radius] fill];
-	
-	// Highlight
-	CGContextSaveGState(context);
-	CGFloat topHighlightHeight = self.barMetrics == UIBarMetricsDefault ? 26.0f : 21.0f;
-	CGRect highlightRect = CGRectMake(2.0f, 2.0f, CGRectGetWidth(rect) - 4.0f, topHighlightHeight);
-	CGSize highlightRadii = CGSizeMake(radius - 1.0f, radius - 1.0f);
-	
-	[[UIBezierPath bezierPathWithRoundedRect: highlightRect byRoundingCorners: UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii: highlightRadii] addClip];
-	CGContextDrawLinearGradient(context, _topGradient, CGPointMake(0, 2.0f), CGPointMake(0, topHighlightHeight), 0);
-	
-	CGContextRestoreGState(context);
-	
-	if (self.drawsBottomHighlight) {
-		CGContextSaveGState(context);
-		
-		CGFloat bottomHighlightHeight = self.barMetrics == UIBarMetricsDefault ? 28.0f : 20.0f;
-		CGRect bottomHighlightRect = CGRectMake(4.0f, CGRectGetMaxY(rect) - bottomHighlightHeight * 2, CGRectGetWidth(rect) - 8.0f, bottomHighlightHeight);
-		
-		[[UIBezierPath bezierPathWithRect: bottomHighlightRect] addClip];
-		CGContextDrawLinearGradient(context, _bottomGradient, CGPointMake(2.0f, CGRectGetMinY(bottomHighlightRect)), CGPointMake(2.0f, CGRectGetMaxY(bottomHighlightRect)), 0);
-		CGContextRestoreGState(context);
-	}
+	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: 9.0f] fill];
 }
 
 @end
@@ -116,10 +43,10 @@
 
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
-	const CGFloat radius = 5.0f;
-	const CGFloat frameWidth = 3.0f;
+	const CGFloat radius = 4.0f;
+	const CGFloat frameWidth = 2.0f;
 	
-	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: UIRectCornerAllCorners cornerRadii: CGSizeMake(radius+3, radius+3)];
+	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii: CGSizeMake(radius-1, radius-1)];
 	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
 	UIBezierPath *fillRect = [outerRect copy];
 	[fillRect appendPath: innerRect];
@@ -193,13 +120,6 @@
 
 #pragma mark -
 
-static inline UIImage *CQMCreateBlankImage(void) {
-	UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
-	UIImage *ret = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
-	return ret;
-}
-
 @interface DZPopupController ()
 
 @property (nonatomic, strong) UIWindow *window;
@@ -226,21 +146,14 @@ static const NSInteger kContentInsetTag = 'OVRL';
 - (id)initWithContentViewController:(UIViewController *)viewController {
 	if (self = [super initWithNibName:nil bundle:nil]) {
 		NSParameterAssert(viewController);
-		
-		static dispatch_once_t onceToken;
-		dispatch_once(&onceToken, ^{
-			UIImage *blank = CQMCreateBlankImage();
-			id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [self class], nil];
-			id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [self class], nil];
-			[navigationBarAppearance setBarStyle: UIBarStyleBlack];
-			[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsDefault];
-			[navigationBarAppearance setBackgroundImage: blank forBarMetrics: UIBarMetricsLandscapePhone];
-			[toolbarAppearance setBarStyle: UIBarStyleBlack];
-			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
-			[toolbarAppearance setBackgroundImage: blank forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsLandscapePhone];
-		});
 
 		_frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
+		
+		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [self class], nil];
+		id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [self class], nil];
+		[navigationBarAppearance setTintColor: _frameColor];
+		[toolbarAppearance setTintColor: _frameColor];
+		
 		_frameSize = CGSizeMake(254, 394);
 		
 		self.contentViewController = viewController;
@@ -261,14 +174,19 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	frame.layer.shadowOffset = CGSizeMake(0, 2);
 	frame.layer.shadowOpacity = 0.7f;
 	frame.layer.shadowRadius = 10.0f;
+	frame.layer.borderColor = [[UIColor colorWithWhite:1.00f alpha:0.10f] CGColor];
+	frame.layer.borderWidth = 1.0f;
+	//[self.baseColor setFill];
+	//[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: radius] fill];
 	frame.baseColor = _frameColor;
 	[self.view addSubview: frame];
 	self.frameView = frame;
 	
 	// Content
-	UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 5.0f, 5.0f)];
+	UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 2.0f, 2.0f)];
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	content.layer.cornerRadius = 8.0f;
+	content.layer.masksToBounds = YES;
 	content.tag = kContentViewTag;
 	[frame addSubview: content];
 	
@@ -310,11 +228,6 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	return should;
 }
 
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-	[super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
-	self.frameView.barMetrics = UIInterfaceOrientationIsLandscape(toInterfaceOrientation) ? UIBarMetricsLandscapePhone : UIBarMetricsDefault;
-}
-
 - (void)viewDidLayoutSubviews {
 	[super viewDidLayoutSubviews];
 	
@@ -329,14 +242,11 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	// Navigation	
 	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height,
 	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
-	
-	self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
-	
+		
 	// Content inset
 	UIView *contentInset = [self.view viewWithTag:kContentInsetTag];
 	
-	const CGFloat frameWidth = 3.0f;
-	contentInset.frame = CGRectMake(5.0f - frameWidth, 5.0f - frameWidth + navBarHeight, contentSize.width + frameWidth * 2, contentSize.height - navBarHeight - toolbarHeight + frameWidth * 2);
+	contentInset.frame = CGRectMake(1.0f, 2.0f + navBarHeight, contentSize.width + 2.0f, contentSize.height - navBarHeight - toolbarHeight + 2.0f);
 }
 
 #pragma mark - Properties
@@ -380,10 +290,6 @@ static const NSInteger kContentInsetTag = 'OVRL';
 			
 			navigationController.toolbar.clipsToBounds = YES;
 			navigationController.navigationBar.clipsToBounds = YES;
-			
-			self.frameView.drawsBottomHighlight = (!navigationController.toolbarHidden);
-		} else {
-			self.frameView.drawsBottomHighlight = NO;
 		}
 		
 		[self.frameView setNeedsDisplay];
@@ -450,6 +356,10 @@ static const NSInteger kContentInsetTag = 'OVRL';
 		UIView *contentInsetView = [self.view viewWithTag: kContentInsetTag];
 		[(id)contentInsetView setBaseColor: _frameColor];
 		[contentInsetView setNeedsDisplay];
+		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [self class], nil];
+		id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [self class], nil];
+		[navigationBarAppearance setTintColor: _frameColor];
+		[toolbarAppearance setTintColor: _frameColor];
 	} completion: NULL];
 }
 
@@ -532,13 +442,6 @@ static const NSInteger kContentInsetTag = 'OVRL';
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	if ([object isEqual: self.contentViewController]) {
 		[self.view setNeedsLayout];
-		
-		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, ([object isToolbarHidden] ? 1./3. : 0) * NSEC_PER_SEC);
-		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-			self.frameView.drawsBottomHighlight = (![object isToolbarHidden]);
-			[self.frameView setNeedsDisplay];
-		});
-		
 		return;
 	}
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
