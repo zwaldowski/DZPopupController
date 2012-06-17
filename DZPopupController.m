@@ -22,9 +22,23 @@
 
 @synthesize baseColor = _baseColor;
 
+- (id)initWithFrame:(CGRect)frame {
+	if ((self = [super initWithFrame:frame])) {
+		self.backgroundColor = [UIColor clearColor];
+		self.contentMode = UIViewContentModeRedraw;
+		self.layer.shadowOffset = CGSizeMake(0, 2);
+		self.layer.shadowOpacity = 0.7f;
+		self.layer.shadowRadius = 10.0f;
+		self.layer.borderWidth = 1.0f;
+		self.layer.borderColor = [[UIColor colorWithWhite:1.00f alpha:0.10f] CGColor];
+		self.layer.cornerRadius = 8.0f;
+	}
+	return self;
+}
+
 - (void)drawRect:(CGRect)rect {
 	[self.baseColor setFill];
-	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: 9.0f] fill];
+	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: 8.0f] fill];
 }
 
 @end
@@ -44,10 +58,9 @@
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	const CGFloat radius = 4.0f;
-	const CGFloat frameWidth = 2.0f;
 	
-	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii: CGSizeMake(radius-1, radius-1)];
-	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, frameWidth, frameWidth) cornerRadius: radius];
+	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii: CGSizeMake(2.0f, 2.0f)];
+	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 2.0f, 3.0f) cornerRadius: radius];
 	UIBezierPath *fillRect = [outerRect copy];
 	[fillRect appendPath: innerRect];
 	[fillRect setUsesEvenOddFillRule: YES];
@@ -148,13 +161,17 @@ static const NSInteger kContentInsetTag = 'OVRL';
 		NSParameterAssert(viewController);
 
 		_frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
-		
-		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [self class], nil];
-		id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [self class], nil];
-		[navigationBarAppearance setTintColor: _frameColor];
-		[toolbarAppearance setTintColor: _frameColor];
-		
 		_frameSize = CGSizeMake(254, 394);
+		
+		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
+		[navigationBarAppearance setTintColor: _frameColor];
+		
+		UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
+		UIImage *ret = UIGraphicsGetImageFromCurrentImageContext();
+		UIGraphicsEndImageContext();
+		id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
+		[toolbarAppearance setBackgroundColor: _frameColor];
+		[toolbarAppearance setBackgroundImage: ret forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
 		
 		self.contentViewController = viewController;
 	}
@@ -168,16 +185,6 @@ static const NSInteger kContentInsetTag = 'OVRL';
 		
 	DZPopupControllerFrameView *frame = [[DZPopupControllerFrameView alloc] initWithFrame: (CGRect){{ floor(CGRectGetMidX(self.view.bounds) - self.frameSize.width / 2), floor(CGRectGetMidY(self.view.bounds) - self.frameSize.height / 2) }, self.frameSize }];
 	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-	frame.backgroundColor = [UIColor clearColor];
-	frame.contentMode = UIViewContentModeRedraw;
-	frame.layer.cornerRadius = 8.0f;
-	frame.layer.shadowOffset = CGSizeMake(0, 2);
-	frame.layer.shadowOpacity = 0.7f;
-	frame.layer.shadowRadius = 10.0f;
-	frame.layer.borderColor = [[UIColor colorWithWhite:1.00f alpha:0.10f] CGColor];
-	frame.layer.borderWidth = 1.0f;
-	//[self.baseColor setFill];
-	//[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: radius] fill];
 	frame.baseColor = _frameColor;
 	[self.view addSubview: frame];
 	self.frameView = frame;
@@ -185,7 +192,7 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	// Content
 	UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 2.0f, 2.0f)];
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-	content.layer.cornerRadius = 8.0f;
+	content.layer.cornerRadius = 7.0f;
 	content.layer.masksToBounds = YES;
 	content.tag = kContentViewTag;
 	[frame addSubview: content];
@@ -246,7 +253,7 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	// Content inset
 	UIView *contentInset = [self.view viewWithTag:kContentInsetTag];
 	
-	contentInset.frame = CGRectMake(1.0f, 2.0f + navBarHeight, contentSize.width + 2.0f, contentSize.height - navBarHeight - toolbarHeight + 2.0f);
+	contentInset.frame = CGRectMake(2.0f, 1.0f + navBarHeight, contentSize.width, contentSize.height - navBarHeight - toolbarHeight + 3.0f);
 }
 
 #pragma mark - Properties
@@ -356,10 +363,10 @@ static const NSInteger kContentInsetTag = 'OVRL';
 		UIView *contentInsetView = [self.view viewWithTag: kContentInsetTag];
 		[(id)contentInsetView setBaseColor: _frameColor];
 		[contentInsetView setNeedsDisplay];
-		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [self class], nil];
-		id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [self class], nil];
+		id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
+		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
 		[navigationBarAppearance setTintColor: _frameColor];
-		[toolbarAppearance setTintColor: _frameColor];
+		[toolbarAppearance setBackgroundColor: _frameColor];
 	} completion: NULL];
 }
 
