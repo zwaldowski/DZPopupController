@@ -90,11 +90,23 @@
 {
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	
+	rect = CGRectInset(rect, 13, 13);
+	
+	CGContextSaveGState(context);
+	CGContextSetShadowWithColor(context, CGSizeMake(0,4), 3.0, [[UIColor colorWithWhite: 0 alpha:0.3] CGColor]);
+	CGContextSetFillColorWithColor(context, [[UIColor blackColor] CGColor]);
 	CGContextFillEllipseInRect(context, rect);
+	CGContextRestoreGState(context);
+	
+	CGContextSaveGState(context);
+	CGContextSetLineWidth(context, 2.0f);
+	CGContextSetStrokeColorWithColor(context, [[UIColor whiteColor] CGColor]);
+	CGContextStrokeEllipseInRect(context, rect);
+	CGContextRestoreGState(context);
 	
 	CGFloat w = CGRectGetWidth(rect) - 4;
-	CGAffineTransform xTransform = CGAffineTransformMakeScale(0.01 * w, 0.01 * w);
-	CGAffineTransform translation = CGAffineTransformMakeTranslation(2, 2);
+	CGAffineTransform xTransform = CGAffineTransformMakeScale(0.013 * w, 0.013 * w);
+	CGAffineTransform translation = CGAffineTransformMakeTranslation(13, 13);
 	[[UIColor whiteColor] setFill];
 	
 	UIBezierPath* leftCross = [UIBezierPath bezierPath];
@@ -193,7 +205,7 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 2.0f, 2.0f)];
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	content.layer.cornerRadius = 7.0f;
-	content.layer.masksToBounds = YES;
+	content.clipsToBounds = YES;
 	content.tag = kContentViewTag;
 	[frame addSubview: content];
 	
@@ -205,13 +217,7 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	overlay.tag = kContentInsetTag;
 	[frame addSubview: overlay];
 
-	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-8, -8, 22, 22)];
-	closeButton.layer.borderColor = [[UIColor whiteColor] CGColor];
-	closeButton.layer.borderWidth = 2.0f;
-	closeButton.layer.shadowColor = [[UIColor blackColor] CGColor];
-	closeButton.layer.shadowOffset = CGSizeMake(0,4);
-	closeButton.layer.shadowOpacity = 0.3;
-	closeButton.layer.cornerRadius = 11.0f;
+	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-21, -21, 44, 44)];
 	closeButton.showsTouchWhenHighlighted = YES;
 	[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
 	[frame addSubview: closeButton];
