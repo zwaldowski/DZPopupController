@@ -22,23 +22,30 @@
 
 @synthesize baseColor = _baseColor;
 
-- (id)initWithFrame:(CGRect)frame {
-	if ((self = [super initWithFrame:frame])) {
+- (id)init {
+	if ((self = [super initWithFrame: CGRectZero])) {
 		self.backgroundColor = [UIColor clearColor];
 		self.contentMode = UIViewContentModeRedraw;
 		self.layer.shadowOffset = CGSizeMake(0, 2);
 		self.layer.shadowOpacity = 0.7f;
 		self.layer.shadowRadius = 10.0f;
-		self.layer.borderWidth = 1.0f;
-		self.layer.borderColor = [[UIColor colorWithWhite:1.00f alpha:0.10f] CGColor];
 		self.layer.cornerRadius = 8.0f;
 	}
 	return self;
 }
 
+- (void)layoutSubviews {
+	self.layer.shadowPath = [[UIBezierPath bezierPathWithRect: self.bounds] CGPath];
+}
+
 - (void)drawRect:(CGRect)rect {
+	const CGFloat radius = self.layer.cornerRadius;
+	
+	[[UIColor colorWithWhite:1.00f alpha:0.10f] setStroke];
+	[[UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: radius+1] stroke];
+	
 	[self.baseColor setFill];
-	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(self.bounds, 1.0f, 1.0f) cornerRadius: 8.0f] fill];
+	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 1.0f, 1.0f) cornerRadius: radius] fill];
 }
 
 @end
@@ -59,19 +66,13 @@
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	const CGFloat radius = 4.0f;
 	
-	UIBezierPath *outerRect = [UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii: CGSizeMake(2.0f, 2.0f)];
-	UIBezierPath *innerRect = [UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 2.0f, 3.0f) cornerRadius: radius];
-	UIBezierPath *fillRect = [outerRect copy];
-	[fillRect appendPath: innerRect];
-	[fillRect setUsesEvenOddFillRule: YES];
-	
 	CGContextSaveGState(context);
 	
-	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), radius, [[UIColor colorWithWhite:0 alpha:0.8f] CGColor]);
-	
-	[outerRect addClip];
-	[self.baseColor setFill];
-	[fillRect fill];
+	CGContextAddPath(context, [[UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii: CGSizeMake(2.0f, 2.0f)] CGPath]);
+	CGContextAddPath(context, [[UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 2.0f, 3.0f) cornerRadius: radius] CGPath]);
+	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), radius, [[UIColor colorWithWhite:0  alpha: 0.8f] CGColor]);
+	CGContextSetFillColorWithColor(context, self.baseColor.CGColor);
+	CGContextEOFillPath(context);
 	
 	CGContextRestoreGState(context);
 }
@@ -86,26 +87,39 @@
 
 @implementation DZPopupControllerCloseButton
 
+- (id)initWithFrame:(CGRect)frame {
+	if ((self = [super initWithFrame:frame])) {
+		self.backgroundColor = [UIColor clearColor];
+		self.contentMode = UIViewContentModeRedraw;
+		self.layer.shadowColor = [[UIColor blackColor] CGColor];
+		self.layer.shadowOffset = CGSizeMake(0,4);
+		self.layer.shadowOpacity = 0.3;
+		self.layer.cornerRadius = frame.size.width / 2;
+		
+	}
+	return self;
+}
+
+- (void)layoutSubviews{
+	self.layer.shadowPath = [[UIBezierPath bezierPathWithOvalInRect: self.bounds] CGPath];
+}
+
 - (void)drawRect:(CGRect)rect
 {
 	CGContextRef context = UIGraphicsGetCurrentContext();
 	
-	rect = CGRectInset(rect, 13, 13);
-	
-	CGContextSaveGState(context);
-	CGContextSetShadowWithColor(context, CGSizeMake(0,4), 3.0, [[UIColor colorWithWhite: 0 alpha:0.3] CGColor]);
-	CGContextSetFillColorWithColor(context, [[UIColor blackColor] CGColor]);
-	CGContextFillEllipseInRect(context, rect);
-	CGContextRestoreGState(context);
+	rect = CGRectInset(rect, 2, 2);
 	
 	CGContextSaveGState(context);
 	CGContextSetLineWidth(context, 2.0f);
+	CGContextSetFillColorWithColor(context, [[UIColor blackColor] CGColor]);
 	CGContextSetStrokeColorWithColor(context, [[UIColor whiteColor] CGColor]);
+	CGContextFillEllipseInRect(context, rect);
 	CGContextStrokeEllipseInRect(context, rect);
 	CGContextRestoreGState(context);
 	
-	CGContextTranslateCTM(context, 14, 14);
-	CGContextScaleCTM(context, 0.16, 0.16);
+	CGContextTranslateCTM(context, 3, 3);
+	CGContextScaleCTM(context, 0.18, 0.18);
 	CGContextSetFillColorWithColor(context, [[UIColor whiteColor] CGColor]);
 	
 	CGContextMoveToPoint(context, 25, 36);
@@ -137,24 +151,22 @@
 
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
+@property (nonatomic, weak) UIView *contentView;
+@property (nonatomic, weak) DZPopupControllerInsetView *insetView;
 @property (nonatomic) UIStatusBarStyle backupStatusBarStyle;
 
 @end
 
 @implementation DZPopupController
 
-@synthesize window = _window;
-@synthesize contentViewController = _contentViewController;
-@synthesize frameView = _frameView;
+@synthesize window = _window, contentViewController = _contentViewController;
+@synthesize frameView = _frameView, contentView = _contentView, insetView = _insetView;
 @synthesize backupStatusBarStyle = _backupStatusBarStyle;
 
 @synthesize frameSize = _frameSize;
 @synthesize frameColor = _frameColor;
 
 #pragma mark - Setup and teardown
-
-static const NSInteger kContentViewTag = 'CNTN';
-static const NSInteger kContentInsetTag = 'OVRL';
 
 - (id)initWithContentViewController:(UIViewController *)viewController {
 	if (self = [super initWithNibName:nil bundle:nil]) {
@@ -195,18 +207,18 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	content.layer.cornerRadius = 7.0f;
 	content.clipsToBounds = YES;
-	content.tag = kContentViewTag;
 	[frame addSubview: content];
+	self.contentView = content;
 	
 	DZPopupControllerInsetView *overlay = [DZPopupControllerInsetView new];
 	overlay.backgroundColor = [UIColor clearColor];
 	overlay.contentMode = UIViewContentModeRedraw;
 	overlay.userInteractionEnabled = NO;
 	overlay.baseColor = _frameColor;
-	overlay.tag = kContentInsetTag;
 	[frame addSubview: overlay];
+	self.insetView = overlay;
 
-	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-21, -21, 44, 44)];
+	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-9, -9, 24, 24)];
 	closeButton.showsTouchWhenHighlighted = YES;
 	[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
 	[frame addSubview: closeButton];
@@ -235,20 +247,15 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	
 	if (![self.contentViewController isKindOfClass: [UINavigationController class]])
 		return;
-	
-	UIView *contentView = [self.view viewWithTag: kContentViewTag];
-		
+			
 	UINavigationController *navigationController = (id)self.contentViewController;
 	
 	// Navigation	
 	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height,
 	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
-		
-	// Content inset
-	UIView *contentInset = [self.view viewWithTag:kContentInsetTag];
 	
-	CGRect cFrame = contentView.frame;
-	contentInset.frame = CGRectMake(CGRectGetMinX(cFrame), CGRectGetMinY(cFrame) + navBarHeight - 2, CGRectGetWidth(cFrame), CGRectGetHeight(cFrame) - navBarHeight - toolbarHeight + 4.0f);
+	CGRect cFrame = self.contentView.frame;
+	self.insetView.frame = CGRectMake(CGRectGetMinX(cFrame), CGRectGetMinY(cFrame) + navBarHeight - 2, CGRectGetWidth(cFrame), CGRectGetHeight(cFrame) - navBarHeight - toolbarHeight + 4.0f);
 }
 
 #pragma mark - Properties
@@ -298,20 +305,18 @@ static const NSInteger kContentInsetTag = 'OVRL';
 		[self.view setNeedsLayout];
 	};
 	
-	UIView *contentView = [self.view viewWithTag:kContentViewTag];
-	
 	if (!oldController) {
-		[UIView transitionWithView: contentView duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
-			newController.view.frame = contentView.bounds;
-			[contentView addSubview: newController.view];
+		[UIView transitionWithView: self.contentView duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
+			newController.view.frame = self.contentView.bounds;
+			[self.contentView addSubview: newController.view];
 		} completion:^(BOOL finished) {
 			[self addChildViewController: newController];
 			
 			addObservers();
 		}];
 	} else if (!oldController.view.superview) {
-		newController.view.frame = contentView.bounds;
-		[contentView addSubview: newController.view];
+		newController.view.frame = self.contentView.bounds;
+		[self.contentView addSubview: newController.view];
 		[self addChildViewController: newController];
 		
 		addObservers();
@@ -358,9 +363,8 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	[UIView transitionWithView: self.frameView duration: animated ? 1./3. : 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionCrossDissolve animations: ^{
 		self.frameView.baseColor = _frameColor;
 		[self.frameView setNeedsDisplay];
-		UIView *contentInsetView = [self.view viewWithTag: kContentInsetTag];
-		[(id)contentInsetView setBaseColor: _frameColor];
-		[contentInsetView setNeedsDisplay];
+		self.insetView.baseColor = _frameColor;
+		[self.insetView setNeedsDisplay];
 		id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
 		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
 		[navigationBarAppearance setTintColor: _frameColor];
