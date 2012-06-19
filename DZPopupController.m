@@ -104,41 +104,29 @@
 	CGContextStrokeEllipseInRect(context, rect);
 	CGContextRestoreGState(context);
 	
-	CGFloat w = CGRectGetWidth(rect) - 4;
-	CGAffineTransform xTransform = CGAffineTransformMakeScale(0.013 * w, 0.013 * w);
-	CGAffineTransform translation = CGAffineTransformMakeTranslation(13, 13);
-	[[UIColor whiteColor] setFill];
+	CGContextTranslateCTM(context, 14, 14);
+	CGContextScaleCTM(context, 0.16, 0.16);
+	CGContextSetFillColorWithColor(context, [[UIColor whiteColor] CGColor]);
 	
-	UIBezierPath* leftCross = [UIBezierPath bezierPath];
+	CGContextMoveToPoint(context, 25, 36);
+	CGContextAddCurveToPoint(context, 22, 33, 22, 28, 25, 25);
+	CGContextAddCurveToPoint(context, 28, 22, 33, 22, 36, 25);
+	CGContextAddLineToPoint(context, 75, 64);
+	CGContextAddCurveToPoint(context, 78, 67, 78, 72, 75, 75);
+	CGContextAddCurveToPoint(context, 72, 78, 67, 78, 64, 75);
+	CGContextAddLineToPoint(context, 25, 36);
+	CGContextClosePath(context);
+	CGContextFillPath(context);
 	
-	[leftCross moveToPoint: CGPointMake(25, 36)];
-	[leftCross addCurveToPoint: CGPointMake(25, 25) controlPoint1: CGPointMake(22, 33) controlPoint2: CGPointMake(22, 28)];
-	[leftCross addCurveToPoint: CGPointMake(36, 25) controlPoint1: CGPointMake(28, 22) controlPoint2: CGPointMake(33, 22)];
-	[leftCross addLineToPoint: CGPointMake(75, 64)];
-	[leftCross addCurveToPoint: CGPointMake(75, 75) controlPoint1: CGPointMake(78, 67) controlPoint2: CGPointMake(78, 72)];
-	[leftCross addCurveToPoint: CGPointMake(64, 75) controlPoint1: CGPointMake(72, 78) controlPoint2: CGPointMake(67, 78)];
-	[leftCross addLineToPoint: CGPointMake(25, 36)];
-	[leftCross closePath];
-	
-	UIBezierPath* rightCross = [UIBezierPath bezierPath];
-	
-	[rightCross moveToPoint: CGPointMake(75, 36)];
-	[rightCross addCurveToPoint: CGPointMake(75, 25) controlPoint1: CGPointMake(78, 33) controlPoint2: CGPointMake(78, 28)];
-	[rightCross addCurveToPoint: CGPointMake(64, 25) controlPoint1: CGPointMake(72, 22) controlPoint2: CGPointMake(67, 22)];
-	[rightCross addLineToPoint: CGPointMake(25, 64)];
-	[rightCross addCurveToPoint: CGPointMake(25, 75) controlPoint1: CGPointMake(22, 67) controlPoint2: CGPointMake(22, 72)];
-	[rightCross addCurveToPoint: CGPointMake(36, 75) controlPoint1: CGPointMake(28, 78) controlPoint2: CGPointMake(33, 78)];
-	[rightCross addLineToPoint: CGPointMake(75, 36)];
-	[rightCross closePath];
-	
-	[leftCross applyTransform:xTransform];
-	[rightCross applyTransform:xTransform];
-	
-	[leftCross applyTransform:translation];
-	[rightCross applyTransform:translation];
-	
-	[leftCross fill];
-	[rightCross fill];
+	CGContextMoveToPoint(context, 75, 36);
+	CGContextAddCurveToPoint(context, 78, 33, 78, 28, 75, 25);
+	CGContextAddCurveToPoint(context, 72, 22, 67, 22, 64, 25);
+	CGContextAddLineToPoint(context, 25, 64);
+	CGContextAddCurveToPoint(context, 22, 67, 22, 72, 25, 75);
+	CGContextAddCurveToPoint(context, 28, 78, 33, 78, 36, 75);
+	CGContextAddLineToPoint(context, 75, 36);
+	CGContextClosePath(context);
+	CGContextFillPath(context);
 }
 
 @end
