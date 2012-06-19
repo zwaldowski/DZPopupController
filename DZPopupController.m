@@ -183,11 +183,12 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	
 	self.view.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
 		
-	DZPopupControllerFrameView *frame = [[DZPopupControllerFrameView alloc] initWithFrame: (CGRect){{ floor(CGRectGetMidX(self.view.bounds) - self.frameSize.width / 2), floor(CGRectGetMidY(self.view.bounds) - self.frameSize.height / 2) }, self.frameSize }];
+	DZPopupControllerFrameView *frame = [DZPopupControllerFrameView new];
 	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	frame.baseColor = _frameColor;
 	[self.view addSubview: frame];
 	self.frameView = frame;
+	self.frameSize = _frameSize;
 	
 	// Content
 	UIView *content = [[UIView alloc] initWithFrame: CGRectInset(frame.bounds, 2.0f, 2.0f)];
@@ -237,7 +238,6 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	
 	UIView *contentView = [self.view viewWithTag: kContentViewTag];
 		
-	CGSize contentSize = contentView.frame.size;
 	UINavigationController *navigationController = (id)self.contentViewController;
 	
 	// Navigation	
@@ -247,7 +247,8 @@ static const NSInteger kContentInsetTag = 'OVRL';
 	// Content inset
 	UIView *contentInset = [self.view viewWithTag:kContentInsetTag];
 	
-	contentInset.frame = CGRectMake(2.0f, 1.0f + navBarHeight, contentSize.width, contentSize.height - navBarHeight - toolbarHeight + 3.0f);
+	CGRect cFrame = contentView.frame;
+	contentInset.frame = CGRectMake(CGRectGetMinX(cFrame), CGRectGetMinY(cFrame) + navBarHeight - 2, CGRectGetWidth(cFrame), CGRectGetHeight(cFrame) - navBarHeight - toolbarHeight + 4.0f);
 }
 
 #pragma mark - Properties
@@ -328,17 +329,20 @@ static const NSInteger kContentInsetTag = 'OVRL';
 }
 
 - (void)setFrameSize:(CGSize)frameSize animated:(BOOL)animated {
-	if (CGSizeEqualToSize(_frameSize, frameSize))
-		return;
-	
 	_frameSize = frameSize;
 	
 	if (!self.isViewLoaded)
 		return;
 	
-	[UIView animateWithDuration: animated ? 1./3. : 0 delay: 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionLayoutSubviews animations: ^{
+	void (^animations)(void) = ^{
 		self.frameView.frame = (CGRect){{ floor(CGRectGetMidX(self.view.bounds) - self.frameSize.width / 2), floor(CGRectGetMidY(self.view.bounds) - self.frameSize.height / 2) }, self.frameSize };
-	} completion: NULL];
+	};
+	
+	if (animated) {
+		[UIView animateWithDuration: animated ? 1./3. : 0 delay: 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionLayoutSubviews animations: animations completion: NULL];
+	} else {
+		animations();
+	}
 }
 
 - (void)setFrameColor:(UIColor*)frameColor {
