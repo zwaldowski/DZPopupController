@@ -150,6 +150,7 @@
 @interface DZPopupController ()
 
 @property (nonatomic, strong) UIWindow *window;
+@property (nonatomic, weak) UIView *backgroundView;
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) DZPopupControllerInsetView *insetView;
@@ -160,11 +161,14 @@
 @implementation DZPopupController
 
 @synthesize window = _window, contentViewController = _contentViewController;
+@synthesize backgroundView = _backgroundView;
 @synthesize frameView = _frameView, contentView = _contentView, insetView = _insetView;
 @synthesize backupStatusBarStyle = _backupStatusBarStyle;
 
 @synthesize frameSize = _frameSize;
 @synthesize frameColor = _frameColor;
+
+@synthesize entranceStyle = _entranceStyle, exitStyle = _exitStyle;
 
 #pragma mark - Setup and teardown
 
@@ -193,7 +197,11 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
-	self.view.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
+    UIView *background = [[UIView alloc] initWithFrame: self.view.bounds];
+	background.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	background.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
+	[self.view addSubview: background];
+	self.backgroundView = background;
 		
 	DZPopupControllerFrameView *frame = [DZPopupControllerFrameView new];
 	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -396,54 +404,20 @@
 	
 	self.backupStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
 	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
-	
-	CABasicAnimation *alpha = [CABasicAnimation animationWithKeyPath:@"opacity"];
-	alpha.fromValue = [NSNumber numberWithDouble:0.0];
-	alpha.toValue = [NSNumber numberWithDouble:1.0];
-	alpha.timingFunction = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseOut];
-	alpha.duration = (1./3.);
-	
-	CAKeyframeAnimation *scale = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
-	scale.duration = 0.7f;
-	scale.keyTimes = [NSArray arrayWithObjects:
-					  [NSNumber numberWithDouble:0.0],
-					  [NSNumber numberWithDouble:0.5],
-					  [NSNumber numberWithDouble:(2.0f/3.0f)],
-					  [NSNumber numberWithDouble:(5.0f/6.0f)],
-					  [NSNumber numberWithDouble:1.0f],
-					  nil];
-	scale.values = [NSArray arrayWithObjects:
-					[NSNumber numberWithFloat:0.00001],
-					[NSNumber numberWithFloat:1.05],
-					[NSNumber numberWithFloat:0.95],
-					[NSNumber numberWithFloat:1.02],
-					[NSNumber numberWithFloat:1.00],
-					nil];
-	
-	CAMediaTimingFunction *easeIn = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseIn];
-	CAMediaTimingFunction *easeOut = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseOut];
-	scale.timingFunctions = [NSArray arrayWithObjects: easeIn, easeOut, easeIn, easeOut, nil];
-	
-	[CATransaction begin];
-	[CATransaction setCompletionBlock: block];
-	[self.view.layer addAnimation:alpha forKey: nil];
-	[self.frameView.layer addAnimation:scale forKey: nil];
-	[CATransaction commit];
+    
+    [self performAnimationWithStyle: self.entranceStyle entering: YES duration: (1./3.) completion: block];
 }
 
 - (void)dismissWithCompletion:(void (^)(void))block {
 	[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
-	
-	[UIView animateWithDuration: (1./3.) delay: 0.0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent animations:^{
-		self.view.alpha = 0.0001;
-		self.frameView.transform = CGAffineTransformScale(self.frameView.transform, 0.00001, 0.00001);
-	} completion:^(BOOL finished) {
+    
+    [self performAnimationWithStyle: self.exitStyle entering: NO duration: (1./3.) completion: ^{
 		if (block)
 			block();
 		
 		self.window.rootViewController = nil;
 		self.window = nil;
-	}];
+    }];
 }
 
 #pragma mark - Internal
@@ -458,6 +432,78 @@
 
 - (void)closePressed:(UIButton *)closeButton {
 	[self dismissWithCompletion: NULL];
+}
+
+- (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
+    self.backgroundView.alpha = entering ? 0 : 1;
+    
+    UIViewAnimationOptions options = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent;
+    
+    CGRect originalRect = self.frameView.frame;
+    CGRect modifiedRect = self.frameView.frame;
+    
+    switch (style) {
+        case DZPopupTransitionStylePop:
+            break;
+            
+        case DZPopupTransitionStyleSlideBottom:
+            modifiedRect.origin.y = CGRectGetMaxY(self.view.bounds);
+            break;
+        case DZPopupTransitionStyleSlideTop:
+            modifiedRect.origin.y = CGRectGetMinY(self.view.bounds) - CGRectGetHeight(modifiedRect);
+            break;
+        case DZPopupTransitionStyleSlideLeft:
+            modifiedRect.origin.x = CGRectGetMinX(self.view.bounds) - CGRectGetWidth(modifiedRect);
+            break;
+        case DZPopupTransitionStyleSlideRight:
+            modifiedRect.origin.x = CGRectGetMaxX(self.view.bounds);
+            break;
+    }
+    
+    self.frameView.frame = entering ? modifiedRect : originalRect;
+    
+    [UIView transitionWithView: self.frameView duration: duration options: options animations: ^{
+        self.backgroundView.alpha = entering ? 1 : 0;
+        self.frameView.frame = entering ? originalRect : modifiedRect;;
+        
+        switch (style) {
+            case DZPopupTransitionStylePop:
+                if (entering) {
+                    CAKeyframeAnimation *scale = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
+                    scale.duration = 2 * duration;
+                    scale.keyTimes = [NSArray arrayWithObjects:
+                                      [NSNumber numberWithDouble:0.0],
+                                      [NSNumber numberWithDouble:0.5],
+                                      [NSNumber numberWithDouble:(2.0f/3.0f)],
+                                      [NSNumber numberWithDouble:(5.0f/6.0f)],
+                                      [NSNumber numberWithDouble:1.0f],
+                                      nil];
+                    scale.values = [NSArray arrayWithObjects:
+                                    [NSNumber numberWithFloat:0.00001],
+                                    [NSNumber numberWithFloat:1.05],
+                                    [NSNumber numberWithFloat:0.95],
+                                    [NSNumber numberWithFloat:1.02],
+                                    [NSNumber numberWithFloat:1.00],
+                                    nil];
+                    
+                    [self.frameView.layer addAnimation:scale forKey: nil];
+                } else {
+                    self.frameView.transform = CGAffineTransformScale(self.frameView.transform, 0.00001, 0.00001);
+                }
+                break;
+                
+            case DZPopupTransitionStyleSlideBottom:
+            case DZPopupTransitionStyleSlideTop:
+            case DZPopupTransitionStyleSlideLeft:
+            case DZPopupTransitionStyleSlideRight:
+                break;
+        }
+    } completion:^(BOOL finished) {
+        if (block)
+            block();
+    }];
+    
+    
 }
 
 @end

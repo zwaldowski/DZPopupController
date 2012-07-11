@@ -7,6 +7,16 @@
 //  Copyright (c) 2012 Dizzy Technology. All rights reserved.
 //
 
+typedef enum {
+    DZPopupTransitionStylePop,
+    //DZPopupTransitionStyleFlipHorizontal,
+    //DZPopupTransitionStyleFlipVertical,
+    DZPopupTransitionStyleSlideBottom,
+    DZPopupTransitionStyleSlideTop,
+    DZPopupTransitionStyleSlideLeft,
+    DZPopupTransitionStyleSlideRight,
+} DZPopupTransitionStyle;
+
 @interface DZPopupController : UIViewController <UIAppearanceContainer>
 
 - (id)initWithContentViewController:(UIViewController *)viewController;
@@ -21,6 +31,9 @@
 - (void)setFrameColor:(UIColor*)frameColor animated:(BOOL)animated;
 
 @property (nonatomic, readonly, getter = isVisible) BOOL visible;
+
+@property (nonatomic) DZPopupTransitionStyle entranceStyle;
+@property (nonatomic) DZPopupTransitionStyle exitStyle;
 
 - (IBAction)present;
 - (IBAction)dismiss;

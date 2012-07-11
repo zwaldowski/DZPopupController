@@ -59,7 +59,8 @@
 	
 	// 2. Get shared floating controller
 	DZPopupController *floatingController = [[DZPopupController alloc] initWithContentViewController: contentViewController];
-	
+	floatingController.entranceStyle = DZPopupTransitionStyleSlideRight;
+    floatingController.exitStyle = DZPopupTransitionStyleSlideRight;
 	// 3. Show floating controller with specified content
 	[floatingController present];
 }
