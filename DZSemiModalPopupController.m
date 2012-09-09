@@ -9,9 +9,11 @@
 #import "DZSemiModalPopupController.h"
 #import "DZPopupControllerFrameView.h"
 
-@interface DZSemiModalPopupController ()
+@interface DZPopupController ()
 
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
+@property (nonatomic, weak) UIControl *backgroundView;
+- (void)closePressed:(UIButton *)closeButton;
 
 @end
 
@@ -76,6 +78,11 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 }
 
 #pragma mark - Layout
+
+- (void)viewDidLoad {
+	[super viewDidLoad];
+	[self.backgroundView addTarget: self action: @selector(closePressed:) forControlEvents: UIControlEventTouchUpInside];
+}
 
 - (void)dz_setFrameFromMiddle {
 	CGRect appFrame = self.view.bounds;

@@ -17,7 +17,7 @@
 @interface DZPopupController ()
 
 @property (nonatomic, strong) UIWindow *window;
-@property (nonatomic, weak) UIView *backgroundView;
+@property (nonatomic, weak) UIControl *backgroundView;
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) DZPopupControllerInsetView *insetView;
@@ -60,7 +60,7 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
-    UIView *background = [[UIView alloc] initWithFrame: self.view.bounds];
+    UIControl *background = [[UIControl alloc] initWithFrame: self.view.bounds];
 	background.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	background.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
 	[self.view addSubview: background];
