@@ -9,8 +9,6 @@
 
 typedef enum {
     DZPopupTransitionStylePop,
-    //DZPopupTransitionStyleFlipHorizontal,
-    //DZPopupTransitionStyleFlipVertical,
     DZPopupTransitionStyleSlideBottom,
     DZPopupTransitionStyleSlideTop,
     DZPopupTransitionStyleSlideLeft,

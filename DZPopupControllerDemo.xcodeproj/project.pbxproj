@@ -74,10 +74,10 @@
 			children = (
 				6C91AA68157FDB71008618FA /* DZPopupController.h */,
 				6C91AA69157FDB71008618FA /* DZPopupController.m */,
-				6C3E7B6D15FD4E9F0014F5C7 /* DZPopupControllerCloseButton.h */,
-				6C3E7B6E15FD4E9F0014F5C7 /* DZPopupControllerCloseButton.m */,
 				6C3E7B5F15FD384C0014F5C7 /* DZSemiModalPopupController.h */,
 				6C3E7B6015FD384C0014F5C7 /* DZSemiModalPopupController.m */,
+				6C3E7B6D15FD4E9F0014F5C7 /* DZPopupControllerCloseButton.h */,
+				6C3E7B6E15FD4E9F0014F5C7 /* DZPopupControllerCloseButton.m */,
 				6C3E7B6715FD48E80014F5C7 /* DZPopupControllerFrameView.h */,
 				6C3E7B6815FD48E80014F5C7 /* DZPopupControllerFrameView.m */,
 				6C3E7B6A15FD4E5D0014F5C7 /* DZPopupControllerInsetView.h */,

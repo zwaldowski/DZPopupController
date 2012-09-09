@@ -17,20 +17,7 @@
 
 @implementation DZSemiModalPopupController
 
-- (void)dz_configureDefaultAppearance {
-	[super setFrameColor: nil];
-	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
-	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
-	[super setFrameEdgeInsets: UIEdgeInsetsMake(appFrame.size.height / 2 - statusBarFrame.size.height, 0, 0, 0)];
-}
-
-- (DZPopupTransitionStyle)entranceStyle {
-	return DZPopupTransitionStyleSlideBottom;
-}
-
-- (DZPopupTransitionStyle)exitStyle {
-	return DZPopupTransitionStyleSlideBottom;
-}
+#pragma mark - Internal super methods
 
 + (BOOL)dz_shouldUseCloseButton {
 	return NO;
@@ -43,6 +30,25 @@
 + (BOOL)dz_shouldUseDecoratedFrame {
 	return NO;
 }
+
+- (void)dz_configureDefaultAppearance {
+	[super setFrameColor: nil];
+	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
+	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
+	[super setFrameEdgeInsets: UIEdgeInsetsMake(appFrame.size.height / 2 - statusBarFrame.size.height, 0, 0, 0)];
+}
+
+#pragma mark - Restricted subclass methods
+
+- (DZPopupTransitionStyle)entranceStyle {
+	return DZPopupTransitionStyleSlideBottom;
+}
+
+- (DZPopupTransitionStyle)exitStyle {
+	return DZPopupTransitionStyleSlideBottom;
+}
+
+#pragma mark - Layout
 
 - (void)dz_setFrameFromMiddle {
 	CGRect appFrame = self.view.bounds;

@@ -11,8 +11,6 @@
 
 @implementation DZPopupControllerFrameView
 
-@synthesize baseColor = _baseColor;
-
 - (id)init {
 	if ((self = [super initWithFrame: CGRectZero])) {
 		self.backgroundColor = [UIColor clearColor];
