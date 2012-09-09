@@ -40,3 +40,12 @@ typedef enum {
 - (void)dismissWithCompletion:(void(^)(void))block;
 
 @end
+
+@interface DZPopupController (SubclassMethods)
+
+- (void)setDefaultAppearance;
+- (void)configureFrameView;
+- (void)configureInsetView;
+- (void)configureCloseButton;
+
+@end

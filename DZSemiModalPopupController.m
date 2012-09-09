@@ -27,23 +27,23 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 
 #pragma mark - Internal super methods
 
-- (BOOL)dz_shouldUseCloseButton {
-	return NO;
-}
-
-- (BOOL)dz_shouldUseInset {
-	return NO;
-}
-
-- (BOOL)dz_shouldUseDecoratedFrame {
-	return NO;
-}
-
-- (void)dz_configureDefaultAppearance {
+- (void)setDefaultAppearance {
 	[super setFrameColor: nil];
-	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
-	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
-	[super setFrameEdgeInsets: UIEdgeInsetsMake(appFrame.size.height / 2 - statusBarFrame.size.height, 0, 0, 0) animated: NO];
+}
+
+- (void)configureFrameView {
+	self.frameView.decorated = NO;
+
+	id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
+	[toolbarAppearance setBackgroundImage: nil forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
+}
+
+- (void)configureInsetView {
+
+}
+
+- (void)configureCloseButton {
+	
 }
 
 #pragma mark - Restricted subclass methods
@@ -84,7 +84,7 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 	[self.backgroundView addTarget: self action: @selector(closePressed:) forControlEvents: UIControlEventTouchUpInside];
 }
 
-- (void)dz_setFrameFromMiddle {
+- (void)setViewFrameFromMiddle {
 	CGRect appFrame = self.view.bounds;
 	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
 	CGFloat statusBarHeight = statusBarFrame.size.height == appFrame.size.width ?  statusBarFrame.size.width : statusBarFrame.size.height;
@@ -93,12 +93,12 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-	[self dz_setFrameFromMiddle];
+	[self setViewFrameFromMiddle];
 	[super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
 }
 
 - (void)viewDidLayoutSubviews {
-	[self dz_setFrameFromMiddle];
+	[self setViewFrameFromMiddle];
 	[super viewDidLayoutSubviews];
 }
 
