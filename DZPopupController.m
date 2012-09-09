@@ -292,6 +292,25 @@
 	appBounds.origin = CGPointZero;
 
 	self.oldKeyWindow = [[UIApplication sharedApplication] keyWindow];
+	
+	__block UIView *(^innerFirstResponder)(UIView *) = nil;
+	UIView *(^findFirstResponder)(UIView *) = ^UIView *(UIView *view){
+		if (view.isFirstResponder)
+			return view;
+
+		for (UIView *subView in view.subviews) {
+			UIView *firstResponder = innerFirstResponder(subView);
+
+			if (firstResponder != nil) {
+				return firstResponder;
+			}
+		}
+
+		return nil;
+	};
+	innerFirstResponder = findFirstResponder;
+	[findFirstResponder(self.oldKeyWindow) resignFirstResponder];
+
 	UIWindow *window = [[UIWindow alloc] initWithFrame:appBounds];
 	window.backgroundColor = [UIColor clearColor];
 	window.windowLevel = UIWindowLevelAlert;
@@ -386,7 +405,6 @@
         if (block)
             block();
     }];
-    
 }
 
 @end
