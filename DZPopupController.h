@@ -24,8 +24,8 @@ typedef enum {
 @property (nonatomic, strong) UIViewController *contentViewController;
 - (void)setContentViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
-@property (nonatomic) CGSize frameSize;
-- (void)setFrameSize:(CGSize)frameSize animated:(BOOL)animated;
+@property (nonatomic) UIEdgeInsets frameEdgeInsets;
+- (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated;
 
 @property (nonatomic, strong) UIColor *frameColor;
 - (void)setFrameColor:(UIColor*)frameColor animated:(BOOL)animated;

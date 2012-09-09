@@ -10,5 +10,6 @@
 @interface DZDemoViewController : UIViewController
 
 - (IBAction)showButtonAction:(id)sender;
+- (IBAction)showSemiModalButtonAction:(id)sender;
 
 @end

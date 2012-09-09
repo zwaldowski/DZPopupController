@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6C3E7B6115FD384C0014F5C7 /* DZSemiModalPopupController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C3E7B6015FD384C0014F5C7 /* DZSemiModalPopupController.m */; };
+		6C3E7B6915FD48E80014F5C7 /* DZPopupControllerFrameView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C3E7B6815FD48E80014F5C7 /* DZPopupControllerFrameView.m */; };
 		6C6BB32D15788BAB0001113B /* DZDemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C6BB32B15788BAA0001113B /* DZDemoViewController.m */; };
 		6C6BB32E15788BAB0001113B /* DZDemoViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6C6BB32C15788BAA0001113B /* DZDemoViewController.xib */; };
 		6C6BB346157A99E00001113B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C6BB345157A99E00001113B /* QuartzCore.framework */; };
@@ -21,6 +23,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6C3E7B5F15FD384C0014F5C7 /* DZSemiModalPopupController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DZSemiModalPopupController.h; sourceTree = "<group>"; };
+		6C3E7B6015FD384C0014F5C7 /* DZSemiModalPopupController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DZSemiModalPopupController.m; sourceTree = "<group>"; };
+		6C3E7B6715FD48E80014F5C7 /* DZPopupControllerFrameView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DZPopupControllerFrameView.h; sourceTree = "<group>"; };
+		6C3E7B6815FD48E80014F5C7 /* DZPopupControllerFrameView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DZPopupControllerFrameView.m; sourceTree = "<group>"; };
 		6C6BB32A15788BAA0001113B /* DZDemoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DZDemoViewController.h; sourceTree = "<group>"; };
 		6C6BB32B15788BAA0001113B /* DZDemoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DZDemoViewController.m; sourceTree = "<group>"; };
 		6C6BB32C15788BAA0001113B /* DZDemoViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DZDemoViewController.xib; sourceTree = "<group>"; };
@@ -62,6 +68,10 @@
 			children = (
 				6C91AA68157FDB71008618FA /* DZPopupController.h */,
 				6C91AA69157FDB71008618FA /* DZPopupController.m */,
+				6C3E7B5F15FD384C0014F5C7 /* DZSemiModalPopupController.h */,
+				6C3E7B6015FD384C0014F5C7 /* DZSemiModalPopupController.m */,
+				6C3E7B6715FD48E80014F5C7 /* DZPopupControllerFrameView.h */,
+				6C3E7B6815FD48E80014F5C7 /* DZPopupControllerFrameView.m */,
 			);
 			name = DZPopupController;
 			sourceTree = "<group>";
@@ -192,6 +202,8 @@
 				F54E32B3156273780057A34F /* DZDemoDetailViewController.m in Sources */,
 				6C6BB32D15788BAB0001113B /* DZDemoViewController.m in Sources */,
 				6C91AA6A157FDB71008618FA /* DZPopupController.m in Sources */,
+				6C3E7B6115FD384C0014F5C7 /* DZSemiModalPopupController.m in Sources */,
+				6C3E7B6915FD48E80014F5C7 /* DZPopupControllerFrameView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
