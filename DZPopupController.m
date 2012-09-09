@@ -373,21 +373,8 @@
                 if (entering) {
                     CAKeyframeAnimation *scale = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
                     scale.duration = 2 * duration;
-                    scale.keyTimes = [NSArray arrayWithObjects:
-                                      [NSNumber numberWithDouble:0.0],
-                                      [NSNumber numberWithDouble:0.5],
-                                      [NSNumber numberWithDouble:(2.0f/3.0f)],
-                                      [NSNumber numberWithDouble:(5.0f/6.0f)],
-                                      [NSNumber numberWithDouble:1.0f],
-                                      nil];
-                    scale.values = [NSArray arrayWithObjects:
-                                    [NSNumber numberWithFloat:0.00001],
-                                    [NSNumber numberWithFloat:1.05],
-                                    [NSNumber numberWithFloat:0.95],
-                                    [NSNumber numberWithFloat:1.02],
-                                    [NSNumber numberWithFloat:1.00],
-                                    nil];
-                    
+                    scale.keyTimes = @[@0.0, @0.5, @(2.0f/3.0f), @(5.0f/6.0f), @1.0];
+                    scale.values = @[@0.00001f, @1.05f, @0.95f, @1.02f, @1.00f];
                     [self.frameView.layer addAnimation:scale forKey: nil];
                 } else {
                     self.frameView.transform = CGAffineTransformScale(self.frameView.transform, 0.00001, 0.00001);

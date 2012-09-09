@@ -52,7 +52,7 @@
 	UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemFlexibleSpace target: nil action:NULL];
 	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh target: nil action:NULL];
 	UIBarButtonItem *share = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemAction target: nil action:NULL];
-	demoViewController.toolbarItems = [NSArray arrayWithObjects: refresh, space, share, nil];
+	demoViewController.toolbarItems = @[refresh, space, share];
 	demoViewController.hidesBottomBarWhenPushed = NO;
 	
 	// 2. Get shared floating controller
@@ -72,7 +72,7 @@
 	UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemFlexibleSpace target: nil action:NULL];
 	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh target: nil action:NULL];
 	UIBarButtonItem *share = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemAction target: nil action:NULL];
-	demoViewController.toolbarItems = [NSArray arrayWithObjects: refresh, space, share, nil];
+	demoViewController.toolbarItems = @[refresh, space, share];
 	demoViewController.hidesBottomBarWhenPushed = NO;
 
 	// 2. Get shared floating controller
