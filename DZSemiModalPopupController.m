@@ -35,7 +35,7 @@
 	[super setFrameColor: nil];
 	CGRect appFrame = [[UIScreen mainScreen] applicationFrame];
 	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
-	[super setFrameEdgeInsets: UIEdgeInsetsMake(appFrame.size.height / 2 - statusBarFrame.size.height, 0, 0, 0)];
+	[super setFrameEdgeInsets: UIEdgeInsetsMake(appFrame.size.height / 2 - statusBarFrame.size.height, 0, 0, 0) animated: NO];
 }
 
 #pragma mark - Restricted subclass methods
@@ -46,6 +46,27 @@
 
 - (DZPopupTransitionStyle)exitStyle {
 	return DZPopupTransitionStyleSlideBottom;
+}
+
+- (void)setEntranceStyle:(DZPopupTransitionStyle)entranceStyle {
+	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+}
+
+- (void)setExitStyle:(DZPopupTransitionStyle)exitStyle {
+	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+}
+
+- (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated {
+	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+}
+
+- (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets {
+	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+}
+
+- (UIEdgeInsets)frameEdgeInsets {
+	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+	return UIEdgeInsetsZero;
 }
 
 #pragma mark - Layout

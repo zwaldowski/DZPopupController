@@ -66,12 +66,11 @@
 	[self.view addSubview: background];
 	self.backgroundView = background;
 
-	DZPopupControllerFrameView *frame = [DZPopupControllerFrameView new];
+	DZPopupControllerFrameView *frame = [[DZPopupControllerFrameView alloc] initWithFrame: UIEdgeInsetsInsetRect(self.view.bounds, _frameEdgeInsets)];
 	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	frame.baseColor = self.frameColor;
 	[self.view addSubview: frame];
 	self.frameView = frame;
-	self.frameEdgeInsets = self.frameEdgeInsets;
 
 	CGRect contentFrame = frame.bounds;
 	if ([[self class] dz_shouldUseDecoratedFrame]) {

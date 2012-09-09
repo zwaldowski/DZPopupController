@@ -11,8 +11,8 @@
 
 @implementation DZPopupControllerFrameView
 
-- (id)init {
-	if ((self = [super initWithFrame: CGRectZero])) {
+- (id)initWithFrame:(CGRect)frame {
+	if ((self = [super initWithFrame: frame])) {
 		self.backgroundColor = [UIColor clearColor];
 		self.contentMode = UIViewContentModeRedraw;
 		self.layer.shadowOffset = CGSizeMake(0, 2);
