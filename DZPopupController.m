@@ -45,15 +45,15 @@
 	return self;
 }
 
-+ (BOOL)dz_shouldUseDecoratedFrame {
+- (BOOL)dz_shouldUseDecoratedFrame {
 	return YES;
 }
 
-+ (BOOL)dz_shouldUseCloseButton {
+- (BOOL)dz_shouldUseCloseButton {
 	return YES;
 }
 
-+ (BOOL)dz_shouldUseInset {
+- (BOOL)dz_shouldUseInset {
 	return YES;
 }
 
@@ -73,25 +73,24 @@
 	self.frameView = frame;
 
 	CGRect contentFrame = frame.bounds;
-	if ([[self class] dz_shouldUseDecoratedFrame]) {
+	if ([self dz_shouldUseDecoratedFrame]) {
 		frame.decorated = YES;
 		contentFrame = CGRectInset(frame.bounds, 2.0f, 2.0f);
 	} else {
 		frame.decorated = NO;
 	}
 	
-	// Content
 	UIView *content = [[UIView alloc] initWithFrame: contentFrame];
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[frame addSubview: content];
 	self.contentView = content;
 
-	if ([[self class] dz_shouldUseDecoratedFrame]) {
+	if ([self dz_shouldUseDecoratedFrame]) {
 		content.layer.cornerRadius = 7.0f;
 		content.clipsToBounds = YES;
 	}
 	
-	if ([[self class] dz_shouldUseInset]) {
+	if ([self dz_shouldUseInset]) {
 		DZPopupControllerInsetView *overlay = [DZPopupControllerInsetView new];
 		overlay.backgroundColor = [UIColor clearColor];
 		overlay.contentMode = UIViewContentModeRedraw;
@@ -101,7 +100,7 @@
 		self.insetView = overlay;
 	}
 
-	if ([[self class] dz_shouldUseCloseButton]) {
+	if ([self dz_shouldUseCloseButton]) {
 		DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-9, -9, 24, 24)];
 		closeButton.showsTouchWhenHighlighted = YES;
 		[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
@@ -252,7 +251,7 @@
 		[navigationBarAppearance setTintColor: frameColor];
 		[toolbarAppearance setBackgroundColor: frameColor];
 
-		if ([[self class] dz_shouldUseDecoratedFrame]) {
+		if ([self dz_shouldUseDecoratedFrame]) {
 			UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
 			[toolbarAppearance setBackgroundImage: UIGraphicsGetImageFromCurrentImageContext() forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
 			UIGraphicsEndImageContext();

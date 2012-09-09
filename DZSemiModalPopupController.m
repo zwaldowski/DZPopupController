@@ -15,19 +15,25 @@
 
 @end
 
+static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
+	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(cmd), NSStringFromClass(cls)];
+}
+
+#define DZRaiseUnavailable() _DZRaiseUnavailable([self class], _cmd)
+
 @implementation DZSemiModalPopupController
 
 #pragma mark - Internal super methods
 
-+ (BOOL)dz_shouldUseCloseButton {
+- (BOOL)dz_shouldUseCloseButton {
 	return NO;
 }
 
-+ (BOOL)dz_shouldUseInset {
+- (BOOL)dz_shouldUseInset {
 	return NO;
 }
 
-+ (BOOL)dz_shouldUseDecoratedFrame {
+- (BOOL)dz_shouldUseDecoratedFrame {
 	return NO;
 }
 
@@ -49,23 +55,23 @@
 }
 
 - (void)setEntranceStyle:(DZPopupTransitionStyle)entranceStyle {
-	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+	DZRaiseUnavailable();
 }
 
 - (void)setExitStyle:(DZPopupTransitionStyle)exitStyle {
-	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+	DZRaiseUnavailable();
 }
 
 - (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated {
-	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+	DZRaiseUnavailable();
 }
 
 - (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets {
-	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+	DZRaiseUnavailable();
 }
 
 - (UIEdgeInsets)frameEdgeInsets {
-	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(_cmd), NSStringFromClass([self class])];
+	DZRaiseUnavailable();
 	return UIEdgeInsetsZero;
 }
 
