@@ -44,7 +44,6 @@
 
 
 - (IBAction)showButtonAction:(id)sender {
-	// 1. Prepare a content view controller
 	DZDemoTableViewController *demoViewController = [DZDemoTableViewController new];
 	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
 	contentViewController.toolbarHidden = NO;
@@ -55,29 +54,19 @@
 	demoViewController.toolbarItems = @[refresh, space, share];
 	demoViewController.hidesBottomBarWhenPushed = NO;
 	
-	// 2. Get shared floating controller
 	DZPopupController *floatingController = [[DZPopupController alloc] initWithContentViewController: contentViewController];
-	floatingController.entranceStyle = DZPopupTransitionStyleSlideRight;
-    floatingController.exitStyle = DZPopupTransitionStyleSlideRight;
-	// 3. Show floating controller with specified content
+	floatingController.entranceStyle = DZPopupTransitionStylePop;
+    floatingController.exitStyle = DZPopupTransitionStylePop;
 	[floatingController present];
 }
 
 - (IBAction)showSemiModalButtonAction:(id)sender {
-	// 1. Prepare a content view controller
 	DZDemoTableViewController *demoViewController = [DZDemoTableViewController new];
 	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
-	contentViewController.toolbarHidden = NO;
-
-	UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemFlexibleSpace target: nil action:NULL];
-	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh target: nil action:NULL];
-	UIBarButtonItem *share = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemAction target: nil action:NULL];
-	demoViewController.toolbarItems = @[refresh, space, share];
-	demoViewController.hidesBottomBarWhenPushed = NO;
-
-	// 2. Get shared floating controller
 	DZSemiModalPopupController *floatingController = [[DZSemiModalPopupController alloc] initWithContentViewController: contentViewController];
-		demoViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemDone target: floatingController action: @selector(dismiss)];
+
+	demoViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemDone target: floatingController action: @selector(dismiss)];
+	
 	[floatingController present];
 }
 
