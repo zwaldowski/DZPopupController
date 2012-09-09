@@ -8,12 +8,15 @@
 
 #import "DZSemiModalPopupController.h"
 #import "DZPopupControllerFrameView.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface DZPopupController ()
 
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIControl *backgroundView;
+@property (nonatomic, weak) UIWindow *oldKeyWindow;
 - (void)closePressed:(UIButton *)closeButton;
+- (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block;
 
 @end
 
@@ -100,6 +103,44 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 - (void)viewDidLayoutSubviews {
 	[self setViewFrameFromMiddle];
 	[super viewDidLayoutSubviews];
+}
+
+#pragma mark - Present and dismiss
+
+- (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
+	[super performAnimationWithStyle:style entering:entering duration:duration completion:block];
+
+	if (!self.pushesContentBack)
+		return;
+
+	[UIView transitionWithView: self.oldKeyWindow duration: duration options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent animations:^{
+		CATransform3D t1 = CATransform3DIdentity;
+		CATransform3D t2 = CATransform3DIdentity;
+
+		t1.m34 = t2.m34 = 1.0 / -900;
+		t1 = CATransform3DScale(t1, 0.95, 0.95, 1);
+		t1 = CATransform3DRotate(t1, 15.0f*M_PI/180.0f, 1, 0, 0);
+		t2 = CATransform3DTranslate(t2, 0, self.oldKeyWindow.frame.size.height*-0.08, 0);
+		t2 = CATransform3DScale(t2, 0.8, 0.8, 1);
+
+		CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
+		animation.toValue = [NSValue valueWithCATransform3D:t1];
+		animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+
+		CABasicAnimation *animation2 = [CABasicAnimation animationWithKeyPath:@"transform"];
+		animation2.toValue = [NSValue valueWithCATransform3D: entering ? t2 : CATransform3DIdentity];
+
+		CAAnimationGroup *group = [CAAnimationGroup animation];
+		group.removedOnCompletion = NO;
+
+		group.fillMode = animation.fillMode = animation2.fillMode = kCAFillModeForwards;
+		animation.duration = animation2.beginTime = animation2.duration = duration/2;
+		group.duration = duration;
+
+		group.animations = @[ animation, animation2 ];
+		
+		[self.oldKeyWindow.layer addAnimation: group forKey: nil];
+	} completion: NULL];
 }
 
 @end

@@ -17,6 +17,7 @@
 @interface DZPopupController ()
 
 @property (nonatomic, strong) UIWindow *window;
+@property (nonatomic, weak) UIWindow *oldKeyWindow;
 @property (nonatomic, weak) UIControl *backgroundView;
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
@@ -290,6 +291,7 @@
 	CGRect appBounds = [[UIScreen mainScreen] applicationFrame];
 	appBounds.origin = CGPointZero;
 
+	self.oldKeyWindow = [[UIApplication sharedApplication] keyWindow];
 	UIWindow *window = [[UIWindow alloc] initWithFrame:appBounds];
 	window.backgroundColor = [UIColor clearColor];
 	window.windowLevel = UIWindowLevelAlert;
@@ -384,7 +386,6 @@
         if (block)
             block();
     }];
-    
     
 }
 

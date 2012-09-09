@@ -16,4 +16,6 @@
 @property (nonatomic) UIEdgeInsets frameEdgeInsets NS_UNAVAILABLE;
 - (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated NS_UNAVAILABLE;
 
+@property (nonatomic) BOOL pushesContentBack;
+
 @end
