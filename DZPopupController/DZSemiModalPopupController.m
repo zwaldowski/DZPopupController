@@ -118,10 +118,16 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 	CATransform3D t1 = CATransform3DIdentity;
 	CATransform3D t2 = CATransform3DIdentity;
 
+	BOOL isPortrait = UIInterfaceOrientationIsPortrait([[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue]);
+
 	t1.m34 = t2.m34 = 1.0 / -900;
 	t1 = CATransform3DScale(t1, 0.95, 0.95, 1);
-	t1 = CATransform3DRotate(t1, 15.0f*M_PI/180.0f, 1, 0, 0);
-	t2 = CATransform3DTranslate(t2, 0, self.oldKeyWindow.frame.size.height*-0.08, 0);
+	t1 = CATransform3DRotate(t1, 15.0f*M_PI/180.0f, isPortrait ? 1 : 0, isPortrait ? 0 : -1, 0);
+	if (isPortrait)
+		t2 = CATransform3DTranslate(t2, 0, self.oldKeyWindow.frame.size.height*-0.08, 0);
+	else {
+		t2 = CATransform3DTranslate(t2, self.oldKeyWindow.frame.size.width*-0.08, 0, 0);
+	}
 	t2 = CATransform3DScale(t2, 0.8, 0.8, 1);
 
 	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
