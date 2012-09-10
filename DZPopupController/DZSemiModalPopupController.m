@@ -12,6 +12,47 @@
 #import "DZPopupControllerFrameView.h"
 #import <QuartzCore/QuartzCore.h>
 
+static CATransform3D DZSemiModalTranslationForFrameSize(CGSize frameSize, UIInterfaceOrientation orientation) {
+	BOOL isPortrait = UIInterfaceOrientationIsPortrait(orientation);
+	CATransform3D translation = CATransform3DIdentity;
+	translation.m34 = 1.0 / -900;
+	if (isPortrait) {
+		CGFloat factor = (orientation == UIInterfaceOrientationPortrait) ? -0.08 : 0.08;
+		translation = CATransform3DTranslate(translation, 0, frameSize.height*factor, 0);
+	} else {
+		CGFloat factor = (orientation == UIInterfaceOrientationLandscapeLeft) ? -0.08 : 0.08;
+		translation = CATransform3DTranslate(translation, frameSize.width*factor, 0, 0);
+	}
+	return CATransform3DScale(translation, 0.8, 0.8, 1);
+}
+
+static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSize, UIInterfaceOrientation orientation, NSTimeInterval duration, BOOL entering) {
+	BOOL isPortrait = UIInterfaceOrientationIsPortrait(orientation);
+	CATransform3D t1 = CATransform3DIdentity;
+	t1.m34 = 1.0 / -900;
+	t1 = CATransform3DScale(t1, 0.95, 0.95, 1);
+	t1 = CATransform3DRotate(t1, 15.0f*M_PI/180.0f, isPortrait ? 1 : 0, isPortrait ? 0 : -1, 0);
+	CATransform3D t2 = DZSemiModalTranslationForFrameSize(frameSize, orientation);
+
+	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
+	animation.toValue = [NSValue valueWithCATransform3D:t1];
+	animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+
+	CABasicAnimation *animation2 = [CABasicAnimation animationWithKeyPath:@"transform"];
+	animation2.toValue = [NSValue valueWithCATransform3D: entering ? t2 : CATransform3DIdentity];
+
+	CAAnimationGroup *group = [CAAnimationGroup animation];
+	group.removedOnCompletion = NO;
+
+	group.fillMode = animation.fillMode = animation2.fillMode = kCAFillModeForwards;
+	animation.duration = animation2.beginTime = animation2.duration = duration/2;
+	group.duration = duration;
+
+	group.animations = @[ animation, animation2 ];
+
+	return group;
+}
+
 @interface DZPopupController ()
 
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
@@ -98,8 +139,21 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-	[self setViewFrameFromMiddle];
 	[super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
+
+	[self setViewFrameFromMiddle];
+
+	if (!self.pushesContentBack)
+		return;
+
+	CGSize frameSize = self.oldKeyWindow.frame.size;
+	UIInterfaceOrientation orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
+	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
+	animation.toValue = [NSValue valueWithCATransform3D: DZSemiModalTranslationForFrameSize(frameSize, orient)];
+	animation.removedOnCompletion = NO;
+	animation.fillMode = kCAFillModeForwards;
+	animation.duration = duration;
+	[self.oldKeyWindow.layer addAnimation: animation forKey: nil];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -115,38 +169,9 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 	if (!self.pushesContentBack)
 		return;
 
-	CATransform3D t1 = CATransform3DIdentity;
-	CATransform3D t2 = CATransform3DIdentity;
-
-	BOOL isPortrait = UIInterfaceOrientationIsPortrait([[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue]);
-
-	t1.m34 = t2.m34 = 1.0 / -900;
-	t1 = CATransform3DScale(t1, 0.95, 0.95, 1);
-	t1 = CATransform3DRotate(t1, 15.0f*M_PI/180.0f, isPortrait ? 1 : 0, isPortrait ? 0 : -1, 0);
-	if (isPortrait)
-		t2 = CATransform3DTranslate(t2, 0, self.oldKeyWindow.frame.size.height*-0.08, 0);
-	else {
-		t2 = CATransform3DTranslate(t2, self.oldKeyWindow.frame.size.width*-0.08, 0, 0);
-	}
-	t2 = CATransform3DScale(t2, 0.8, 0.8, 1);
-
-	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
-	animation.toValue = [NSValue valueWithCATransform3D:t1];
-	animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-
-	CABasicAnimation *animation2 = [CABasicAnimation animationWithKeyPath:@"transform"];
-	animation2.toValue = [NSValue valueWithCATransform3D: entering ? t2 : CATransform3DIdentity];
-
-	CAAnimationGroup *group = [CAAnimationGroup animation];
-	group.removedOnCompletion = NO;
-
-	group.fillMode = animation.fillMode = animation2.fillMode = kCAFillModeForwards;
-	animation.duration = animation2.beginTime = animation2.duration = duration/2;
-	group.duration = duration;
-
-	group.animations = @[ animation, animation2 ];
-	
-	[self.oldKeyWindow.layer addAnimation: group forKey: nil];
+	CGSize frameSize = self.oldKeyWindow.frame.size;
+	UIInterfaceOrientation orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
+	[self.oldKeyWindow.layer addAnimation: DZSemiModalPushBackAnimationForFrameSize(frameSize, orient, duration, entering) forKey: nil];
 }
 
 @end
