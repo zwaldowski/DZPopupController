@@ -333,6 +333,8 @@
 		
 		self.window.rootViewController = nil;
 		self.window = nil;
+		[self.oldKeyWindow makeKeyAndVisible];
+		[self.oldKeyWindow.layer removeAllAnimations];
     }];
 }
 
