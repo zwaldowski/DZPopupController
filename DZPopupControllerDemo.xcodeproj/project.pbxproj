@@ -83,7 +83,7 @@
 				6C3E7B6A15FD4E5D0014F5C7 /* DZPopupControllerInsetView.h */,
 				6C3E7B6B15FD4E5D0014F5C7 /* DZPopupControllerInsetView.m */,
 			);
-			name = DZPopupController;
+			path = DZPopupController;
 			sourceTree = "<group>";
 		};
 		F5C422341560BF2300F7E3EE = {
