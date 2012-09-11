@@ -137,9 +137,6 @@
 			UINavigationController *navigationController = (id)newController;
 			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
 			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
-			
-			navigationController.toolbar.clipsToBounds = YES;
-			navigationController.navigationBar.clipsToBounds = YES;
 		}
 		
 		[self.frameView setNeedsDisplay];
