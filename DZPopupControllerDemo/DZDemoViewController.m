@@ -71,4 +71,19 @@
 	[floatingController present];
 }
 
+- (void)dismiss {
+	[self dismissViewControllerAnimated: YES completion: NULL];
+}
+
+- (IBAction)showSystemModalButtonAction:(id)sender {
+	DZDemoTableViewController *demoViewController = [DZDemoTableViewController new];
+	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
+	contentViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+	contentViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+
+	demoViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemDone target: self action: @selector(dismiss)];
+
+	[self presentViewController: contentViewController animated: YES completion: NULL];
+}
+
 @end

@@ -11,5 +11,6 @@
 
 - (IBAction)showButtonAction:(id)sender;
 - (IBAction)showSemiModalButtonAction:(id)sender;
+- (IBAction)showSystemModalButtonAction:(id)sender;
 
 @end
