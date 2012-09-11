@@ -68,4 +68,8 @@
 	CGContextFillPath(context);
 }
 
+- (NSString *)accessibilityLabel {
+	return NSLocalizedString(@"Close", nil);
+}
+
 @end
