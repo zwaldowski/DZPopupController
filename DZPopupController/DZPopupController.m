@@ -251,7 +251,7 @@
 }
 
 - (void)configureInsetView {
-	if (self.frameView)
+	if (self.insetView)
 		return;
 
 	DZPopupControllerInsetView *overlay = [DZPopupControllerInsetView new];
