@@ -285,9 +285,6 @@
 }
 
 - (void)presentWithCompletion:(void (^)(void))block {
-	CGRect appBounds = [[UIScreen mainScreen] applicationFrame];
-	appBounds.origin = CGPointZero;
-
 	self.oldKeyWindow = [[UIApplication sharedApplication] keyWindow];
 	
 	__block UIView *(^innerFirstResponder)(UIView *) = nil;
@@ -308,7 +305,7 @@
 	innerFirstResponder = findFirstResponder;
 	[findFirstResponder(self.oldKeyWindow) resignFirstResponder];
 
-	UIWindow *window = [[UIWindow alloc] initWithFrame:appBounds];
+	UIWindow *window = [[UIWindow alloc] initWithFrame: [[UIScreen mainScreen] bounds]];
 	window.backgroundColor = [UIColor clearColor];
 	window.windowLevel = UIWindowLevelAlert;
 	window.rootViewController = self;
@@ -322,16 +319,18 @@
 }
 
 - (void)dismissWithCompletion:(void (^)(void))block {
-	[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
-    
+	[self.oldKeyWindow makeKeyAndVisible];
+
     [self performAnimationWithStyle: self.exitStyle entering: NO duration: (1./3.) completion: ^{
-		if (block)
-			block();
+		[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
 		
 		self.window.rootViewController = nil;
 		self.window = nil;
-		[self.oldKeyWindow makeKeyAndVisible];
+		
 		[self.oldKeyWindow.layer removeAllAnimations];
+
+		if (block)
+			block();
     }];
 }
 
