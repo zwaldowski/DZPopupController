@@ -164,14 +164,13 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 #pragma mark - Present and dismiss
 
 - (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
+	if (self.pushesContentBack) {
+		CGSize frameSize = self.oldKeyWindow.frame.size;
+		UIInterfaceOrientation orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
+		[self.oldKeyWindow.layer addAnimation: DZSemiModalPushBackAnimationForFrameSize(frameSize, orient, duration, entering) forKey: nil];
+	}
+
 	[super performAnimationWithStyle:style entering:entering duration:duration completion:block];
-
-	if (!self.pushesContentBack)
-		return;
-
-	CGSize frameSize = self.oldKeyWindow.frame.size;
-	UIInterfaceOrientation orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
-	[self.oldKeyWindow.layer addAnimation: DZSemiModalPushBackAnimationForFrameSize(frameSize, orient, duration, entering) forKey: nil];
 }
 
 @end
