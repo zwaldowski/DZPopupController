@@ -132,7 +132,7 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 	CGFloat statusBarHeight = statusBarFrame.size.height == appFrame.size.width ?  statusBarFrame.size.width : statusBarFrame.size.height;
 	if (!self.height)
 		_height = appFrame.size.height / 2;
-	CGFloat topInset = MIN(appFrame.size.height - self.height, statusBarHeight);
+	CGFloat topInset = MAX(appFrame.size.height - self.height, statusBarHeight);
 	UIEdgeInsets inset = UIEdgeInsetsMake(topInset, 0, 0, 0);
 	self.frameView.frame = UIEdgeInsetsInsetRect(appFrame, inset);
 }
