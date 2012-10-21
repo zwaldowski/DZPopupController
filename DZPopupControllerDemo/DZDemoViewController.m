@@ -64,6 +64,7 @@
 	DZDemoTableViewController *demoViewController = [DZDemoTableViewController new];
 	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
 	DZSemiModalPopupController *floatingController = [[DZSemiModalPopupController alloc] initWithContentViewController: contentViewController];
+	floatingController.height = 216.0f;
 	floatingController.pushesContentBack = YES;
 
 	demoViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemDone target: floatingController action: @selector(dismiss)];

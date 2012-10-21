@@ -18,6 +18,9 @@
 @property (nonatomic) UIEdgeInsets frameEdgeInsets NS_UNAVAILABLE;
 - (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated NS_UNAVAILABLE;
 
+@property (nonatomic) CGFloat height;
+- (void)setHeight:(CGFloat)height animated:(BOOL)animated;
+
 @property (nonatomic) BOOL pushesContentBack;
 
 @end

@@ -63,10 +63,6 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 
 @end
 
-static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
-	[NSException raise: NSInvalidArgumentException format: @"%@ is unavailable on %@", NSStringFromSelector(cmd), NSStringFromClass(cls)];
-}
-
 #define DZRaiseUnavailable() _DZRaiseUnavailable([self class], _cmd)
 
 @implementation DZSemiModalPopupController
@@ -103,23 +99,23 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 }
 
 - (void)setEntranceStyle:(DZPopupTransitionStyle)entranceStyle {
-	DZRaiseUnavailable();
+	[self doesNotRecognizeSelector: _cmd];
 }
 
 - (void)setExitStyle:(DZPopupTransitionStyle)exitStyle {
-	DZRaiseUnavailable();
+	[self doesNotRecognizeSelector: _cmd];
 }
 
 - (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated {
-	DZRaiseUnavailable();
+	[self doesNotRecognizeSelector: _cmd];
 }
 
 - (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets {
-	DZRaiseUnavailable();
+	[self doesNotRecognizeSelector: _cmd];
 }
 
 - (UIEdgeInsets)frameEdgeInsets {
-	DZRaiseUnavailable();
+	[self doesNotRecognizeSelector: _cmd];
 	return UIEdgeInsetsZero;
 }
 
@@ -134,7 +130,10 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 	CGRect appFrame = self.view.bounds;
 	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
 	CGFloat statusBarHeight = statusBarFrame.size.height == appFrame.size.width ?  statusBarFrame.size.width : statusBarFrame.size.height;
-	UIEdgeInsets inset = UIEdgeInsetsMake(appFrame.size.height / 2 - statusBarHeight, 0, 0, 0);
+	if (!self.height)
+		_height = appFrame.size.height / 2;
+	CGFloat topInset = MIN(appFrame.size.height - self.height, statusBarHeight);
+	UIEdgeInsets inset = UIEdgeInsetsMake(topInset, 0, 0, 0);
 	self.frameView.frame = UIEdgeInsetsInsetRect(appFrame, inset);
 }
 
@@ -159,6 +158,17 @@ static inline void _DZRaiseUnavailable(Class cls, SEL cmd) {
 - (void)viewDidLayoutSubviews {
 	[self setViewFrameFromMiddle];
 	[super viewDidLayoutSubviews];
+}
+
+- (void)setHeight:(CGFloat)height {
+	_height = height;
+	[self.view setNeedsLayout];
+}
+
+- (void)setHeight:(CGFloat)height animated:(BOOL)animated {
+	[UIView animateWithDuration: (1./3.) delay: 0.0 options: UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionCurveEaseInOut animations:^{
+		self.height = height;
+	} completion: NULL];
 }
 
 #pragma mark - Present and dismiss
