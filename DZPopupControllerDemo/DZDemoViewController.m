@@ -26,6 +26,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+
+	self.modalPresentationStyle = UIModalPresentationCurrentContext;
     // Do any additional setup after loading the view from its nib.
 }
 
@@ -40,6 +42,14 @@
 {
 	return YES;
     //return (interfaceOrientation == UIInterfaceOrientationPortrait);
+}
+
+- (BOOL)shouldAutorotate {
+	return YES;
+}
+
+- (NSUInteger)supportedInterfaceOrientations {
+	return UIInterfaceOrientationMaskAll;
 }
 
 
@@ -58,6 +68,7 @@
 	floatingController.entranceStyle = DZPopupTransitionStylePop;
     floatingController.exitStyle = DZPopupTransitionStylePop;
 	[floatingController present];
+	//[self presentViewController: floatingController animated: YES completion: NULL];
 }
 
 - (IBAction)showSemiModalButtonAction:(id)sender {
@@ -69,7 +80,8 @@
 
 	demoViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemDone target: floatingController action: @selector(dismiss)];
 	
-	[floatingController present];
+	//[floatingController present];
+	[self presentViewController: floatingController animated: YES completion: NULL];
 }
 
 - (void)dismiss {

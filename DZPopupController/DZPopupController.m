@@ -75,7 +75,28 @@
 
 #pragma mark - UIViewController
 
+- (NSUInteger)supportedInterfaceOrientations
+{
+	if (self.presentingViewController)
+		return UIInterfaceOrientationMaskPortrait;
+	if (self.contentViewController)
+		return self.contentViewController.supportedInterfaceOrientations;
+    return UIInterfaceOrientationMaskAll;
+}
+
+- (BOOL)shouldAutorotate
+{
+	if (self.presentingViewController)
+		return NO;
+	if (self.contentViewController)
+		return [self.contentViewController shouldAutorotate];
+	return YES;
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+	if (self.presentingViewController)
+		return NO;
+
 	BOOL should = (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
 	
 	if (self.contentViewController)
@@ -100,6 +121,27 @@
 	if (self.insetView) {
 		CGRect cFrame = self.contentView.frame;
 		self.insetView.frame = CGRectMake(CGRectGetMinX(cFrame), CGRectGetMinY(cFrame) + navBarHeight - 2, CGRectGetWidth(cFrame), CGRectGetHeight(cFrame) - navBarHeight - toolbarHeight + 4.0f);
+	}
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+	[super viewWillAppear:animated];
+
+	self.backupStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
+	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
+
+	if (self.presentingViewController) {
+		[self performAnimationWithStyle: self.entranceStyle entering: YES duration: animated ? (1./3.) : 0 completion: NULL];
+	}
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+	[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
+	
+	if (self.presentingViewController) {
+		[self performAnimationWithStyle: self.exitStyle entering: NO duration: animated ? (1./3.) : 0 completion: ^{
+			[self.oldKeyWindow.layer removeAllAnimations];
+		}];
 	}
 }
 
@@ -311,9 +353,6 @@
 	window.rootViewController = self;
 	[window makeKeyAndVisible];
 	self.window = window;
-	
-	self.backupStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
-	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
     
     [self performAnimationWithStyle: self.entranceStyle entering: YES duration: (1./3.) completion: block];
 }
@@ -322,15 +361,19 @@
 	[self.oldKeyWindow makeKeyAndVisible];
 
     [self performAnimationWithStyle: self.exitStyle entering: NO duration: (1./3.) completion: ^{
-		[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
-		
-		self.window.rootViewController = nil;
-		self.window = nil;
-		
 		[self.oldKeyWindow.layer removeAllAnimations];
 
-		if (block)
-			block();
+		if (self.presentingViewController) {
+			[self.presentingViewController dismissViewControllerAnimated: NO completion: block];
+		} else {
+			if (!self.presentingViewController) {
+				self.window.rootViewController = nil;
+				self.window = nil;
+			}
+
+			if (block)
+				block();
+		}
     }];
 }
 
