@@ -115,12 +115,12 @@
 	
 	// Navigation	
 	CGFloat navBarHeight = navigationController.navigationBarHidden ? 0.0 : navigationController.navigationBar.frame.size.height,
-	toolbarHeight = navigationController.toolbarHidden ? 0.0 : navigationController.toolbar.frame.size.height;
-	
+	toolbarHeight = navigationController.toolbarHidden ? 2.0 : navigationController.toolbar.frame.size.height;
 
 	if (self.insetView) {
 		CGRect cFrame = self.contentView.frame;
 		self.insetView.frame = CGRectMake(CGRectGetMinX(cFrame), CGRectGetMinY(cFrame) + navBarHeight - 2, CGRectGetWidth(cFrame), CGRectGetHeight(cFrame) - navBarHeight - toolbarHeight + 4.0f);
+		self.insetView.clippedDrawing = navigationController.toolbarHidden;
 	}
 }
 

@@ -11,20 +11,26 @@
 
 @implementation DZPopupControllerInsetView
 
-@synthesize baseColor = _baseColor;
-
 - (void)drawRect:(CGRect)rect {
 	CGContextRef context = UIGraphicsGetCurrentContext();
-	const CGFloat radius = 4.0f;
+	const CGFloat radius = 6.0f;
+	
+	CGRect insetRect = CGRectInset(rect, 2.0f, 2.0f);
+	insetRect.origin.y += 1.0f;
+	insetRect.size.height -= 1.0f;
+
 
 	CGContextSaveGState(context);
-
-	CGContextAddPath(context, [[UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii: CGSizeMake(2.0f, 2.0f)] CGPath]);
-	CGContextAddPath(context, [[UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 2.0f, 3.0f) cornerRadius: radius] CGPath]);
-	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), radius, [[UIColor colorWithWhite:0  alpha: 0.8f] CGColor]);
-	CGContextSetFillColorWithColor(context, self.baseColor.CGColor);
+	
+	if (_clippedDrawing) {
+		CGContextAddPath(context, [[UIBezierPath bezierPathWithRoundedRect: rect byRoundingCorners: UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii: CGSizeMake(radius, radius)] CGPath]);
+		CGContextClip(context);
+	}
+	CGContextAddPath(context, [[UIBezierPath bezierPathWithRect: rect] CGPath]);
+	CGContextAddPath(context, [[UIBezierPath bezierPathWithRoundedRect:insetRect cornerRadius: radius] CGPath]);
+	CGContextSetShadowWithColor(context, CGSizeMake(0, 1), radius, [[UIColor colorWithWhite:0 alpha: 0.8f] CGColor]);
+	CGContextSetFillColorWithColor(context, _baseColor.CGColor);
 	CGContextEOFillPath(context);
-
 	CGContextRestoreGState(context);
 }
 

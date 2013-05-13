@@ -12,5 +12,6 @@
 @interface DZPopupControllerInsetView : UIView
 
 @property (nonatomic, strong) UIColor *baseColor;
+@property (nonatomic) BOOL clippedDrawing;
 
 @end
