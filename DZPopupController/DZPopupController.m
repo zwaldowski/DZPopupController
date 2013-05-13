@@ -12,7 +12,7 @@
 #import "DZPopupControllerInsetView.h"
 #import "DZPopupControllerCloseButton.h"
 #import <QuartzCore/QuartzCore.h>
-
+#import "CALayer+DZPopupController.h"
 
 @interface DZPopupController ()
 
@@ -426,11 +426,28 @@
         switch (style) {
             case DZPopupTransitionStylePop:
                 if (entering) {
-                    CAKeyframeAnimation *scale = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
-                    scale.duration = 2 * duration;
-                    scale.keyTimes = @[@0.0, @0.5, @(2.0f/3.0f), @(5.0f/6.0f), @1.0];
-                    scale.values = @[@0.00001f, @1.05f, @0.95f, @1.02f, @1.00f];
-                    [self.frameView.layer addAnimation:scale forKey: nil];
+					NSString *key = @"transform.scale";
+					NSString *fill = @"extended";
+					CGFloat myDuration = 0.4;
+					CAMediaTimingFunction *function = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut];
+					
+					[self.frameView.layer dzp_addBasicAnimation:key
+												   withDuration:(0.5*myDuration)
+														   from:@0.01 to:@1.1
+														 timing:function fillMode:fill
+													 completion:^(CALayer *layer, BOOL finished) {
+						[layer dzp_addBasicAnimation:key
+										withDuration:(0.25 * myDuration)
+												from:@1.1f to:@0.9f
+											  timing:function fillMode:fill
+										  completion:^(CALayer *layer, BOOL finished) {
+											  [layer dzp_addBasicAnimation:key
+															  withDuration:(0.25 * myDuration)
+																	  from:@0.9 to:@1.0
+																	timing:function fillMode:fill
+																completion:NULL];
+										  }];
+					}];
                 } else {
                     self.frameView.transform = CGAffineTransformScale(self.frameView.transform, 0.00001, 0.00001);
                 }
