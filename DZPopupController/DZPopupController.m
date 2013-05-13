@@ -131,7 +131,7 @@
 	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
 
 	if (self.presentingViewController) {
-		[self performAnimationWithStyle: self.entranceStyle entering: YES duration: animated ? (1./3.) : 0 completion: NULL];
+		[self dzp_performAnimationWithStyle: self.entranceStyle entering: YES duration: animated ? (1./3.) : 0 completion: NULL];
 	}
 }
 
@@ -139,7 +139,7 @@
 	[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
 	
 	if (self.presentingViewController) {
-		[self performAnimationWithStyle: self.exitStyle entering: NO duration: animated ? (1./3.) : 0 completion: ^{
+		[self dzp_performAnimationWithStyle: self.exitStyle entering: NO duration: animated ? (1./3.) : 0 completion: ^{
 			[self.oldKeyWindow.layer removeAllAnimations];
 		}];
 	}
@@ -312,7 +312,7 @@
 
 	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-9, -9, 24, 24)];
 	closeButton.showsTouchWhenHighlighted = YES;
-	[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
+	[closeButton addTarget: self action:@selector(dzp_closePressed:) forControlEvents:UIControlEventTouchUpInside];
 	[self.frameView addSubview: closeButton];
 }
 
@@ -328,24 +328,7 @@
 
 - (void)presentWithCompletion:(void (^)(void))block {
 	self.oldKeyWindow = [[UIApplication sharedApplication] keyWindow];
-	
-	__block UIView *(^innerFirstResponder)(UIView *) = nil;
-	UIView *(^findFirstResponder)(UIView *) = ^UIView *(UIView *view){
-		if (view.isFirstResponder)
-			return view;
-
-		for (UIView *subView in view.subviews) {
-			UIView *firstResponder = innerFirstResponder(subView);
-
-			if (firstResponder != nil) {
-				return firstResponder;
-			}
-		}
-
-		return nil;
-	};
-	innerFirstResponder = findFirstResponder;
-	[findFirstResponder(self.oldKeyWindow) resignFirstResponder];
+	[[DZPopupController dzp_findFirstResponder: self.oldKeyWindow] resignFirstResponder];
 
 	UIWindow *window = [[UIWindow alloc] initWithFrame: [[UIScreen mainScreen] bounds]];
 	window.backgroundColor = [UIColor clearColor];
@@ -354,13 +337,13 @@
 	[window makeKeyAndVisible];
 	self.window = window;
     
-    [self performAnimationWithStyle: self.entranceStyle entering: YES duration: (1./3.) completion: block];
+    [self dzp_performAnimationWithStyle: self.entranceStyle entering: YES duration: (1./3.) completion: block];
 }
 
 - (void)dismissWithCompletion:(void (^)(void))block {
 	[self.oldKeyWindow makeKeyAndVisible];
 
-    [self performAnimationWithStyle: self.exitStyle entering: NO duration: (1./3.) completion: ^{
+    [self dzp_performAnimationWithStyle: self.exitStyle entering: NO duration: (1./3.) completion: ^{
 		[self.oldKeyWindow.layer removeAllAnimations];
 
 		if (self.presentingViewController) {
@@ -387,11 +370,11 @@
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
-- (void)closePressed:(UIButton *)closeButton {
+- (void)dzp_closePressed:(UIButton *)closeButton {
 	[self dismissWithCompletion: NULL];
 }
 
-- (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
+- (void)dzp_performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
     self.backgroundView.alpha = entering ? 0 : 1;
     
     UIViewAnimationOptions options = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent;
@@ -463,6 +446,21 @@
         if (block)
             block();
     }];
+}
+
++ (UIView *)dzp_findFirstResponder:(UIView *)view {
+	if (view.isFirstResponder)
+		return view;
+	
+	for (UIView *subView in view.subviews) {
+		UIView *firstResponder = [self dzp_findFirstResponder:subView];
+		
+		if (firstResponder != nil) {
+			return firstResponder;
+		}
+	}
+	
+	return nil;
 }
 
 @end
