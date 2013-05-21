@@ -12,5 +12,6 @@ Pod::Spec.new do |s|
                    'UIPopoverController crossed with UIAlertView.'
   s.source_files = 'DZPopupController/*.{h,m}'
   s.framework    = 'QuartzCore'
+  s.ios.deployment_target = '5.0' # there are usages of __weak
   s.requires_arc = true
 end
