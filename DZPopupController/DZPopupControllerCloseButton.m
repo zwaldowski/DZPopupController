@@ -69,7 +69,7 @@
 }
 
 - (NSString *)accessibilityLabel {
-	return NSLocalizedString(@"Close", nil);
+	return NSLocalizedString(@"Close", @"VoiceOver descriptor for a graphics-only close button");
 }
 
 @end
