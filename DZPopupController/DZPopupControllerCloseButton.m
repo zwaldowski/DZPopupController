@@ -35,17 +35,23 @@
 
 	rect = CGRectInset(rect, 2, 2);
 
+	const CGFloat black[4] = {0, 0, 0, 1};
+	const CGFloat white[4] = {1, 1, 1, 1};
+
 	CGContextSaveGState(context);
 	CGContextSetLineWidth(context, 2.0f);
-	CGContextSetFillColorWithColor(context, [[UIColor blackColor] CGColor]);
-	CGContextSetStrokeColorWithColor(context, [[UIColor whiteColor] CGColor]);
+	CGContextSetFillColor(context, black);
+	CGContextSetStrokeColor(context, white);
 	CGContextFillEllipseInRect(context, rect);
 	CGContextStrokeEllipseInRect(context, rect);
 	CGContextRestoreGState(context);
 
-	CGContextTranslateCTM(context, 3, 3);
-	CGContextScaleCTM(context, 0.18, 0.18);
-	CGContextSetFillColorWithColor(context, [[UIColor whiteColor] CGColor]);
+	const CGFloat crossSize = 18;
+	const CGFloat crossDelta = ((rect.size.width - crossSize)) / 2 + 2;
+
+	CGContextTranslateCTM(context, crossDelta, crossDelta);
+	CGContextScaleCTM(context, crossSize / 100, crossSize / 100);
+	CGContextSetFillColor(context, white);
 
 	CGContextMoveToPoint(context, 25, 36);
 	CGContextAddCurveToPoint(context, 22, 33, 22, 28, 25, 25);
