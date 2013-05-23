@@ -332,7 +332,7 @@
 
 	UIWindow *window = [[UIWindow alloc] initWithFrame: [[UIScreen mainScreen] bounds]];
 	window.backgroundColor = [UIColor clearColor];
-	window.windowLevel = UIWindowLevelAlert;
+	window.windowLevel = 5;
 	window.rootViewController = self;
 	[window makeKeyAndVisible];
 	self.window = window;
