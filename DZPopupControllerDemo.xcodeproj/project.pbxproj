@@ -41,7 +41,7 @@
 		6C6BB345157A99E00001113B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		6C91AA68157FDB71008618FA /* DZPopupController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DZPopupController.h; sourceTree = "<group>"; };
 		6C91AA69157FDB71008618FA /* DZPopupController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DZPopupController.m; sourceTree = "<group>"; };
-		6CC5C6B91642AC9E004CC3F5 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		6CC5C6B91642AC9E004CC3F5 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-568h@2x.png"; path = "DZPopupControllerDemo/Default-568h@2x.png"; sourceTree = "<group>"; };
 		DB69112017417D090001903F /* CALayer+DZPopupController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CALayer+DZPopupController.h"; sourceTree = "<group>"; };
 		DB69112117417D090001903F /* CALayer+DZPopupController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CALayer+DZPopupController.m"; sourceTree = "<group>"; };
 		F54E32AE156271030057A34F /* DZDemoTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DZDemoTableViewController.h; sourceTree = "<group>"; };
@@ -96,7 +96,6 @@
 		F5C422341560BF2300F7E3EE = {
 			isa = PBXGroup;
 			children = (
-				6CC5C6B91642AC9E004CC3F5 /* Default-568h@2x.png */,
 				6C91AA6B157FDB75008618FA /* DZPopupController */,
 				F5ED3E9E15620A810058C7F1 /* DZPopupControllerDemo */,
 				F5C422421560BF2300F7E3EE /* Frameworks */,
@@ -126,6 +125,7 @@
 		F5C4224A1560BF2300F7E3EE /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				6CC5C6B91642AC9E004CC3F5 /* Default-568h@2x.png */,
 				F5ED3EA115620A810058C7F1 /* main.m */,
 				F5C4224B1560BF2300F7E3EE /* DZPopupControllerDemo-Info.plist */,
 				F5C422511560BF2300F7E3EE /* DZPopupControllerDemo-Prefix.pch */,
