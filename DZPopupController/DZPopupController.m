@@ -22,6 +22,7 @@
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) DZPopupControllerInsetView *insetView;
+@property (nonatomic, weak) DZPopupControllerCloseButton *closeButton;
 @property (nonatomic) UIStatusBarStyle backupStatusBarStyle;
 
 @end
@@ -279,7 +280,7 @@
 
 - (void)configureFrameView {
 	self.frameView.decorated = YES;
-	self.contentView.frame = CGRectInset(self.contentView.frame, 2.0f, 2.0f);
+	self.contentView.frame = CGRectInset(self.frameView.bounds, 2.0f, 2.0f);
 	self.contentView.layer.cornerRadius = 7.0f;
 	self.contentView.clipsToBounds = YES;
 
@@ -303,17 +304,13 @@
 }
 
 - (void)configureCloseButton {
-	NSUInteger closeIndex = [self.frameView.subviews indexOfObjectPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
-		return [obj isKindOfClass: [DZPopupControllerCloseButton class]];
-	}];
+	if (self.closeButton) return;
 
-	if (closeIndex != NSNotFound)
-		return;
-
-	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-9, -9, 24, 24)];
+	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-6, -6, 26, 26)];
 	closeButton.showsTouchWhenHighlighted = YES;
 	[closeButton addTarget: self action:@selector(dzp_closePressed:) forControlEvents:UIControlEventTouchUpInside];
 	[self.frameView addSubview: closeButton];
+	self.closeButton = closeButton;
 }
 
 #pragma mark - Actions
@@ -375,17 +372,17 @@
 }
 
 - (void)dzp_performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
+	UIView *frame = self.frameView;
+	
     self.backgroundView.alpha = entering ? 0 : 1;
     
-    UIViewAnimationOptions options = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent;
+    UIViewAnimationOptions options = UIViewAnimationOptionCurveEaseInOut;
+    UIViewAnimationOptions chainedOptions = options | UIViewAnimationOptionOverrideInheritedDuration | UIViewAnimationOptionOverrideInheritedCurve;
     
-    CGRect originalRect = self.frameView.frame;
-    CGRect modifiedRect = self.frameView.frame;
+    CGRect originalRect = frame.frame, modifiedRect = frame.frame;
     
     switch (style) {
-        case DZPopupTransitionStylePop:
-            break;
-            
+        case DZPopupTransitionStylePop:	break;
         case DZPopupTransitionStyleSlideBottom:
             modifiedRect.origin.y = CGRectGetMaxY(self.view.bounds);
             break;
@@ -400,52 +397,45 @@
             break;
     }
     
-    self.frameView.frame = entering ? modifiedRect : originalRect;
-    
-    [UIView transitionWithView: self.frameView duration: duration options: options animations: ^{
-        self.backgroundView.alpha = entering ? 1 : 0;
-        self.frameView.frame = entering ? originalRect : modifiedRect;;
-        
-        switch (style) {
-            case DZPopupTransitionStylePop:
-                if (entering) {
-					NSString *key = @"transform.scale";
-					NSString *fill = @"extended";
-					CGFloat myDuration = 0.4;
-					CAMediaTimingFunction *function = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionEaseInEaseOut];
-					
-					[self.frameView.layer dzp_addBasicAnimation:key
-												   withDuration:(0.5*myDuration)
-														   from:@0.01 to:@1.1
-														 timing:function fillMode:fill
-													 completion:^(CALayer *layer, BOOL finished) {
-						[layer dzp_addBasicAnimation:key
-										withDuration:(0.25 * myDuration)
-												from:@1.1f to:@0.9f
-											  timing:function fillMode:fill
-										  completion:^(CALayer *layer, BOOL finished) {
-											  [layer dzp_addBasicAnimation:key
-															  withDuration:(0.25 * myDuration)
-																	  from:@0.9 to:@1.0
-																	timing:function fillMode:fill
-																completion:NULL];
-										  }];
+    frame.frame = entering ? modifiedRect : originalRect;
+	if (style == DZPopupTransitionStylePop && entering) {
+		frame.transform = CGAffineTransformMakeScale(0.00001, 0.00001);
+	}
+	
+	BOOL isChainedAnimation = (entering && style == DZPopupTransitionStylePop);
+	
+	[UIView animateWithDuration:duration delay:0.0 options:options animations:^{
+		self.backgroundView.alpha = entering ? 1 : 0;
+		
+		if (style == DZPopupTransitionStylePop) {
+			if (entering) {
+				NSTimeInterval firstAnimDiff = MAX(duration - 0.25, 0);				
+				[UIView animateWithDuration:0.25 delay:firstAnimDiff options:chainedOptions animations:^{
+					frame.transform = CGAffineTransformMakeScale(1.1, 1.1);
+				} completion:^(BOOL finished) {
+					[UIView animateWithDuration:0.125 delay:0 options:chainedOptions animations:^{
+						frame.transform = CGAffineTransformMakeScale(0.9, 0.9);
+					} completion:^(BOOL finished) {
+						[UIView animateWithDuration:0.125 delay:0 options:chainedOptions animations:^{
+							frame.transform = CGAffineTransformIdentity;
+						} completion:^(BOOL finished) {
+							if (block) block();
+						}];
 					}];
-                } else {
-                    self.frameView.transform = CGAffineTransformScale(self.frameView.transform, 0.00001, 0.00001);
-                }
-                break;
-                
-            case DZPopupTransitionStyleSlideBottom:
-            case DZPopupTransitionStyleSlideTop:
-            case DZPopupTransitionStyleSlideLeft:
-            case DZPopupTransitionStyleSlideRight:
-                break;
-        }
-    } completion:^(BOOL finished) {
-        if (block)
-            block();
-    }];
+				}];
+			} else {
+				frame.frame = entering ? originalRect : modifiedRect;
+				frame.transform = CGAffineTransformMakeScale(0.000001, 0.000001);
+				frame.alpha = 0.2;
+			}
+		} else {
+			frame.frame = entering ? originalRect : modifiedRect;
+		}
+	} completion:^(BOOL finished) {
+		if (!isChainedAnimation && block) {
+			block();
+		}
+	}];
 }
 
 + (UIView *)dzp_findFirstResponder:(UIView *)view {
