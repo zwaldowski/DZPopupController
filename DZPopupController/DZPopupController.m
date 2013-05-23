@@ -12,7 +12,6 @@
 #import "DZPopupControllerInsetView.h"
 #import "DZPopupControllerCloseButton.h"
 #import <QuartzCore/QuartzCore.h>
-#import "CALayer+DZPopupController.h"
 
 @interface DZPopupController ()
 
