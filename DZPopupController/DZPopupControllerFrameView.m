@@ -10,41 +10,58 @@
 #import "DZPopupControllerFrameView.h"
 #import <QuartzCore/QuartzCore.h>
 
-@implementation DZPopupControllerFrameView
+@implementation DZPopupControllerFrameView {
+	CGFloat _cornerRadius;
+}
 
 - (id)initWithFrame:(CGRect)frame {
 	if ((self = [super initWithFrame: frame])) {
-		self.backgroundColor = [UIColor clearColor];
-		self.contentMode = UIViewContentModeRedraw;
+		self.userInteractionEnabled = YES;
 		self.layer.shadowOffset = CGSizeMake(0, 2);
 		self.layer.shadowOpacity = 0.7f;
 		self.layer.shadowRadius = 10.0f;
-		self.layer.cornerRadius = 0.0f;
+		self.layer.shouldRasterize = YES;
+		self.layer.rasterizationScale = [[UIScreen mainScreen] scale];
 	}
 	return self;
 }
 
 - (void)setDecorated:(BOOL)decorated {
 	if (_decorated != decorated) {
-		self.layer.cornerRadius = decorated ? 8.0f : 0;
+		_cornerRadius = decorated ? 8.0f : 0;
+		self.image = nil;
+		if (self.decorated && self.superview) [self setBackgroundImage];
 	}
 	_decorated = decorated;
 }
 
-- (void)layoutSubviews {
-	self.layer.shadowPath = [[UIBezierPath bezierPathWithRect: self.bounds] CGPath];
+- (void)setBackgroundImage {
+	const CGFloat radius = _cornerRadius;
+	CGFloat size = ((radius + 1) * 2) + 1;
+	CGRect rect = CGRectMake(0, 0, size, size);
+	UIGraphicsBeginImageContextWithOptions(CGSizeMake(size, size), NO, 0);
+	[[UIColor colorWithWhite:1.00f alpha:0.10f] setStroke];
+	[[UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: radius+1] stroke];
+	
+	[self.baseColor setFill];
+	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 1.0f, 1.0f) cornerRadius: radius] fill];
+
+	
+	UIImage *unstretched = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	
+	self.image = [unstretched resizableImageWithCapInsets:UIEdgeInsetsMake(radius, radius, radius, radius)];
 }
 
-- (void)drawRect:(CGRect)rect {
-	if (self.decorated) {
-		const CGFloat radius = self.layer.cornerRadius;
+- (void)willMoveToWindow:(UIWindow *)newWindow {
+	[super willMoveToWindow:newWindow];
+	if (!self.image && self.decorated) [self setBackgroundImage];
+}
 
-		[[UIColor colorWithWhite:1.00f alpha:0.10f] setStroke];
-		[[UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: radius+1] stroke];
-
-		[self.baseColor setFill];
-		[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 1.0f, 1.0f) cornerRadius: radius] fill];
-	}
+- (void)setBaseColor:(UIColor *)baseColor {
+	_baseColor = baseColor;
+	self.image = nil;
+	if (self.decorated && self.superview) [self setBackgroundImage];
 }
 
 @end

@@ -9,7 +9,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface DZPopupControllerInsetView : UIView
+@interface DZPopupControllerInsetView : UIImageView
 
 @property (nonatomic, strong) UIColor *baseColor;
 @property (nonatomic) BOOL clippedDrawing;

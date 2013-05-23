@@ -15,18 +15,14 @@
 - (id)initWithFrame:(CGRect)frame {
 	if ((self = [super initWithFrame:frame])) {
 		self.backgroundColor = [UIColor clearColor];
-		self.contentMode = UIViewContentModeRedraw;
 		self.layer.shadowColor = [[UIColor blackColor] CGColor];
 		self.layer.shadowOffset = CGSizeMake(0,4);
 		self.layer.shadowOpacity = 0.3;
 		self.layer.cornerRadius = frame.size.width / 2;
-
+		self.layer.rasterizationScale = [[UIScreen mainScreen] scale];
+		self.layer.shouldRasterize = YES;
 	}
 	return self;
-}
-
-- (void)layoutSubviews{
-	self.layer.shadowPath = [[UIBezierPath bezierPathWithOvalInRect: self.bounds] CGPath];
 }
 
 - (void)drawRect:(CGRect)rect
@@ -34,7 +30,7 @@
 	CGContextRef context = UIGraphicsGetCurrentContext();
 
 	rect = CGRectInset(rect, 2, 2);
-
+	
 	const CGFloat black[4] = {0, 0, 0, 1};
 	const CGFloat white[4] = {1, 1, 1, 1};
 
@@ -48,7 +44,7 @@
 
 	const CGFloat crossSize = 18;
 	const CGFloat crossDelta = ((rect.size.width - crossSize)) / 2 + 2;
-
+	
 	CGContextTranslateCTM(context, crossDelta, crossDelta);
 	CGContextScaleCTM(context, crossSize / 100, crossSize / 100);
 	CGContextSetFillColor(context, white);

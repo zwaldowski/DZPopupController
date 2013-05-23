@@ -9,7 +9,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface DZPopupControllerFrameView : UIView
+@interface DZPopupControllerFrameView : UIImageView
 
 @property (nonatomic, strong) UIColor *baseColor;
 @property (nonatomic, getter = isDecorated) BOOL decorated;
