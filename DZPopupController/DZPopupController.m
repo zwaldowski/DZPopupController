@@ -49,14 +49,18 @@
 	background.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.5];
 	[self.view addSubview: background];
 	self.backgroundView = background;
+	
+	CGFloat shadowPad = 12;
+	CGRect frameVisualRect = UIEdgeInsetsInsetRect(self.view.bounds, _frameEdgeInsets);
+	CGRect frameOuterRect = CGRectInset(frameVisualRect, -shadowPad, -shadowPad);
 
-	DZPopupControllerFrameView *frame = [[DZPopupControllerFrameView alloc] initWithFrame: UIEdgeInsetsInsetRect(self.view.bounds, _frameEdgeInsets)];
+	DZPopupControllerFrameView *frame = [[DZPopupControllerFrameView alloc] initWithFrame:frameOuterRect];
 	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	frame.baseColor = self.frameColor;
 	[self.view addSubview: frame];
 	self.frameView = frame;
 	
-	UIView *content = [[UIView alloc] initWithFrame: frame.bounds];
+	UIView *content = [[UIView alloc] initWithFrame: CGRectZero];//frame.bounds
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[frame addSubview: content];
 	self.contentView = content;
@@ -279,7 +283,7 @@
 
 - (void)configureFrameView {
 	self.frameView.decorated = YES;
-	self.contentView.frame = CGRectInset(self.frameView.bounds, 2.0f, 2.0f);
+	self.contentView.frame = CGRectInset(self.frameView.bounds, 14, 14);
 	self.contentView.layer.cornerRadius = 7.0f;
 	self.contentView.clipsToBounds = YES;
 
@@ -305,7 +309,7 @@
 - (void)configureCloseButton {
 	if (self.closeButton) return;
 
-	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(-6, -6, 26, 26)];
+	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(0, 0, 26, 26)];
 	closeButton.showsTouchWhenHighlighted = YES;
 	[closeButton addTarget: self action:@selector(dzp_closePressed:) forControlEvents:UIControlEventTouchUpInside];
 	[self.frameView addSubview: closeButton];
@@ -345,10 +349,7 @@
 		if (self.presentingViewController) {
 			[self.presentingViewController dismissViewControllerAnimated: NO completion: block];
 		} else {
-			if (!self.presentingViewController) {
-				self.window.rootViewController = nil;
-				self.window = nil;
-			}
+			self.window = nil;
 
 			if (block)
 				block();
@@ -397,11 +398,12 @@
     }
     
     frame.frame = entering ? modifiedRect : originalRect;
-	if (style == DZPopupTransitionStylePop && entering) {
-		frame.transform = CGAffineTransformMakeScale(0.00001, 0.00001);
-	}
-	
+
 	BOOL isChainedAnimation = (entering && style == DZPopupTransitionStylePop);
+
+	if (isChainedAnimation) {
+		frame.transform = CGAffineTransformMakeScale(0.0001, 0.0001);
+	}
 	
 	[UIView animateWithDuration:duration delay:0.0 options:options animations:^{
 		self.backgroundView.alpha = entering ? 1 : 0;
@@ -423,9 +425,7 @@
 					}];
 				}];
 			} else {
-				frame.frame = entering ? originalRect : modifiedRect;
-				frame.transform = CGAffineTransformMakeScale(0.000001, 0.000001);
-				frame.alpha = 0.2;
+				frame.transform = CGAffineTransformMakeScale(0.0001, 0.0001);
 			}
 		} else {
 			frame.frame = entering ? originalRect : modifiedRect;

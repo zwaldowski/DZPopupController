@@ -10,47 +10,42 @@
 #import "DZPopupControllerFrameView.h"
 #import <QuartzCore/QuartzCore.h>
 
-@implementation DZPopupControllerFrameView {
-	CGFloat _cornerRadius;
-}
+@implementation DZPopupControllerFrameView
 
 - (id)initWithFrame:(CGRect)frame {
 	if ((self = [super initWithFrame: frame])) {
 		self.userInteractionEnabled = YES;
-		self.layer.shadowOffset = CGSizeMake(0, 2);
-		self.layer.shadowOpacity = 0.7f;
-		self.layer.shadowRadius = 10.0f;
-		self.layer.shouldRasterize = YES;
-		self.layer.rasterizationScale = [[UIScreen mainScreen] scale];
 	}
 	return self;
 }
 
-- (void)setDecorated:(BOOL)decorated {
-	if (_decorated != decorated) {
-		_cornerRadius = decorated ? 8.0f : 0;
-		self.image = nil;
-		if (self.decorated && self.superview) [self setBackgroundImage];
-	}
-	_decorated = decorated;
-}
-
 - (void)setBackgroundImage {
-	const CGFloat radius = _cornerRadius;
-	CGFloat size = ((radius + 1) * 2) + 1;
-	CGRect rect = CGRectMake(0, 0, size, size);
-	UIGraphicsBeginImageContextWithOptions(CGSizeMake(size, size), NO, 0);
-	[[UIColor colorWithWhite:1.00f alpha:0.10f] setStroke];
-	[[UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: radius+1] stroke];
+	const CGFloat radius = 8.0f;
+	const CGFloat currentRadius = _decorated ? radius : 0;
 	
+	const CGFloat shadowOffset = radius / 4;
+	const CGFloat uniqueLength = ((currentRadius + 3) * 2) + 1, shadowPad = radius + (shadowOffset * 2);
+	const CGFloat size = uniqueLength + (shadowPad * 2);
+	const CGFloat cap = (size - 1) / 2;
+	
+	CGRect rect = (CGRect){CGPointZero, {size, size}};
+	UIGraphicsBeginImageContextWithOptions((CGSize){size, size}, NO, 0);
+	
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	
+	rect = CGRectInset(rect, shadowPad, shadowPad);
+	
+	[[UIColor colorWithWhite:1.00f alpha:0.2] setStroke];
+	[[UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: currentRadius+1] stroke];
+	
+	CGContextSetShadowWithColor(ctx, CGSizeMake(0, shadowOffset), radius, [[UIColor colorWithWhite:0 alpha:0.7] CGColor]);
 	[self.baseColor setFill];
-	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 1.0f, 1.0f) cornerRadius: radius] fill];
-
+	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 1.0f, 1.0f) cornerRadius: currentRadius] fill];
 	
 	UIImage *unstretched = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 	
-	self.image = [unstretched resizableImageWithCapInsets:UIEdgeInsetsMake(radius, radius, radius, radius)];
+	self.image = [unstretched resizableImageWithCapInsets:UIEdgeInsetsMake(cap, cap, cap, cap)];
 }
 
 - (void)willMoveToWindow:(UIWindow *)newWindow {
@@ -62,6 +57,14 @@
 	_baseColor = baseColor;
 	self.image = nil;
 	if (self.decorated && self.superview) [self setBackgroundImage];
+}
+
+- (void)setDecorated:(BOOL)decorated {
+	if (_decorated != decorated) {
+		_decorated = decorated;
+		self.image = nil;
+		if (self.decorated && self.superview) [self setBackgroundImage];
+	}
 }
 
 @end
