@@ -249,8 +249,11 @@
 	void (^configureAppearance)(void) = ^{
 		id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
 		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
+		id specialToolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationBar class], [UINavigationController class], [self class], nil];
 		[navigationBarAppearance setTintColor: frameColor];
 		[toolbarAppearance setBackgroundColor: frameColor];
+		[specialToolbarAppearance setBackgroundColor: nil];
+		[specialToolbarAppearance setTintColor: nil];
 	};
 
 	if (self.frameView) {
