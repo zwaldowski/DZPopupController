@@ -14,34 +14,8 @@
 
 @implementation DZDemoViewController
 
-- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
-
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-
-	self.modalPresentationStyle = UIModalPresentationCurrentContext;
-    // Do any additional setup after loading the view from its nib.
-}
-
-- (void)viewDidUnload
-{
-    [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	return YES;
-    //return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
 - (BOOL)shouldAutorotate {
@@ -51,7 +25,6 @@
 - (NSUInteger)supportedInterfaceOrientations {
 	return UIInterfaceOrientationMaskAll;
 }
-
 
 - (IBAction)showButtonAction:(id)sender {
 	DZDemoTableViewController *demoViewController = [DZDemoTableViewController new];
@@ -67,6 +40,7 @@
 	DZPopupController *floatingController = [[DZPopupController alloc] initWithContentViewController: contentViewController];
 	floatingController.entranceStyle = DZPopupTransitionStylePop;
     floatingController.exitStyle = DZPopupTransitionStylePop;
+	self.modalPresentationStyle = UIModalPresentationCurrentContext;
 	[floatingController present];
 	//[self presentViewController: floatingController animated: YES completion: NULL];
 }
@@ -81,6 +55,7 @@
 	demoViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemDone target: floatingController action: @selector(dismiss)];
 	
 	//[floatingController present];
+	self.modalPresentationStyle = UIModalPresentationCurrentContext;
 	[self presentViewController: floatingController animated: YES completion: NULL];
 }
 
@@ -93,7 +68,7 @@
 	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
 	contentViewController.modalPresentationStyle = UIModalPresentationFullScreen;
 	contentViewController.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
-
+	self.modalPresentationStyle = UIModalPresentationFullScreen;
 	demoViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemDone target: self action: @selector(dismiss)];
 
 	[self presentViewController: contentViewController animated: YES completion: NULL];
