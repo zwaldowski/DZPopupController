@@ -50,7 +50,7 @@
 	[self.view addSubview: background];
 	self.backgroundView = background;
 	
-	CGFloat shadowPad = 12;
+	CGFloat shadowPad = 24;
 	CGRect frameVisualRect = UIEdgeInsetsInsetRect(self.view.bounds, _frameEdgeInsets);
 	CGRect frameOuterRect = CGRectInset(frameVisualRect, -shadowPad, -shadowPad);
 
@@ -60,7 +60,7 @@
 	[self.view addSubview: frame];
 	self.frameView = frame;
 	
-	UIView *content = [[UIView alloc] initWithFrame: CGRectZero];//frame.bounds
+	UIView *content = [[UIView alloc] initWithFrame: frame.bounds];
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[frame addSubview: content];
 	self.contentView = content;
@@ -286,7 +286,7 @@
 
 - (void)configureFrameView {
 	self.frameView.decorated = YES;
-	self.contentView.frame = CGRectInset(self.frameView.bounds, 14, 14);
+	self.contentView.frame = CGRectInset(self.frameView.bounds, 26, 26);
 	self.contentView.layer.cornerRadius = 7.0f;
 	self.contentView.clipsToBounds = YES;
 
@@ -312,7 +312,7 @@
 - (void)configureCloseButton {
 	if (self.closeButton) return;
 
-	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(0, 0, 26, 26)];
+	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(12, 12, 26, 26)];
 	closeButton.showsTouchWhenHighlighted = YES;
 	[closeButton addTarget: self action:@selector(dzp_closePressed:) forControlEvents:UIControlEventTouchUpInside];
 	[self.frameView addSubview: closeButton];

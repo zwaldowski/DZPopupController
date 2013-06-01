@@ -24,7 +24,7 @@
 	const CGFloat currentRadius = _decorated ? radius : 0;
 	
 	const CGFloat shadowOffset = radius / 4;
-	const CGFloat uniqueLength = ((currentRadius + 3) * 2) + 1, shadowPad = radius + (shadowOffset * 2);
+	const CGFloat uniqueLength = ((currentRadius + 3) * 2) + 1, shadowPad = 2 * (radius + (shadowOffset * 2));
 	const CGFloat size = uniqueLength + (shadowPad * 2);
 	const CGFloat cap = (size - 1) / 2;
 	
@@ -37,11 +37,13 @@
 	
 	[[UIColor colorWithWhite:1.00f alpha:0.2] setStroke];
 	[[UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: currentRadius+1] stroke];
-	
-	CGContextSetShadowWithColor(ctx, CGSizeMake(0, shadowOffset), radius, [[UIColor colorWithWhite:0 alpha:0.7] CGColor]);
+
 	[self.baseColor setFill];
-	[[UIBezierPath bezierPathWithRoundedRect: CGRectInset(rect, 1.0f, 1.0f) cornerRadius: currentRadius] fill];
-	
+	UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: currentRadius];
+	CGContextSetShadowWithColor(ctx, CGSizeMake(0, shadowOffset), 10, [[UIColor colorWithWhite:0 alpha:1] CGColor]);
+	[path fill];
+	[path stroke];
+
 	UIImage *unstretched = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 	
