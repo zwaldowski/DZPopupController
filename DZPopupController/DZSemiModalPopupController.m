@@ -58,7 +58,8 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 @property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIControl *backgroundView;
 @property (nonatomic, weak) UIWindow *oldKeyWindow;
-- (void)closePressed:(UIButton *)closeButton;
+@property (nonatomic, weak, readonly) UIView *contentView;
+- (void)dzp_closePressed:(UIButton *)closeButton;
 - (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block;
 
 @end
@@ -75,6 +76,11 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 
 - (void)configureFrameView {
 	self.frameView.decorated = NO;
+	self.frameView.layer.shadowOffset = CGSizeMake(0, -2);
+	self.frameView.layer.shadowOpacity = 0.7f;
+	self.frameView.layer.shadowRadius = 10.0f;
+	self.frameView.layer.shouldRasterize = YES;
+	self.frameView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
 
 	id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
 	[toolbarAppearance setBackgroundImage: nil forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
@@ -85,7 +91,7 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 }
 
 - (void)configureCloseButton {
-	
+
 }
 
 #pragma mark - Restricted subclass methods
@@ -123,7 +129,7 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	[self.backgroundView addTarget: self action: @selector(closePressed:) forControlEvents: UIControlEventTouchUpInside];
+	[self.backgroundView addTarget: self action: @selector(dzp_closePressed:) forControlEvents: UIControlEventTouchUpInside];
 }
 
 - (void)setViewFrameFromMiddle {
