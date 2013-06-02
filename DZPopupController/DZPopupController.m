@@ -26,7 +26,9 @@
 
 @end
 
-@implementation DZPopupController
+@implementation DZPopupController {
+	BOOL _dismissingViaOurMethod;
+}
 
 #pragma mark - Setup and teardown
 
@@ -135,17 +137,15 @@
 	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
 
 	if (self.presentingViewController) {
-		[self dzp_performAnimationWithStyle: self.entranceStyle entering: YES duration: animated ? (1./3.) : 0 completion: NULL];
+		[self performAnimationWithStyle: self.entranceStyle entering: YES duration: animated ? (1./3.) : 0 completion: NULL];
 	}
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
 	[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
 	
-	if (self.presentingViewController) {
-		[self dzp_performAnimationWithStyle: self.exitStyle entering: NO duration: animated ? (1./3.) : 0 completion: ^{
-			[self.oldKeyWindow.layer removeAllAnimations];
-		}];
+	if (self.presentingViewController && !_dismissingViaOurMethod) {
+		[self performAnimationWithStyle: self.exitStyle entering: NO duration: animated ? (1./3.) : 0 completion: NULL];
 	}
 }
 
@@ -314,7 +314,7 @@
 
 	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(12, 12, 26, 26)];
 	closeButton.showsTouchWhenHighlighted = YES;
-	[closeButton addTarget: self action:@selector(dzp_closePressed:) forControlEvents:UIControlEventTouchUpInside];
+	[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
 	[self.frameView addSubview: closeButton];
 	self.closeButton = closeButton;
 }
@@ -331,7 +331,7 @@
 
 - (void)presentWithCompletion:(void (^)(void))block {
 	self.oldKeyWindow = [[UIApplication sharedApplication] keyWindow];
-	[[DZPopupController dzp_findFirstResponder: self.oldKeyWindow] resignFirstResponder];
+	[[DZPopupController findFirstResponder: self.oldKeyWindow] resignFirstResponder];
 
 	UIWindow *window = [[UIWindow alloc] initWithFrame: [[UIScreen mainScreen] bounds]];
 	window.backgroundColor = [UIColor clearColor];
@@ -340,19 +340,26 @@
 	[window makeKeyAndVisible];
 	self.window = window;
     
-    [self dzp_performAnimationWithStyle: self.entranceStyle entering: YES duration: (1./3.) completion: block];
+    [self performAnimationWithStyle: self.entranceStyle entering: YES duration: (1./3.) completion: block];
 }
 
 - (void)dismissWithCompletion:(void (^)(void))block {
+	_dismissingViaOurMethod = YES;
+	
 	[self.oldKeyWindow makeKeyAndVisible];
 
-    [self dzp_performAnimationWithStyle: self.exitStyle entering: NO duration: (1./3.) completion: ^{
-		[self.oldKeyWindow.layer removeAllAnimations];
-
+    [self performAnimationWithStyle: self.exitStyle entering: NO duration: (1./3.) completion: ^{
 		if (self.presentingViewController) {
-			[self.presentingViewController dismissViewControllerAnimated: NO completion: block];
+			[self.presentingViewController dismissViewControllerAnimated: NO completion: ^{
+				_dismissingViaOurMethod = NO;
+
+				if (block)
+					block();
+			}];
 		} else {
 			self.window = nil;
+
+			_dismissingViaOurMethod = NO;
 
 			if (block)
 				block();
@@ -370,11 +377,11 @@
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
-- (void)dzp_closePressed:(UIButton *)closeButton {
+- (void)closePressed:(UIButton *)closeButton {
 	[self dismissWithCompletion: NULL];
 }
 
-- (void)dzp_performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
+- (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
 	UIView *frame = self.frameView;
 	
     self.backgroundView.alpha = entering ? 0 : 1;
@@ -440,12 +447,12 @@
 	}];
 }
 
-+ (UIView *)dzp_findFirstResponder:(UIView *)view {
++ (UIView *)findFirstResponder:(UIView *)view {
 	if (view.isFirstResponder)
 		return view;
 	
 	for (UIView *subView in view.subviews) {
-		UIView *firstResponder = [self dzp_findFirstResponder:subView];
+		UIView *firstResponder = [self findFirstResponder:subView];
 		
 		if (firstResponder != nil) {
 			return firstResponder;

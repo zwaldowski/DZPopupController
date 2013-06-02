@@ -48,4 +48,7 @@ typedef enum {
 - (void)configureInsetView;
 - (void)configureCloseButton;
 
+- (void)closePressed:(UIButton *)closeButton;
+- (void)performAnimationWithStyle:(DZPopupTransitionStyle)style entering:(BOOL)entering duration:(NSTimeInterval)duration completion:(void(^)(void))block;
+
 @end

@@ -26,31 +26,15 @@ static CATransform3D DZSemiModalTranslationForFrameSize(CGSize frameSize, UIInte
 	return CATransform3DScale(translation, 0.8, 0.8, 1);
 }
 
-static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSize, UIInterfaceOrientation orientation, NSTimeInterval duration, BOOL entering) {
-	BOOL isPortrait = UIInterfaceOrientationIsPortrait(orientation);
+static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrientation orient, BOOL entering, CATransform3D *step1, CATransform3D *step2) {
+	BOOL isPortrait = UIInterfaceOrientationIsPortrait(orient);
 	CATransform3D t1 = CATransform3DIdentity;
 	t1.m34 = 1.0 / -900;
 	t1 = CATransform3DScale(t1, 0.95, 0.95, 1);
 	t1 = CATransform3DRotate(t1, 15.0f*M_PI/180.0f, isPortrait ? 1 : 0, isPortrait ? 0 : -1, 0);
-	CATransform3D t2 = DZSemiModalTranslationForFrameSize(frameSize, orientation);
-
-	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
-	animation.toValue = [NSValue valueWithCATransform3D:t1];
-	animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-
-	CABasicAnimation *animation2 = [CABasicAnimation animationWithKeyPath:@"transform"];
-	animation2.toValue = [NSValue valueWithCATransform3D: entering ? t2 : CATransform3DIdentity];
-
-	CAAnimationGroup *group = [CAAnimationGroup animation];
-	group.removedOnCompletion = NO;
-
-	group.fillMode = animation.fillMode = animation2.fillMode = kCAFillModeForwards;
-	animation.duration = animation2.beginTime = animation2.duration = duration/2;
-	group.duration = duration;
-
-	group.animations = @[ animation, animation2 ];
-
-	return group;
+	CATransform3D t2 = entering ? DZSemiModalTranslationForFrameSize(frameSize, orient) : CATransform3DIdentity;
+	if (step1) *step1 = t1;
+	if (step2) *step2 = t2;
 }
 
 @interface DZPopupController ()
@@ -59,8 +43,6 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 @property (nonatomic, weak) UIControl *backgroundView;
 @property (nonatomic, weak) UIWindow *oldKeyWindow;
 @property (nonatomic, weak, readonly) UIView *contentView;
-- (void)dzp_closePressed:(UIButton *)closeButton;
-- (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block;
 
 @end
 
@@ -129,7 +111,7 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	[self.backgroundView addTarget: self action: @selector(dzp_closePressed:) forControlEvents: UIControlEventTouchUpInside];
+	[self.backgroundView addTarget: self action: @selector(closePressed:) forControlEvents: UIControlEventTouchUpInside];
 }
 
 - (void)setViewFrameFromMiddle {
@@ -148,17 +130,27 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 
 	[self setViewFrameFromMiddle];
 
-	if (!self.pushesContentBack)
-		return;
+	UIView *view = nil;
+	BOOL pushesContentBack = self.pushesContentBack;
 
-	CGSize frameSize = self.oldKeyWindow.frame.size;
-	UIInterfaceOrientation orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
-	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
-	animation.toValue = [NSValue valueWithCATransform3D: DZSemiModalTranslationForFrameSize(frameSize, orient)];
-	animation.removedOnCompletion = NO;
-	animation.fillMode = kCAFillModeForwards;
-	animation.duration = duration;
-	[self.oldKeyWindow.layer addAnimation: animation forKey: nil];
+	if (pushesContentBack) {
+		UIInterfaceOrientation orient = UIInterfaceOrientationPortrait;
+		if (self.presentingViewController) {
+			view = self.presentingViewController.view;
+			orient = self.presentingViewController.interfaceOrientation;
+		} else {
+			view = self.oldKeyWindow;
+			orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
+		}
+
+		if (view) {
+			CGSize frameSize = view.bounds.size;
+			UIViewAnimationOptions opt = UIViewAnimationOptionCurveEaseInOut;
+			[UIView animateWithDuration:duration delay:0 options:opt animations:^{
+				view.layer.transform = DZSemiModalTranslationForFrameSize(frameSize, orient);
+			} completion:NULL];
+		}
+	}
 }
 
 - (void)viewDidLayoutSubviews {
@@ -172,21 +164,61 @@ static CAAnimationGroup *DZSemiModalPushBackAnimationForFrameSize(CGSize frameSi
 }
 
 - (void)setHeight:(CGFloat)height animated:(BOOL)animated {
-	[UIView animateWithDuration: (1./3.) delay: 0.0 options: UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionCurveEaseInOut animations:^{
+	if (animated) {
+		[UIView animateWithDuration:(1./3.) delay:0 options: UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+			self.height = height;
+		} completion: NULL];
+	} else {
 		self.height = height;
-	} completion: NULL];
+	}
 }
 
 #pragma mark - Present and dismiss
 
 - (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
-	if (self.pushesContentBack) {
-		CGSize frameSize = self.oldKeyWindow.frame.size;
-		UIInterfaceOrientation orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
-		[self.oldKeyWindow.layer addAnimation: DZSemiModalPushBackAnimationForFrameSize(frameSize, orient, duration, entering) forKey: nil];
+	UIView *view = nil;
+	BOOL pushesContentBack = self.pushesContentBack;
+	
+	if (pushesContentBack) {
+		UIInterfaceOrientation orient = UIInterfaceOrientationPortrait;
+		if (self.presentingViewController) {
+			view = self.presentingViewController.view;
+			orient = self.presentingViewController.interfaceOrientation;
+		} else {
+			view = self.oldKeyWindow;
+			orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
+		}
+
+		if (view) {
+			CGSize frameSize = view.bounds.size;
+			
+			if (entering) {
+				view.layer.zPosition = -100;
+			}
+
+			NSTimeInterval pushDuration = duration / 2;
+			CATransform3D t1, t2;
+			DZSemiModalMakePushBackTransforms(frameSize, orient, entering, &t1, &t2);
+
+			UIViewAnimationOptions opt = UIViewAnimationOptionCurveEaseInOut;
+			[UIView animateWithDuration:pushDuration delay:0 options:opt animations:^{
+				view.layer.transform = t1;
+			} completion:^(BOOL finished) {
+				[UIView animateWithDuration:pushDuration delay:0 options:opt animations:^{
+					view.layer.transform = t2;
+				} completion:NULL];
+			}];
+		}
 	}
 
-	[super performAnimationWithStyle:style entering:entering duration:duration completion:block];
+	[super performAnimationWithStyle:style entering:entering duration:duration completion:^{
+		if (!entering && pushesContentBack && view) {
+			view.layer.transform = CATransform3DIdentity;
+			view.layer.zPosition = 0;
+		}
+
+		if (block) block();
+	}];
 }
 
 @end
