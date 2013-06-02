@@ -21,9 +21,11 @@
 
 @implementation DZDemoTableViewController
 
-@synthesize texts = _texts;
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+	return YES;
+}
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
+- (BOOL)shouldAutorotate {
 	return YES;
 }
 
