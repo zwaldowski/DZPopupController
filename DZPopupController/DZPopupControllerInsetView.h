@@ -7,9 +7,9 @@
 //  Copyright (c) 2012 Dizzy Technology. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "DZPopupControllerDrawingView.h"
 
-@interface DZPopupControllerInsetView : UIImageView
+@interface DZPopupControllerInsetView : DZPopupControllerDrawingView
 
 @property (nonatomic, strong) UIColor *baseColor;
 @property (nonatomic) BOOL clippedDrawing;

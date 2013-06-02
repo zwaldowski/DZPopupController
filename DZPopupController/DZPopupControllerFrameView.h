@@ -7,9 +7,9 @@
 //  Copyright (c) 2012 Dizzy Technology. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "DZPopupControllerDrawingView.h"
 
-@interface DZPopupControllerFrameView : UIImageView
+@interface DZPopupControllerFrameView : DZPopupControllerDrawingView
 
 @property (nonatomic, strong) UIColor *baseColor;
 @property (nonatomic, getter = isDecorated) BOOL decorated;

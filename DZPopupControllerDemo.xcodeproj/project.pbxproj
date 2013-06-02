@@ -16,6 +16,7 @@
 		6C6BB346157A99E00001113B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C6BB345157A99E00001113B /* QuartzCore.framework */; };
 		6C91AA6A157FDB71008618FA /* DZPopupController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C91AA69157FDB71008618FA /* DZPopupController.m */; };
 		6CC5C6BA1642AC9E004CC3F5 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 6CC5C6B91642AC9E004CC3F5 /* Default-568h@2x.png */; };
+		DBBE74D2175AB450006083AF /* DZPopupControllerDrawingView.m in Sources */ = {isa = PBXBuildFile; fileRef = DBBE74D1175AB450006083AF /* DZPopupControllerDrawingView.m */; };
 		F54E32B0156271030057A34F /* DZDemoTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F54E32AF156271030057A34F /* DZDemoTableViewController.m */; };
 		F54E32B3156273780057A34F /* DZDemoDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F54E32B2156273780057A34F /* DZDemoDetailViewController.m */; };
 		F5C422441560BF2300F7E3EE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5C422431560BF2300F7E3EE /* UIKit.framework */; };
@@ -41,6 +42,8 @@
 		6C91AA68157FDB71008618FA /* DZPopupController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DZPopupController.h; sourceTree = "<group>"; };
 		6C91AA69157FDB71008618FA /* DZPopupController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DZPopupController.m; sourceTree = "<group>"; };
 		6CC5C6B91642AC9E004CC3F5 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-568h@2x.png"; path = "DZPopupControllerDemo/Default-568h@2x.png"; sourceTree = "<group>"; };
+		DBBE74D0175AB450006083AF /* DZPopupControllerDrawingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DZPopupControllerDrawingView.h; sourceTree = "<group>"; };
+		DBBE74D1175AB450006083AF /* DZPopupControllerDrawingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DZPopupControllerDrawingView.m; sourceTree = "<group>"; };
 		F54E32AE156271030057A34F /* DZDemoTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DZDemoTableViewController.h; sourceTree = "<group>"; };
 		F54E32AF156271030057A34F /* DZDemoTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DZDemoTableViewController.m; sourceTree = "<group>"; };
 		F54E32B1156273780057A34F /* DZDemoDetailViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DZDemoDetailViewController.h; sourceTree = "<group>"; };
@@ -80,6 +83,8 @@
 				6C3E7B6015FD384C0014F5C7 /* DZSemiModalPopupController.m */,
 				6C3E7B6D15FD4E9F0014F5C7 /* DZPopupControllerCloseButton.h */,
 				6C3E7B6E15FD4E9F0014F5C7 /* DZPopupControllerCloseButton.m */,
+				DBBE74D0175AB450006083AF /* DZPopupControllerDrawingView.h */,
+				DBBE74D1175AB450006083AF /* DZPopupControllerDrawingView.m */,
 				6C3E7B6715FD48E80014F5C7 /* DZPopupControllerFrameView.h */,
 				6C3E7B6815FD48E80014F5C7 /* DZPopupControllerFrameView.m */,
 				6C3E7B6A15FD4E5D0014F5C7 /* DZPopupControllerInsetView.h */,
@@ -220,6 +225,7 @@
 				6C3E7B6915FD48E80014F5C7 /* DZPopupControllerFrameView.m in Sources */,
 				6C3E7B6C15FD4E5D0014F5C7 /* DZPopupControllerInsetView.m in Sources */,
 				6C3E7B6F15FD4E9F0014F5C7 /* DZPopupControllerCloseButton.m in Sources */,
+				DBBE74D2175AB450006083AF /* DZPopupControllerDrawingView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
