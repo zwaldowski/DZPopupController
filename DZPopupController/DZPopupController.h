@@ -15,12 +15,22 @@ typedef enum {
     DZPopupTransitionStyleSlideRight,
 } DZPopupTransitionStyle;
 
+@class DZPopupController;
+
+@protocol DZPopupControllerDelegate <NSObject>
+
+- (void)popupControllerDidDismissPopup:(DZPopupController *)popupController;
+
+@end
+
 @interface DZPopupController : UIViewController <UIAppearanceContainer>
 
 - (id)initWithContentViewController:(UIViewController *)viewController;
 
 @property (nonatomic, strong) UIViewController *contentViewController;
 - (void)setContentViewController:(UIViewController *)viewController animated:(BOOL)animated;
+
+@property (nonatomic, weak) id <DZPopupControllerDelegate> delegate;
 
 @property (nonatomic) UIEdgeInsets frameEdgeInsets;
 - (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated;

@@ -142,11 +142,21 @@
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
+	[super viewWillDisappear:animated];
+	
 	[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
 	
 	if (self.presentingViewController && !_dismissingViaOurMethod) {
-		[self performAnimationWithStyle: self.exitStyle entering: NO duration: animated ? (1./3.) : 0 completion: NULL];
+		[self performAnimationWithStyle: self.exitStyle entering: NO duration: animated ? (1./3.) : 0 completion:^{
+			if ([self.delegate respondsToSelector:@selector(popupControllerDidDismissPopup:)]) {
+				[self.delegate popupControllerDidDismissPopup:self];
+			}
+		}];
 	}
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+	[super viewDidDisappear:animated];
 }
 
 #pragma mark - Properties
@@ -353,6 +363,10 @@
 			[self.presentingViewController dismissViewControllerAnimated: NO completion: ^{
 				_dismissingViaOurMethod = NO;
 
+				if ([self.delegate respondsToSelector:@selector(popupControllerDidDismissPopup:)]) {
+					[self.delegate popupControllerDidDismissPopup:self];
+				}
+
 				if (block)
 					block();
 			}];
@@ -360,6 +374,10 @@
 			self.window = nil;
 
 			_dismissingViaOurMethod = NO;
+
+			if ([self.delegate respondsToSelector:@selector(popupControllerDidDismissPopup:)]) {
+				[self.delegate popupControllerDidDismissPopup:self];
+			}
 
 			if (block)
 				block();
