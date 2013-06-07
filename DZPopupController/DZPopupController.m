@@ -18,7 +18,7 @@
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, weak) UIWindow *oldKeyWindow;
 @property (nonatomic, weak) UIControl *backgroundView;
-@property (nonatomic, weak) DZPopupControllerFrameView *frameView;
+@property (nonatomic, strong) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) UIView *contentView;
 @property (nonatomic, weak) DZPopupControllerInsetView *insetView;
 @property (nonatomic, weak) DZPopupControllerCloseButton *closeButton;
