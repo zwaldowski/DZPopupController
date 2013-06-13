@@ -356,7 +356,7 @@
 - (void)dismissWithCompletion:(void (^)(void))block {
 	_dismissingViaOurMethod = YES;
 	
-	[self.oldKeyWindow makeKeyAndVisible];
+	[self.oldKeyWindow makeKeyWindow];
 
     [self performAnimationWithStyle: self.exitStyle entering: NO duration: (1./3.) completion: ^{
 		if (self.presentingViewController) {
