@@ -11,6 +11,24 @@
 #import "DZPopupController+Subclasses.h"
 #import <QuartzCore/QuartzCore.h>
 
+/**
+ Determined experimentally against iOS 6.1:
+ 
+ - UIWindowLevelAlert = 1000
+ - UIWindowLevelStatusBar = 2000
+ - UIWindowLevelNormal = 0
+ - Keyboard is arbitrarily above whatever the current key window level,
+   iff window level < UIWindowLevelAlert. UIAlertView is not presented at
+   UIWindowLevelAlert if it triggers a keyboard.
+ - Keyboard window level == 1 when there's only one normal window
+ - Keyboard window level == 10 when there's an HBAPopupController.
+ */
+const UIWindowLevel DZWindowLevelPopup = 5;
+const UIWindowLevel DZWindowLevelHUD = 10;
+const UIWindowLevel DZWindowLevelAlert = 15;
+
+const NSTimeInterval DZPopupAnimationDuration = (1./3.);
+
 static UIView *DZPopupFindFirstResponder(UIView *view) {
     if (view.isFirstResponder)
 		return view;
@@ -42,10 +60,15 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 #pragma mark - Setup and teardown
 
 - (id)initWithContentViewController:(UIViewController *)viewController {
+	return [self initWithContentViewController:viewController windowLevel:DZWindowLevelPopup];
+}
+
+- (id)initWithContentViewController:(UIViewController *)viewController windowLevel:(UIWindowLevel)level {
 	if (self = [super initWithNibName:nil bundle:nil]) {
 		NSParameterAssert(viewController);
-		
+        
 		self.contentViewController = viewController;
+		self.windowLevel = level;
 	}
 	return self;
 }
@@ -149,7 +172,7 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
     
 	UIWindow *window = [[UIWindow alloc] initWithFrame: [[UIScreen mainScreen] bounds]];
 	window.backgroundColor = [UIColor clearColor];
-	window.windowLevel = 5;
+	window.windowLevel = self.windowLevel;
 	window.rootViewController = self;
 	[window makeKeyAndVisible];
 	self.window = window;
@@ -323,6 +346,12 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 			addObservers();
 		}];
 	}
+}
+
+- (void)setWindowLevel:(UIWindowLevel)windowLevel {
+	_windowLevel = windowLevel;
+	if (self.window)
+		self.window.windowLevel = _windowLevel;
 }
 
 - (BOOL)isVisible {
