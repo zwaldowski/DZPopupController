@@ -13,6 +13,14 @@
 #import "DZPopupControllerCloseButton.h"
 #import <QuartzCore/QuartzCore.h>
 
+const CGFloat DZPopupSheetBorderRadius = 8.0f;
+
+inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
+	CGFloat shadowOffset = radius / 4;
+	CGFloat shadowPad = 2 * (radius + (shadowOffset * 2));
+	return shadowPad;
+}
+
 @interface DZPopupSheetController ()
 
 @property (nonatomic, strong) DZPopupControllerFrameView *frameView;
@@ -20,30 +28,41 @@
 @property (nonatomic, weak) DZPopupControllerCloseButton *closeButton;
 @property (nonatomic) UIStatusBarStyle backupStatusBarStyle;
 
-
 @end
 
 @implementation DZPopupSheetController
 
+- (CGFloat)shadowPadding {
+	return DZPopupSheetShadowPaddingForBorderRadius(DZPopupSheetBorderRadius);
+}
+
+- (CGRect)frameForFrameView
+{
+    const CGFloat shadowPad = [self shadowPadding];
+	CGRect frameVisualRect = UIEdgeInsetsInsetRect(self.view.bounds, self.frameEdgeInsets);
+	CGRect frameOuterRect = CGRectInset(frameVisualRect, -shadowPad, -shadowPad);
+    return frameOuterRect;
+}
+
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	
-	CGFloat shadowPad = 24;
-	CGRect frameVisualRect = UIEdgeInsetsInsetRect(self.view.bounds, _frameEdgeInsets);
-	CGRect frameOuterRect = CGRectInset(frameVisualRect, -shadowPad, -shadowPad);
+ 
+	self.frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
+	self.frameEdgeInsets = UIEdgeInsetsMake(33, 33, 33, 33);
+	self.frameStyle = DZPopupUIIsStark() ? DZPopupSheetFrameStyleStark : DZPopupSheetFrameStyleAll;
+    
+    CGRect frameViewFrame = [self frameForFrameView];
 
-	DZPopupControllerFrameView *frame = [[DZPopupControllerFrameView alloc] initWithFrame:frameOuterRect];
+	DZPopupControllerFrameView *frame = [[DZPopupControllerFrameView alloc] initWithFrame:frameViewFrame];
 	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	frame.baseColor = self.frameColor;
 	[self.view addSubview: frame];
 	self.frameView = frame;
     
-	[self configureFrameView];
-	[self configureInsetView];
-	[self configureCloseButton];
-    
     self.contentView.frame = frame.bounds;
     [frame addSubview:self.contentView];
+    
+	[self configureFrameStyle];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -70,7 +89,7 @@
 - (void)setContentViewController:(UIViewController *)newController animated:(BOOL)animated {
 	UIViewController *oldController = self.contentViewController;
 	
-	if (oldController && oldController.view.superview) {
+	if (oldController) {
 		if ([oldController isKindOfClass: [UINavigationController class]]) {
 			[oldController removeObserver: self forKeyPath: @"toolbar.bounds"];
 			[oldController removeObserver: self forKeyPath: @"navigationBar.bounds"];
@@ -84,7 +103,7 @@
     if (newController) {
         if ([newController isKindOfClass: [UINavigationController class]]) {
 			UINavigationController *navigationController = (id)newController;
-			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
+			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: 0 context: NULL];
 			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
 		}
 		
@@ -103,9 +122,7 @@
 		return;
 
 	void (^animations)(void) = ^{
-		CGRect superViewBounds = [[UIScreen mainScreen] applicationFrame];
-		superViewBounds.origin = CGPointZero;
-		self.frameView.frame = UIEdgeInsetsInsetRect(superViewBounds, self.frameEdgeInsets);
+        self.frameView.frame = [self frameForFrameView];
 	};
 
 	if (animated) {
@@ -119,6 +136,7 @@
 	[self setFrameColor: frameColor animated: NO];
 }
 
+
 - (void)setFrameColor:(UIColor*)frameColor animated:(BOOL)animated {
 	if ([self.frameColor isEqual: frameColor])
 		return;
@@ -126,13 +144,20 @@
 	_frameColor = frameColor;
 
 	void (^configureAppearance)(void) = ^{
-		id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
-		id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
-		id specialToolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationBar class], [UINavigationController class], [self class], nil];
-		[navigationBarAppearance setTintColor: frameColor];
-		[toolbarAppearance setBackgroundColor: frameColor];
-		[specialToolbarAppearance setBackgroundColor: nil];
-		[specialToolbarAppearance setTintColor: nil];
+		if (DZPopupUIIsStark()) {
+			id barButtonItem = [UIBarButtonItem appearanceWhenContainedIn:[UINavigationController class], [self class], nil];
+			[barButtonItem setTintColor: frameColor];
+		} else {
+			id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
+			id navigationBarAppearance = [UINavigationBar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
+			id specialToolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationBar class], [UINavigationController class], [self class], nil];
+
+			[navigationBarAppearance setTintColor: frameColor];
+			[toolbarAppearance setTintColor: frameColor];
+			[toolbarAppearance setBackgroundColor: frameColor];
+			[specialToolbarAppearance setBackgroundColor: nil];
+			[specialToolbarAppearance setTintColor: nil];
+		}
 	};
 
 	if (self.frameView) {
@@ -152,46 +177,33 @@
 	}
 }
 
-#pragma mark - Subclassable methods
-
-- (void)setDefaultAppearance {
-	self.frameColor = [UIColor colorWithRed:0.10f green:0.12f blue:0.16f alpha:1.00f];
-	self.frameEdgeInsets = UIEdgeInsetsMake(33, 33, 33, 33);
+- (void)setFrameStyle:(DZPopupSheetFrameStyle)frameStyle
+{
+    [self setFrameStyle:frameStyle animated:NO];
 }
 
-- (void)configureFrameView {
-	self.frameView.decorated = YES;
-	self.contentView.frame = CGRectInset(self.frameView.bounds, 26, 26);
-	self.contentView.layer.cornerRadius = 7.0f;
-	self.contentView.clipsToBounds = YES;
-
-	id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
-	UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
-	[toolbarAppearance setBackgroundImage: UIGraphicsGetImageFromCurrentImageContext() forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
-	UIGraphicsEndImageContext();
-}
-
-- (void)configureInsetView {
-	if (self.insetView)
-		return;
-
-	DZPopupControllerInsetView *overlay = [DZPopupControllerInsetView new];
-	overlay.backgroundColor = [UIColor clearColor];
-	overlay.contentMode = UIViewContentModeRedraw;
-	overlay.userInteractionEnabled = NO;
-	overlay.baseColor = self.frameColor;
-	[self.frameView addSubview: overlay];
-	self.insetView = overlay;
-}
-
-- (void)configureCloseButton {
-	if (self.closeButton) return;
-
-	DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(12, 12, 26, 26)];
-	closeButton.showsTouchWhenHighlighted = YES;
-	[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
-	[self.frameView addSubview: closeButton];
-	self.closeButton = closeButton;
+- (void)setFrameStyle:(DZPopupSheetFrameStyle)frameStyle animated:(BOOL)animated
+{
+    if (!self.isViewLoaded || _frameStyle == frameStyle) return;
+    
+    _frameStyle = frameStyle;
+    
+    if (!self.frameView) return;
+    
+    void (^configure)(void) = ^{
+        [self configureFrameStyle];
+		self.frameView.frame = [self frameForFrameView];
+    };
+    
+    if (animated) {
+        UIViewAnimationOptions opts = UIViewAnimationOptionLayoutSubviews |
+                                    UIViewAnimationOptionBeginFromCurrentState |
+                                    UIViewAnimationOptionCurveEaseInOut |
+                                    UIViewAnimationOptionTransitionCrossDissolve;
+        [UIView transitionWithView:self.view duration:DZPopupAnimationDuration options:opts animations:configure completion:NULL];
+    } else {
+        configure();
+    }
 }
 
 #pragma mark - Internal
@@ -204,12 +216,80 @@
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
-- (void)closePressed:(UIButton *)closeButton {
+- (void)closePressed:(UIButton *)closeButton
+{
 	[self dismissWithCompletion: NULL];
 }
 
-- (UIView *)contentViewForPerformingAnimation {
+- (UIView *)contentViewForPerformingAnimation
+{
     return self.frameView;
 }
+
+- (void)configureFrameStyle {
+	const DZPopupSheetFrameStyle frameStyle = self.frameStyle;
+	const BOOL hasShadow = (frameStyle & DZPopupSheetFrameStyleShadowed),
+	hasBorder = (frameStyle & DZPopupSheetFrameStyleBordered),
+	hasBezel = (frameStyle & DZPopupSheetFrameStyleBezel && !DZPopupUIIsStark()),
+	hasClose = (frameStyle & DZPopupSheetFrameStyleCloseButton);
+
+	UIScreen *screen = self.view.window ? self.view.window.screen : [UIScreen mainScreen];
+	const CGFloat scale = screen.scale;
+	
+	CGFloat inset = [self shadowPadding];
+	if (hasShadow) inset += 0.5f;
+	if (hasBorder) inset += 1.5f;
+	inset = roundf(inset * scale) / scale;
+	
+	self.contentView.frame = CGRectInset(self.frameView.bounds, inset, inset);
+	self.contentView.layer.cornerRadius = DZPopupSheetBorderRadius - 1.0f;
+	self.contentView.clipsToBounds = YES;
+	self.frameView.shadowed = hasShadow;
+	self.frameView.bordered = hasBorder;
+	
+	if (!DZPopupUIIsStark()) {
+		UIImage *toolbarBG = nil;
+		if (hasBezel) {
+			UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0.0);
+			toolbarBG = UIGraphicsGetImageFromCurrentImageContext();
+			UIGraphicsEndImageContext();
+		}
+		UIToolbar *toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
+		[toolbarAppearance setBackgroundImage: toolbarBG forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
+		UIGraphicsEndImageContext();
+	}
+	
+	if (hasClose) {
+		if (!self.closeButton) {
+			DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(14, 14, 26, 26)];
+			closeButton.showsTouchWhenHighlighted = YES;
+			[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
+			[self.frameView addSubview: closeButton];
+			self.closeButton = closeButton;
+		}
+	} else {
+		if (self.closeButton) {
+			[self.closeButton removeTarget:self action:NULL forControlEvents:UIControlEventTouchUpInside];
+			[self.closeButton removeFromSuperview];
+		}
+	}
+	
+	if (hasBezel) {
+		if (!self.insetView) {
+			DZPopupControllerInsetView *overlay = [DZPopupControllerInsetView new];
+			overlay.backgroundColor = [UIColor clearColor];
+			overlay.contentMode = UIViewContentModeRedraw;
+			overlay.userInteractionEnabled = NO;
+			overlay.baseColor = self.frameColor;
+			[self.frameView addSubview: overlay];
+			self.insetView = overlay;
+		}
+	} else {
+		if (self.insetView) {
+			[self.insetView removeFromSuperview];
+		}
+	}
+}
+
 
 @end

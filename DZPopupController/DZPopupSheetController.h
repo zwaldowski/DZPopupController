@@ -9,6 +9,27 @@
 
 #import "DZPopupController+Subclasses.h"
 
+extern const CGFloat DZPopupSheetBorderRadius;
+extern inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius);
+
+typedef NS_OPTIONS(NSUInteger, DZPopupSheetFrameStyle) {
+    DZPopupSheetFrameStyleNone			= 0,
+    DZPopupSheetFrameStyleCloseButton	= 1 << 0,
+    DZPopupSheetFrameStyleShadowed		= 1 << 1,
+    DZPopupSheetFrameStyleBordered		= 1 << 2,
+    DZPopupSheetFrameStyleBezel			= 1 << 3, // ignored on iOS 7
+    DZPopupSheetFrameStyleAlert			= DZPopupSheetFrameStyleShadowed |
+										  DZPopupSheetFrameStyleBordered |
+										  DZPopupSheetFrameStyleBezel,
+    DZPopupSheetFrameStyleHUD			= DZPopupSheetFrameStyleShadowed |
+										  DZPopupSheetFrameStyleBordered,
+    DZPopupSheetFrameStyleStark			= DZPopupSheetFrameStyleShadowed, // iOS 7 default
+    DZPopupSheetFrameStyleAll			= DZPopupSheetFrameStyleCloseButton |
+										  DZPopupSheetFrameStyleShadowed |
+										  DZPopupSheetFrameStyleBordered |
+										  DZPopupSheetFrameStyleBezel // iOS 6 default
+};
+
 @interface DZPopupSheetController : DZPopupController
 
 @property (nonatomic) UIEdgeInsets frameEdgeInsets;
@@ -17,14 +38,8 @@
 @property (nonatomic, strong) UIColor *frameColor;
 - (void)setFrameColor:(UIColor*)frameColor animated:(BOOL)animated;
 
-@end
-
-@interface DZPopupSheetController (SubclassMethods)
-
-- (void)setDefaultAppearance;
-- (void)configureFrameView;
-- (void)configureInsetView;
-- (void)configureCloseButton;
+@property (nonatomic) DZPopupSheetFrameStyle frameStyle;
+- (void)setFrameStyle:(DZPopupSheetFrameStyle)frameStyle animated:(BOOL)animated;
 
 - (void)closePressed:(UIButton *)closeButton;
 

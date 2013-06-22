@@ -265,6 +265,15 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
     }
     
     frame.frame = entering ? modifiedRect : originalRect;
+	self.contentView.layer.shouldRasterize = YES;
+	self.contentView.layer.rasterizationScale = frame.window.screen.scale;
+	
+	void (^completion)(void) = ^{
+		self.contentView.layer.shouldRasterize = NO;
+		self.contentView.layer.rasterizationScale = frame.window.screen.scale;
+		
+		if (block) block();
+	};
     
 	BOOL isChainedAnimation = (entering && style == DZPopupTransitionStylePop);
     
@@ -287,7 +296,7 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 						[UIView animateWithDuration:0.125 delay:0 options:chainedOptions animations:^{
 							frame.transform = CGAffineTransformIdentity;
 						} completion:^(BOOL finished) {
-							if (block) block();
+							completion();
 						}];
 					}];
 				}];
@@ -298,9 +307,7 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 			frame.frame = entering ? originalRect : modifiedRect;
 		}
 	} completion:^(BOOL finished) {
-		if (!isChainedAnimation && block) {
-			block();
-		}
+		if (!isChainedAnimation) completion();
 	}];
 }
 

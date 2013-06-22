@@ -14,6 +14,14 @@
 
 @implementation DZDemoViewController
 
+- (void)viewDidLoad {
+    #if DZPOPUP_HAS_7_SDK
+    if (DZPopupUIIsStark()) {
+        self.edgesForExtendedLayout = 0;
+    }
+    #endif
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 	return YES;
 }

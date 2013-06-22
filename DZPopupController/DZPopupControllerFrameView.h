@@ -12,6 +12,7 @@
 @interface DZPopupControllerFrameView : DZPopupControllerDrawingView
 
 @property (nonatomic, strong) UIColor *baseColor;
-@property (nonatomic, getter = isDecorated) BOOL decorated;
+@property (nonatomic, getter = isBordered) BOOL bordered;
+@property (nonatomic, getter = isShadowed) BOOL shadowed;
 
 @end

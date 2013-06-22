@@ -109,6 +109,7 @@
 				F5C422401560BF2300F7E3EE /* Products */,
 			);
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5C422401560BF2300F7E3EE /* Products */ = {
 			isa = PBXGroup;
