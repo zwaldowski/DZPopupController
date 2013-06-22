@@ -31,10 +31,13 @@
 	CGContextRef ctx = UIGraphicsGetCurrentContext();
 
 	rect = CGRectInset(rect, shadowPad, shadowPad);
+    
+    UIScreen *screen = self.window ? self.window.screen : [UIScreen mainScreen];
+    const CGFloat hairline = 1.0f / screen.scale;
 
 	[[UIColor colorWithWhite:1.00f alpha:0.2] setStroke];
 	UIBezierPath *outerRing = [UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: radius+1];
-	outerRing.lineWidth = 1.0f / self.window.screen.scale;
+	outerRing.lineWidth = hairline;
 	[outerRing stroke];
 
 	[self.baseColor setFill];
