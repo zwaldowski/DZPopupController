@@ -10,8 +10,7 @@
 #import "DZDemoTableViewController.h"
 #import "DZDemoDetailViewController.h"
 
-#define kCellIdentifier  @"UITableViewCell"
-#define kNavigationTitle @"Demo"
+static NSString *const kCellIdentifier = @"PopupDemoCell";
 
 @interface DZDemoTableViewController()
 
@@ -32,20 +31,17 @@
 #pragma mark - UITableViewController
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-	return [self.texts count];
+	return self.texts.count;
 }
-
 
 - (UITableViewCell*)tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath {
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kCellIdentifier];
 	if (cell == nil) {
-		cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
-									   reuseIdentifier:kCellIdentifier];
+		cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kCellIdentifier];
 	}
 	
-	NSString *text = [self.texts objectAtIndex:[indexPath row]];
-	[cell.textLabel setText:text];
-	[cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+    cell.textLabel.text = self.texts[indexPath.row];
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 	
 	return cell;
 }
@@ -58,7 +54,7 @@
 	DZDemoDetailViewController *detailViewController = [DZDemoDetailViewController new];
 	NSString *text = [self.texts objectAtIndex:[indexPath row]];
 	detailViewController.title = text;
-	detailViewController.textLabel.text = text;
+	detailViewController.labelText = text;
 	detailViewController.hidesBottomBarWhenPushed = NO;
 	[self.navigationController pushViewController:detailViewController animated:YES];
 }
@@ -68,8 +64,8 @@
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	
-	[self.navigationItem setTitle:kNavigationTitle];
+    
+    self.navigationItem.title = @"Demo";
 	
 	NSMutableArray *data = [NSMutableArray array];
 	

@@ -12,13 +12,10 @@
 
 @implementation DZAppDelegate
 
-@synthesize window = window_;
-
 #pragma mark - UIApplicationDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    // Override point for customization after application launch.
 	self.window.rootViewController = [[DZDemoViewController alloc] initWithNibName:nil bundle:nil];
     [self.window makeKeyAndVisible];
     return YES;

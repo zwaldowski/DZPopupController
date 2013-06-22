@@ -9,6 +9,6 @@
 
 @interface DZDemoDetailViewController : UIViewController
 
-@property (nonatomic, readonly, strong) UILabel *textLabel;
+@property (nonatomic, copy) NSString *labelText;
 
 @end

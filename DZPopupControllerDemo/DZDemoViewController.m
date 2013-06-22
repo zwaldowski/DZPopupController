@@ -45,6 +45,10 @@
 	//[self presentViewController: floatingController animated: YES completion: NULL];
 }
 
+- (IBAction)showFramelessButtonAction:(id)sender {
+    // TODO
+}
+
 - (IBAction)showSemiModalButtonAction:(id)sender {
 	DZDemoTableViewController *demoViewController = [DZDemoTableViewController new];
 	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
