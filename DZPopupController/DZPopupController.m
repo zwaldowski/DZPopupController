@@ -295,11 +295,6 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 	UIViewController *oldController = self.contentViewController;
 	
 	if (oldController && oldController.view.superview) {
-		if ([oldController isKindOfClass: [UINavigationController class]]) {
-			[oldController removeObserver: self forKeyPath: @"toolbar.bounds"];
-			[oldController removeObserver: self forKeyPath: @"navigationBar.bounds"];
-		}
-		
 		if (!animated) {
 			[oldController willMoveToParentViewController: nil];
 			[oldController.view removeFromSuperview];
@@ -312,38 +307,23 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 	if (!newController || !self.isViewLoaded)
 		return;
 	
-	void (^addObservers)(void) = ^{
-		[newController didMoveToParentViewController: self];
-		
-		if ([newController isKindOfClass: [UINavigationController class]]) {
-			UINavigationController *navigationController = (id)newController;
-			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
-			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
-		}
-		
-		[self.view setNeedsLayout];
-	};
-	
 	if (!oldController) {
 		[UIView transitionWithView: self.contentView duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
 			newController.view.frame = self.contentView.bounds;
 			[self.contentView addSubview: newController.view];
 		} completion:^(BOOL finished) {
 			[self addChildViewController: newController];
-			
-			addObservers();
+			[newController didMoveToParentViewController: self];
 		}];
 	} else if (!oldController.view.superview) {
 		newController.view.frame = self.contentView.bounds;
 		[self.contentView addSubview: newController.view];
 		[self addChildViewController: newController];
-		
-		addObservers();
+		[newController didMoveToParentViewController: self];
 	} else {
 		[self transitionFromViewController: oldController toViewController: newController duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{} completion:^(BOOL finished) {
 			[oldController removeFromParentViewController];
-			
-			addObservers();
+			[newController didMoveToParentViewController: self];
 		}];
 	}
 }

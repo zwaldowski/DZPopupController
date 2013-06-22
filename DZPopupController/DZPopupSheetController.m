@@ -68,8 +68,28 @@
 #pragma mark - Properties
 
 - (void)setContentViewController:(UIViewController *)newController animated:(BOOL)animated {
+	UIViewController *oldController = self.contentViewController;
+	
+	if (oldController && oldController.view.superview) {
+		if ([oldController isKindOfClass: [UINavigationController class]]) {
+			[oldController removeObserver: self forKeyPath: @"toolbar.bounds"];
+			[oldController removeObserver: self forKeyPath: @"navigationBar.bounds"];
+		}
+	}
+    
     [super setContentViewController:newController animated:animated];
+    
     [self.frameView setNeedsDisplay];
+    
+    if (newController) {
+        if ([newController isKindOfClass: [UINavigationController class]]) {
+			UINavigationController *navigationController = (id)newController;
+			[navigationController addObserver: self forKeyPath: @"toolbar.bounds" options: NSKeyValueObservingOptionNew context: NULL];
+			[navigationController addObserver: self forKeyPath: @"navigationBar.bounds" options: 0 context: NULL];
+		}
+		
+		[self.view setNeedsLayout];
+    }
 }
 
 - (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets {
