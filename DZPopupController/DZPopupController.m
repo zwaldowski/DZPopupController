@@ -20,7 +20,9 @@ extern BOOL DZPopupUIIsStark() {
     static dispatch_once_t onceToken;
     static BOOL isStark = NO;
     dispatch_once(&onceToken, ^{
-        isStark = (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_IOS_7_0);
+		// https://developer.apple.com/library/prerelease/ios/documentation/UserExperience/Conceptual/TransitionGuide/SupportingEarlieriOS.html
+		NSUInteger deviceSystemMajorVersion = [[[[[UIDevice currentDevice] systemVersion] componentsSeparatedByString:@"."] objectAtIndex:0] intValue];
+        isStark = (deviceSystemMajorVersion >= 7);
     });
     return isStark;
 }
