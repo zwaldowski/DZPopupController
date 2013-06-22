@@ -38,6 +38,7 @@
 	DZDemoTableViewController *demoViewController = [DZDemoTableViewController new];
 	UINavigationController *contentViewController = [[UINavigationController alloc] initWithRootViewController: demoViewController];
 	contentViewController.toolbarHidden = NO;
+
 	
 	UIBarButtonItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemFlexibleSpace target: nil action:NULL];
 	UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemRefresh target: nil action:NULL];
@@ -48,9 +49,14 @@
 	DZPopupSheetController *floatingController = [[DZPopupSheetController alloc] initWithContentViewController: contentViewController];
 	floatingController.entranceStyle = DZPopupTransitionStylePop;
     floatingController.exitStyle = DZPopupTransitionStylePop;
-	self.modalPresentationStyle = UIModalPresentationCurrentContext;
+	
+	
+	
+	if (DZPopupUIIsStark()) {
+		demoViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemDone target: floatingController action: @selector(dismiss)];
+	}
+	
 	[floatingController present];
-	//[self presentViewController: floatingController animated: YES completion: NULL];
 }
 
 - (IBAction)showFramelessButtonAction:(id)sender {
