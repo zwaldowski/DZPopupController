@@ -37,43 +37,21 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	if (step2) *step2 = t2;
 }
 
-@interface DZPopupController ()
-
-@property (nonatomic, weak) DZPopupControllerFrameView *frameView;
-@property (nonatomic, weak) UIControl *backgroundView;
-@property (nonatomic, weak) UIWindow *oldKeyWindow;
-@property (nonatomic, weak, readonly) UIView *contentView;
-
-@end
-
-#define DZRaiseUnavailable() _DZRaiseUnavailable([self class], _cmd)
-
 @implementation DZSemiModalPopupController
 
-#pragma mark - Internal super methods
-
-- (void)setDefaultAppearance {
-	[super setFrameColor: nil];
-}
-
-- (void)configureFrameView {
-	self.frameView.decorated = NO;
-	self.frameView.layer.shadowOffset = CGSizeMake(0, -2);
-	self.frameView.layer.shadowOpacity = 0.7f;
-	self.frameView.layer.shadowRadius = 10.0f;
-	self.frameView.layer.shouldRasterize = YES;
-	self.frameView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
-
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+	self.contentView.layer.shadowOffset = CGSizeMake(0, -2);
+	self.contentView.layer.shadowOpacity = 0.7f;
+	self.contentView.layer.shadowRadius = 10.0f;
+	self.contentView.layer.shouldRasterize = YES;
+	self.contentView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
+    
+    [self.backgroundView addTarget: self action: @selector(dismiss) forControlEvents: UIControlEventTouchUpInside];
+    
 	id toolbarAppearance = [UIToolbar appearanceWhenContainedIn: [UINavigationController class], [self class], nil];
 	[toolbarAppearance setBackgroundImage: nil forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
-}
-
-- (void)configureInsetView {
-
-}
-
-- (void)configureCloseButton {
-
 }
 
 #pragma mark - Restricted subclass methods
@@ -94,26 +72,6 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	[self doesNotRecognizeSelector: _cmd];
 }
 
-- (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated {
-	[self doesNotRecognizeSelector: _cmd];
-}
-
-- (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets {
-	[self doesNotRecognizeSelector: _cmd];
-}
-
-- (UIEdgeInsets)frameEdgeInsets {
-	[self doesNotRecognizeSelector: _cmd];
-	return UIEdgeInsetsZero;
-}
-
-#pragma mark - Layout
-
-- (void)viewDidLoad {
-	[super viewDidLoad];
-	[self.backgroundView addTarget: self action: @selector(closePressed:) forControlEvents: UIControlEventTouchUpInside];
-}
-
 - (void)setViewFrameFromMiddle {
 	CGRect appFrame = self.view.bounds;
 	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
@@ -122,7 +80,7 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 		_height = appFrame.size.height / 2;
 	CGFloat topInset = MAX(appFrame.size.height - self.height, statusBarHeight);
 	UIEdgeInsets inset = UIEdgeInsetsMake(topInset, 0, 0, 0);
-	self.frameView.frame = UIEdgeInsetsInsetRect(appFrame, inset);
+	self.contentView.frame = UIEdgeInsetsInsetRect(appFrame, inset);
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
@@ -139,8 +97,8 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 			view = self.presentingViewController.view;
 			orient = self.presentingViewController.interfaceOrientation;
 		} else {
-			view = self.oldKeyWindow;
-			orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
+			view = self.previousKeyWindow;
+			orient = [[self.previousKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
 		}
 
 		if (view) {
@@ -185,8 +143,8 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 			view = self.presentingViewController.view;
 			orient = self.presentingViewController.interfaceOrientation;
 		} else {
-			view = self.oldKeyWindow;
-			orient = [[self.oldKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
+			view = self.previousKeyWindow;
+			orient = [[self.previousKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
 		}
 
 		if (view) {

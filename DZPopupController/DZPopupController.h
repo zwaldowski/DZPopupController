@@ -7,6 +7,8 @@
 //  Copyright (c) 2012 Dizzy Technology. All rights reserved.
 //
 
+@protocol DZPopupControllerDelegate;
+
 typedef enum {
     DZPopupTransitionStylePop,
     DZPopupTransitionStyleSlideBottom,
@@ -14,14 +16,6 @@ typedef enum {
     DZPopupTransitionStyleSlideLeft,
     DZPopupTransitionStyleSlideRight,
 } DZPopupTransitionStyle;
-
-@class DZPopupController;
-
-@protocol DZPopupControllerDelegate <NSObject>
-
-- (void)popupControllerDidDismissPopup:(DZPopupController *)popupController;
-
-@end
 
 @interface DZPopupController : UIViewController <UIAppearanceContainer>
 
@@ -31,12 +25,6 @@ typedef enum {
 - (void)setContentViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
 @property (nonatomic, weak) id <DZPopupControllerDelegate> delegate;
-
-@property (nonatomic) UIEdgeInsets frameEdgeInsets;
-- (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated;
-
-@property (nonatomic, strong) UIColor *frameColor;
-- (void)setFrameColor:(UIColor*)frameColor animated:(BOOL)animated;
 
 @property (nonatomic, readonly, getter = isVisible) BOOL visible;
 
@@ -51,14 +39,8 @@ typedef enum {
 
 @end
 
-@interface DZPopupController (SubclassMethods)
+@protocol DZPopupControllerDelegate <NSObject>
 
-- (void)setDefaultAppearance;
-- (void)configureFrameView;
-- (void)configureInsetView;
-- (void)configureCloseButton;
-
-- (void)closePressed:(UIButton *)closeButton;
-- (void)performAnimationWithStyle:(DZPopupTransitionStyle)style entering:(BOOL)entering duration:(NSTimeInterval)duration completion:(void(^)(void))block;
+- (void)popupControllerDidDismissPopup:(DZPopupController *)popupController;
 
 @end

@@ -8,7 +8,7 @@
 //
 
 #import "DZDemoViewController.h"
-#import "DZPopupController.h"
+#import "DZPopupSheetController.h"
 #import "DZSemiModalPopupController.h"
 #import "DZDemoTableViewController.h"
 
@@ -37,7 +37,7 @@
 	demoViewController.toolbarItems = @[refresh, space, share];
 	demoViewController.hidesBottomBarWhenPushed = NO;
 	
-	DZPopupController *floatingController = [[DZPopupController alloc] initWithContentViewController: contentViewController];
+	DZPopupSheetController *floatingController = [[DZPopupSheetController alloc] initWithContentViewController: contentViewController];
 	floatingController.entranceStyle = DZPopupTransitionStylePop;
     floatingController.exitStyle = DZPopupTransitionStylePop;
 	self.modalPresentationStyle = UIModalPresentationCurrentContext;

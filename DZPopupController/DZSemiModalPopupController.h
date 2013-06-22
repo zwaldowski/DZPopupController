@@ -8,15 +8,12 @@
 //  Copyright (c) 2012 Dizzy Technology. All rights reserved.
 //
 
-#import "DZPopupController.h"
+#import "DZPopupController+Subclasses.h"
 
 @interface DZSemiModalPopupController : DZPopupController
 
 @property (nonatomic) DZPopupTransitionStyle entranceStyle NS_UNAVAILABLE;
 @property (nonatomic) DZPopupTransitionStyle exitStyle NS_UNAVAILABLE;
-
-@property (nonatomic) UIEdgeInsets frameEdgeInsets NS_UNAVAILABLE;
-- (void)setFrameEdgeInsets:(UIEdgeInsets)frameEdgeInsets animated:(BOOL)animated NS_UNAVAILABLE;
 
 @property (nonatomic) CGFloat height;
 - (void)setHeight:(CGFloat)height animated:(BOOL)animated;
