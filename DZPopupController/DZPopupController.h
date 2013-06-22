@@ -7,6 +7,14 @@
 //  Copyright (c) 2012 Dizzy Technology. All rights reserved.
 //
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < 70000
+#define DZPOPUP_HAS_7_SDK 0
+#else
+#define DZPOPUP_HAS_7_SDK 1
+#endif
+
+extern BOOL DZPopupUIIsStark();
+
 @protocol DZPopupControllerDelegate;
 
 typedef NS_ENUM(NSUInteger, DZPopupTransitionStyle) {

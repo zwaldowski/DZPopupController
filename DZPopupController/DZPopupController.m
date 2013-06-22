@@ -11,6 +11,25 @@
 #import "DZPopupController+Subclasses.h"
 #import <QuartzCore/QuartzCore.h>
 
+#ifndef kCFCoreFoundationVersionNumber_IOS_7_0
+#define kCFCoreFoundationVersionNumber_IOS_7_0 838.00
+#endif
+
+#if DZPOPUP_HAS_7_SDK
+extern BOOL DZPopupUIIsStark() {
+    static dispatch_once_t onceToken;
+    static BOOL isStark = NO;
+    dispatch_once(&onceToken, ^{
+        isStark = (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_IOS_7_0);
+    });
+    return isStark;
+}
+#else
+extern BOOL DZPopupUIIsStark() {
+    return NO;
+}
+#endif
+
 /**
  Determined experimentally against iOS 6.1:
  
