@@ -26,7 +26,6 @@ inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
 @property (nonatomic, strong) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) DZPopupControllerInsetView *insetView;
 @property (nonatomic, weak) DZPopupControllerCloseButton *closeButton;
-@property (nonatomic) UIStatusBarStyle backupStatusBarStyle;
 
 @end
 

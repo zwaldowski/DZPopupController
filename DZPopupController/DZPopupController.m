@@ -110,6 +110,15 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 	[self.view addSubview: content];
 	self.contentView = content;
 	
+#if DZPOPUP_HAS_7_SDK
+	if (DZPopupUIIsStark()) {
+		self.edgesForExtendedLayout = UIExtendedEdgeNone;
+		self.automaticallyAdjustsScrollViewInsets = NO;
+		self.extendedLayoutIncludesOpaqueBars = YES;
+	}
+#endif
+
+
 	if (!self.contentViewController.view.superview)
 		self.contentViewController = self.contentViewController;
 }
@@ -118,7 +127,7 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 	[super viewWillAppear:animated];
     
 	self.backupStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
-	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
+	[[UIApplication sharedApplication] setStatusBarStyle: [self preferredStatusBarStyle] animated:YES];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -238,6 +247,14 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 - (UIView *)contentViewForPerformingAnimation
 {
     return self.contentView;
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+	if (!DZPopupUIIsStark()) {
+		return UIStatusBarStyleBlackTranslucent;
+	}
+	return UIStatusBarStyleDefault;
 }
 
 - (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {

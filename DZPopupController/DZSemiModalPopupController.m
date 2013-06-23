@@ -47,6 +47,8 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	self.contentView.layer.shadowRadius = 10.0f;
 	self.contentView.layer.shouldRasterize = YES;
 	self.contentView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
+
+	[self setViewFrameFromMiddle];
     
     [self.backgroundView addTarget: self action: @selector(dismiss) forControlEvents: UIControlEventTouchUpInside];
     
@@ -129,6 +131,11 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	} else {
 		self.height = height;
 	}
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+	return UIStatusBarStyleBlackTranslucent;
 }
 
 #pragma mark - Present and dismiss
