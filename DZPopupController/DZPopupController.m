@@ -260,17 +260,40 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 }
 
 - (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
+	if (DZPopupUIIsStark() && style == DZPopupTransitionStylePop) style = DZPopupTransitionStyleZoom;
+
 	UIView *frame = [self contentViewForPerformingAnimation];
+	UIView *background = self.backgroundView;
+
+	frame.layer.shouldRasterize = YES;
+	frame.layer.rasterizationScale = frame.window.screen.scale;
 	
-    self.backgroundView.alpha = entering ? 0 : 1;
+	void (^completion)(void) = ^{
+		frame.layer.shouldRasterize = NO;
+		frame.layer.rasterizationScale = frame.window.screen.scale;
+
+		if (block) block();
+	};
+
+    background.alpha = entering ? 0 : 1;
     
-    UIViewAnimationOptions options = UIViewAnimationOptionCurveEaseInOut;
+    UIViewAnimationOptions options = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionBeginFromCurrentState;
     UIViewAnimationOptions chainedOptions = options | UIViewAnimationOptionOverrideInheritedDuration | UIViewAnimationOptionOverrideInheritedCurve;
     
     CGRect originalRect = frame.frame, modifiedRect = frame.frame;
+	BOOL isChainedAnimation = NO;
     
     switch (style) {
-        case DZPopupTransitionStylePop:	break;
+		case DZPopupTransitionStyleFade:
+		case DZPopupTransitionStyleZoom:
+			frame.alpha = entering ? 0 : 1;
+			break;
+        case DZPopupTransitionStylePop:
+			if (entering) {
+				frame.transform = CGAffineTransformMakeScale(0.0001, 0.0001);
+				isChainedAnimation = YES;
+			}
+			break;
         case DZPopupTransitionStyleSlideBottom:
             modifiedRect.origin.y = CGRectGetMaxY(self.view.bounds);
             break;
@@ -286,24 +309,17 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
     }
     
     frame.frame = entering ? modifiedRect : originalRect;
-	self.contentView.layer.shouldRasterize = YES;
-	self.contentView.layer.rasterizationScale = frame.window.screen.scale;
 	
-	void (^completion)(void) = ^{
-		self.contentView.layer.shouldRasterize = NO;
-		self.contentView.layer.rasterizationScale = frame.window.screen.scale;
-		
-		if (block) block();
-	};
-    
-	if (entering && style == DZPopupTransitionStylePop) {
-		frame.transform = CGAffineTransformMakeScale(0.0001, 0.0001);
+	if (style == DZPopupTransitionStyleZoom) {
+		frame.transform = entering ? CGAffineTransformMakeScale(1.1, 1.1) : CGAffineTransformIdentity;
 	}
-    
-	BOOL isChainedAnimation = (entering && style == DZPopupTransitionStylePop);
-	
+
 	[UIView animateWithDuration:duration delay:0.0 options:options animations:^{
-		self.backgroundView.alpha = entering ? 1 : 0;
+		background.alpha = entering ? 1 : 0;
+
+		if (style == DZPopupTransitionStyleFade || style == DZPopupTransitionStyleZoom) {
+			frame.alpha = entering ? 1 : 0;
+		}
 		
 		if (style == DZPopupTransitionStylePop) {
 			if (entering) {
@@ -324,6 +340,8 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 			} else {
 				frame.transform = CGAffineTransformMakeScale(0.0001, 0.0001);
 			}
+		} else if (style == DZPopupTransitionStyleZoom) {
+			frame.transform = entering ? CGAffineTransformIdentity : CGAffineTransformMakeScale(0.8, 0.8);
 		} else {
 			frame.frame = entering ? originalRect : modifiedRect;
 		}

@@ -18,7 +18,9 @@ extern BOOL DZPopupUIIsStark();
 @protocol DZPopupControllerDelegate;
 
 typedef NS_ENUM(NSUInteger, DZPopupTransitionStyle) {
-    DZPopupTransitionStylePop,
+    DZPopupTransitionStyleFade,
+    DZPopupTransitionStylePop, // zoom is used on iOS 7
+	DZPopupTransitionStyleZoom,
     DZPopupTransitionStyleSlideBottom,
     DZPopupTransitionStyleSlideTop,
     DZPopupTransitionStyleSlideLeft,
