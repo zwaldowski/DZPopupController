@@ -11,6 +11,8 @@
 #import "DZPopupController+Subclasses.h"
 #import <QuartzCore/QuartzCore.h>
 
+#pragma mark Helper functions and constants
+
 #if DZPOPUP_HAS_7_SDK
 extern BOOL DZPopupUIIsStark() {
     static dispatch_once_t onceToken;
@@ -27,6 +29,18 @@ extern BOOL DZPopupUIIsStark() {
     return NO;
 }
 #endif
+
+const CGFloat DZPopupControllerBorderRadius = 8.0f;
+
+static inline CGFloat DZPopupControllerShadowPaddingForBorderRadius(CGFloat radius) {
+	CGFloat shadowOffset = radius / 4;
+	CGFloat shadowPad = 2 * (radius + (shadowOffset * 2));
+	return shadowPad;
+}
+
+CGFloat DZPopupControllerShadowPadding(void) {
+	return DZPopupControllerShadowPaddingForBorderRadius(DZPopupControllerBorderRadius);
+}
 
 /**
  Determined experimentally against iOS 6.1:
@@ -61,12 +75,28 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 	return nil;
 }
 
+void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
+	CGPoint newCenter;
+	newCenter.x = CGRectGetMidX(newFrame);
+	newCenter.y = CGRectGetMidY(newFrame);
+	view.center = newCenter;
+	
+	CGRect newBounds;
+	newBounds.origin = CGPointZero;
+	newBounds.size = newFrame.size;
+	view.bounds = newBounds;
+}
+
+#pragma mark - 
+
 @interface DZPopupController ()
 
 @property (nonatomic, strong) UIWindow *window;
+
 @property (nonatomic, weak, readwrite) UIWindow *previousKeyWindow;
-@property (nonatomic, strong, readwrite) UIView *contentView;
 @property (nonatomic, weak, readwrite) UIControl *backgroundView;
+@property (nonatomic, strong, readwrite) UIView *contentView;
+
 @property (nonatomic) UIStatusBarStyle backupStatusBarStyle;
 @property (nonatomic, getter = isDismissingViaCustomMethod) BOOL dismissingViaCustomMethod;
 
@@ -119,8 +149,7 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 		self.extendedLayoutIncludesOpaqueBars = YES;
 	}
 #endif
-
-
+	
 	if (!self.contentViewController.view.superview)
 		self.contentViewController = self.contentViewController;
 }
@@ -261,92 +290,88 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 
 - (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
 	if (DZPopupUIIsStark() && style == DZPopupTransitionStylePop) style = DZPopupTransitionStyleZoom;
-
+	
 	UIView *frame = [self contentViewForPerformingAnimation];
 	UIView *background = self.backgroundView;
-
+	
 	frame.layer.shouldRasterize = YES;
 	frame.layer.rasterizationScale = frame.window.screen.scale;
 	
 	void (^completion)(void) = ^{
 		frame.layer.shouldRasterize = NO;
 		frame.layer.rasterizationScale = frame.window.screen.scale;
-
+		
 		if (block) block();
 	};
+    
+	CGAffineTransform modified = CGAffineTransformIdentity;
+	CGFloat beginAlpha = 1, endAlpha = 1;
 
-    background.alpha = entering ? 0 : 1;
+    switch (style) {
+		case DZPopupTransitionStyleFade:
+		case DZPopupTransitionStyleZoom: {
+			if (style == DZPopupTransitionStyleZoom) {
+				CGFloat scale = entering ? 1.1 : 0.8;
+				modified = CGAffineTransformMakeScale(scale, scale);
+			}
+			endAlpha = entering ? 1 : 0;
+			beginAlpha = entering ? 0 : 1;
+			break;
+		}
+        case DZPopupTransitionStylePop:
+			modified = CGAffineTransformMakeScale(0.0001, 0.0001);
+			break;
+        case DZPopupTransitionStyleSlideBottom:
+			modified = CGAffineTransformMakeTranslation(0, frame.bounds.size.height);
+            break;
+        case DZPopupTransitionStyleSlideTop:
+			modified = CGAffineTransformMakeTranslation(0, -CGRectGetMidY(frame.bounds)-frame.center.y);
+            break;
+        case DZPopupTransitionStyleSlideLeft:
+			modified = CGAffineTransformMakeTranslation(-CGRectGetMidX(frame.bounds)-frame.center.x, 0);
+            break;
+        case DZPopupTransitionStyleSlideRight:
+			modified = CGAffineTransformMakeTranslation(frame.bounds.size.width, 0);
+            break;
+    }
+	
+	CGAffineTransform begin = entering ? modified : CGAffineTransformIdentity;
+	CGAffineTransform end = entering ? CGAffineTransformIdentity : modified;
+	
+	frame.transform = begin;
+	frame.alpha = beginAlpha;
+	background.alpha = beginAlpha;
     
     UIViewAnimationOptions options = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionBeginFromCurrentState;
     UIViewAnimationOptions chainedOptions = options | UIViewAnimationOptionOverrideInheritedDuration | UIViewAnimationOptionOverrideInheritedCurve;
-    
-    CGRect originalRect = frame.frame, modifiedRect = frame.frame;
-	BOOL isChainedAnimation = NO;
-    
-    switch (style) {
-		case DZPopupTransitionStyleFade:
-		case DZPopupTransitionStyleZoom:
-			frame.alpha = entering ? 0 : 1;
-			break;
-        case DZPopupTransitionStylePop:
-			if (entering) {
-				frame.transform = CGAffineTransformMakeScale(0.0001, 0.0001);
-				isChainedAnimation = YES;
-			}
-			break;
-        case DZPopupTransitionStyleSlideBottom:
-            modifiedRect.origin.y = CGRectGetMaxY(self.view.bounds);
-            break;
-        case DZPopupTransitionStyleSlideTop:
-            modifiedRect.origin.y = CGRectGetMinY(self.view.bounds) - CGRectGetHeight(modifiedRect);
-            break;
-        case DZPopupTransitionStyleSlideLeft:
-            modifiedRect.origin.x = CGRectGetMinX(self.view.bounds) - CGRectGetWidth(modifiedRect);
-            break;
-        case DZPopupTransitionStyleSlideRight:
-            modifiedRect.origin.x = CGRectGetMaxX(self.view.bounds);
-            break;
-    }
-    
-    frame.frame = entering ? modifiedRect : originalRect;
 	
-	if (style == DZPopupTransitionStyleZoom) {
-		frame.transform = entering ? CGAffineTransformMakeScale(1.1, 1.1) : CGAffineTransformIdentity;
-	}
-
+	__block BOOL isChained = NO;
 	[UIView animateWithDuration:duration delay:0.0 options:options animations:^{
-		background.alpha = entering ? 1 : 0;
-
-		if (style == DZPopupTransitionStyleFade || style == DZPopupTransitionStyleZoom) {
-			frame.alpha = entering ? 1 : 0;
-		}
+		background.alpha = endAlpha;
+		frame.alpha = endAlpha;
 		
-		if (style == DZPopupTransitionStylePop) {
-			if (entering) {
-				NSTimeInterval firstAnimDiff = MAX(duration - 0.25, 0);
-				[UIView animateWithDuration:0.25 delay:firstAnimDiff options:chainedOptions animations:^{
-					frame.transform = CGAffineTransformMakeScale(1.1, 1.1);
+		if (entering && style == DZPopupTransitionStylePop) {
+			isChained = YES;
+			
+			NSTimeInterval firstAnimDiff = MAX(duration - 0.25, 0);
+			[UIView animateWithDuration:0.25 delay:firstAnimDiff options:chainedOptions animations:^{
+				frame.transform = CGAffineTransformMakeScale(1.1, 1.1);
+			} completion:^(BOOL finished) {
+				[UIView animateWithDuration:0.125 delay:0 options:chainedOptions animations:^{
+					frame.transform = CGAffineTransformMakeScale(0.9, 0.9);
 				} completion:^(BOOL finished) {
 					[UIView animateWithDuration:0.125 delay:0 options:chainedOptions animations:^{
-						frame.transform = CGAffineTransformMakeScale(0.9, 0.9);
+						frame.transform = end;
 					} completion:^(BOOL finished) {
-						[UIView animateWithDuration:0.125 delay:0 options:chainedOptions animations:^{
-							frame.transform = CGAffineTransformIdentity;
-						} completion:^(BOOL finished) {
-							completion();
-						}];
+						completion();
 					}];
 				}];
-			} else {
-				frame.transform = CGAffineTransformMakeScale(0.0001, 0.0001);
-			}
-		} else if (style == DZPopupTransitionStyleZoom) {
-			frame.transform = entering ? CGAffineTransformIdentity : CGAffineTransformMakeScale(0.8, 0.8);
+			}];
 		} else {
-			frame.frame = entering ? originalRect : modifiedRect;
+			frame.transform = end;
 		}
 	} completion:^(BOOL finished) {
-		if (!isChainedAnimation) completion();
+		if (!isChained) completion();
 	}];
 }
 

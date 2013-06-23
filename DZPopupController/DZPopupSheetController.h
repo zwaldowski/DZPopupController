@@ -9,9 +9,6 @@
 
 #import "DZPopupController+Subclasses.h"
 
-extern const CGFloat DZPopupSheetBorderRadius;
-extern inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius);
-
 typedef NS_OPTIONS(NSUInteger, DZPopupSheetFrameStyle) {
     DZPopupSheetFrameStyleNone			= 0,
     DZPopupSheetFrameStyleCloseButton	= 1 << 0,
@@ -40,7 +37,5 @@ typedef NS_OPTIONS(NSUInteger, DZPopupSheetFrameStyle) {
 
 @property (nonatomic) DZPopupSheetFrameStyle frameStyle;
 - (void)setFrameStyle:(DZPopupSheetFrameStyle)frameStyle animated:(BOOL)animated;
-
-- (void)closePressed:(UIButton *)closeButton;
 
 @end

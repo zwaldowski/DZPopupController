@@ -9,7 +9,7 @@
 //
 
 #import "DZSemiModalPopupController.h"
-#import "DZPopupControllerFrameView.h"
+#import "DZPopupSheetController.h"
 #import <QuartzCore/QuartzCore.h>
 
 static CATransform3D DZSemiModalTranslationForFrameSize(CGSize frameSize, UIInterfaceOrientation orientation) {
@@ -38,18 +38,39 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	if (step2) *step2 = t2;
 }
 
+@interface DZSemiModalPopupController ()
+
+@property (nonatomic, weak) UIView *frameView;
+
+@end
+
 @implementation DZSemiModalPopupController
+
+#pragma mark - UIViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    	
+	CGRect frameViewFrame = self.frameForFrameView;
+	
+	UIView *frame = [[UIView alloc] initWithFrame:frameViewFrame];
+	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	[self.view addSubview: frame];
+	self.frameView = frame;
+	
+	CGRect contentFrame = frame.bounds;
+	CGFloat inset = DZPopupControllerShadowPadding();
+	contentFrame.origin.y += inset;
+	contentFrame.size.height -= inset;
+    self.contentView.frame = contentFrame;
+	
 	self.contentView.layer.shadowOffset = CGSizeMake(0, -2);
 	self.contentView.layer.shadowOpacity = 0.7f;
 	self.contentView.layer.shadowRadius = 10.0f;
 	self.contentView.layer.shouldRasterize = YES;
 	self.contentView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
 
-	[self setViewFrameFromMiddle];
+    [frame addSubview:self.contentView];
     
     [self.backgroundView addTarget: self action: @selector(dismiss) forControlEvents: UIControlEventTouchUpInside];
     
@@ -57,7 +78,35 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	[toolbarAppearance setBackgroundImage: nil forToolbarPosition: UIToolbarPositionAny barMetrics: UIBarMetricsDefault];
 }
 
-#pragma mark - Restricted subclass methods
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+	[super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
+	
+	DZPopupSetFrameDuringTransform(self.frameView, self.frameForFrameView);
+	
+	UIView *view = nil;
+	BOOL pushesContentBack = self.pushesContentBack;
+	
+	if (pushesContentBack) {
+		UIInterfaceOrientation orient = UIInterfaceOrientationPortrait;
+		if (self.presentingViewController) {
+			view = self.presentingViewController.view;
+			orient = self.presentingViewController.interfaceOrientation;
+		} else {
+			view = self.previousKeyWindow;
+			orient = [[self.previousKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
+		}
+		
+		if (view) {
+			CGSize frameSize = view.bounds.size;
+			UIViewAnimationOptions opt = UIViewAnimationOptionCurveEaseInOut;
+			[UIView animateWithDuration:duration delay:0 options:opt animations:^{
+				view.layer.transform = DZSemiModalTranslationForFrameSize(frameSize, orient);
+			} completion:NULL];
+		}
+	}
+}
+
+#pragma mark - Restricted
 
 - (DZPopupTransitionStyle)entranceStyle {
 	return DZPopupTransitionStyleSlideBottom;
@@ -75,69 +124,58 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	[self doesNotRecognizeSelector: _cmd];
 }
 
-- (void)setViewFrameFromMiddle {
+#pragma mark - Internal
+
+- (CGRect)frameForFrameView {
 	CGRect appFrame = self.view.bounds;
 	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
 	CGFloat statusBarHeight = statusBarFrame.size.height == appFrame.size.width ?  statusBarFrame.size.width : statusBarFrame.size.height;
+	
 	if (!self.height)
 		_height = appFrame.size.height / 2;
-	CGFloat topInset = MAX(appFrame.size.height - self.height, statusBarHeight);
-	UIEdgeInsets inset = UIEdgeInsetsMake(topInset, 0, 0, 0);
-	self.contentView.frame = UIEdgeInsetsInsetRect(appFrame, inset);
-}
-
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-	[super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
-
-	[self setViewFrameFromMiddle];
-
-	UIView *view = nil;
-	BOOL pushesContentBack = self.pushesContentBack;
-
-	if (pushesContentBack) {
-		UIInterfaceOrientation orient = UIInterfaceOrientationPortrait;
-		if (self.presentingViewController) {
-			view = self.presentingViewController.view;
-			orient = self.presentingViewController.interfaceOrientation;
-		} else {
-			view = self.previousKeyWindow;
-			orient = [[self.previousKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
-		}
-
-		if (view) {
-			CGSize frameSize = view.bounds.size;
-			UIViewAnimationOptions opt = UIViewAnimationOptionCurveEaseInOut;
-			[UIView animateWithDuration:duration delay:0 options:opt animations:^{
-				view.layer.transform = DZSemiModalTranslationForFrameSize(frameSize, orient);
-			} completion:NULL];
-		}
-	}
-}
-
-- (void)viewDidLayoutSubviews {
-	[self setViewFrameFromMiddle];
-	[super viewDidLayoutSubviews];
-}
-
-- (void)setHeight:(CGFloat)height {
-	_height = height;
-	[self.view setNeedsLayout];
-}
-
-- (void)setHeight:(CGFloat)height animated:(BOOL)animated {
-	if (animated) {
-		[UIView animateWithDuration:(1./3.) delay:0 options: UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
-			self.height = height;
-		} completion: NULL];
-	} else {
-		self.height = height;
-	}
+	
+	CGFloat topInset = MAX(appFrame.size.height - self.height, statusBarHeight) - DZPopupControllerShadowPadding();
+	
+	CGRect newFrame = appFrame;
+	newFrame.origin.y += topInset;
+	newFrame.size.height -= topInset;
+	
+	return newFrame;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle
 {
 	return self.pushesContentBack ? UIStatusBarStyleBlackTranslucent : [super preferredStatusBarStyle];
 }
+
+- (UIView *)contentViewForPerformingAnimation
+{
+    return self.frameView;
+}
+
+#pragma mark - Accessors
+
+- (void)setHeight:(CGFloat)height {
+	[self setHeight:height animated:NO];
+}
+
+- (void)setHeight:(CGFloat)height animated:(BOOL)animated {
+	_height = height;
+	
+	if (!self.isViewLoaded)
+		return;
+	
+	void (^animations)(void) = ^{
+        DZPopupSetFrameDuringTransform(self.frameView, self.frameForFrameView);
+	};
+	
+	if (animated) {
+		[UIView animateWithDuration: 1./3. delay: 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState animations: animations completion: NULL];
+	} else {
+		animations();
+	}
+}
+
 
 #pragma mark - Present and dismiss
 

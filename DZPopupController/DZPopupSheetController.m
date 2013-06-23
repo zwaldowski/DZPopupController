@@ -13,35 +13,15 @@
 #import "DZPopupControllerCloseButton.h"
 #import <QuartzCore/QuartzCore.h>
 
-const CGFloat DZPopupSheetBorderRadius = 8.0f;
-
-inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
-	CGFloat shadowOffset = radius / 4;
-	CGFloat shadowPad = 2 * (radius + (shadowOffset * 2));
-	return shadowPad;
-}
-
 @interface DZPopupSheetController ()
 
-@property (nonatomic, strong) DZPopupControllerFrameView *frameView;
+@property (nonatomic, weak) DZPopupControllerFrameView *frameView;
 @property (nonatomic, weak) DZPopupControllerInsetView *insetView;
 @property (nonatomic, weak) DZPopupControllerCloseButton *closeButton;
 
 @end
 
 @implementation DZPopupSheetController
-
-- (CGFloat)shadowPadding {
-	return DZPopupSheetShadowPaddingForBorderRadius(DZPopupSheetBorderRadius);
-}
-
-- (CGRect)frameForFrameView
-{
-    const CGFloat shadowPad = [self shadowPadding];
-	CGRect frameVisualRect = UIEdgeInsetsInsetRect(self.view.bounds, self.frameEdgeInsets);
-	CGRect frameOuterRect = CGRectInset(frameVisualRect, -shadowPad, -shadowPad);
-    return frameOuterRect;
-}
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
@@ -83,7 +63,7 @@ inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
 	}
 }
 
-#pragma mark - Properties
+#pragma mark - Accessors
 
 - (void)setContentViewController:(UIViewController *)newController animated:(BOOL)animated {
 	UIViewController *oldController = self.contentViewController;
@@ -207,6 +187,11 @@ inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
 
 #pragma mark - Internal
 
+- (UIView *)contentViewForPerformingAnimation
+{
+    return self.frameView;
+}
+
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	if ([object isEqual: self.contentViewController]) {
 		[self.view setNeedsLayout];
@@ -215,14 +200,12 @@ inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
-- (void)closePressed:(UIButton *)closeButton
+- (CGRect)frameForFrameView
 {
-	[self dismissWithCompletion: NULL];
-}
-
-- (UIView *)contentViewForPerformingAnimation
-{
-    return self.frameView;
+    const CGFloat shadowPad = DZPopupControllerShadowPadding();
+	CGRect frameVisualRect = UIEdgeInsetsInsetRect(self.view.bounds, self.frameEdgeInsets);
+	CGRect frameOuterRect = CGRectInset(frameVisualRect, -shadowPad, -shadowPad);
+    return frameOuterRect;
 }
 
 - (void)configureFrameStyle {
@@ -235,7 +218,7 @@ inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
 	UIScreen *screen = self.view.window ? self.view.window.screen : [UIScreen mainScreen];
 	const CGFloat scale = screen.scale;
 	
-	CGFloat inset = [self shadowPadding];
+	CGFloat inset = DZPopupControllerShadowPadding();
 	if (hasShadow) {
 		if (DZPopupUIIsStark()) {
 			inset -= 0.5f;
@@ -247,7 +230,7 @@ inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
 	inset = roundf(inset * scale) / scale;
 	
 	self.contentView.frame = CGRectInset(self.frameView.bounds, inset, inset);
-	self.contentView.layer.cornerRadius = DZPopupSheetBorderRadius - 1.0f;
+	self.contentView.layer.cornerRadius = DZPopupControllerBorderRadius - 1.0f;
 	self.contentView.clipsToBounds = YES;
 	self.frameView.shadowed = hasShadow;
 	self.frameView.bordered = hasBorder;
@@ -268,7 +251,7 @@ inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
 		if (!self.closeButton) {
 			DZPopupControllerCloseButton *closeButton = [[DZPopupControllerCloseButton alloc] initWithFrame: CGRectMake(14, 14, 26, 26)];
 			closeButton.showsTouchWhenHighlighted = YES;
-			[closeButton addTarget: self action:@selector(closePressed:) forControlEvents:UIControlEventTouchUpInside];
+			[closeButton addTarget: self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
 			[self.frameView addSubview: closeButton];
 			self.closeButton = closeButton;
 		}

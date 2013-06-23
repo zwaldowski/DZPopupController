@@ -19,9 +19,9 @@
 - (UIImage *)drawImage {
 	if (!self.bordered && !self.shadowed) return nil;
 	
-	const CGFloat radius = DZPopupSheetBorderRadius;
+	CGFloat radius = DZPopupControllerBorderRadius;
 
-	const CGFloat uniqueLength = ((radius + 3) * 2) + 1, shadowPad = DZPopupSheetShadowPaddingForBorderRadius(radius);
+	const CGFloat uniqueLength = ((radius + 3) * 2) + 1, shadowPad = DZPopupControllerShadowPadding();
 	const CGFloat size = uniqueLength + (shadowPad * 2);
 	const CGFloat cap = (size - 1) / 2;
 
