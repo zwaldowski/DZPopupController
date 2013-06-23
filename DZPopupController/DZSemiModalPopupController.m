@@ -67,8 +67,10 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	self.contentView.layer.shadowOffset = CGSizeMake(0, -2);
 	self.contentView.layer.shadowOpacity = 0.7f;
 	self.contentView.layer.shadowRadius = 10.0f;
-	self.contentView.layer.shouldRasterize = YES;
-	self.contentView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
+	if (!DZPopupUIIsStark()) {
+		self.contentView.layer.shouldRasterize = YES;
+		self.contentView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
+	}
 
     [frame addSubview:self.contentView];
     

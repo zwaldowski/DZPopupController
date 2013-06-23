@@ -312,14 +312,19 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	UIView *frame = [self contentViewForPerformingAnimation];
 	UIView *background = self.backgroundView;
 	
-	frame.layer.shouldRasterize = YES;
-	frame.layer.rasterizationScale = frame.window.screen.scale;
-	
-	void (^completion)(void) = ^{
-		frame.layer.shouldRasterize = NO;
+	void (^completion)(void) = NULL;
+	if (DZPopupUIIsStark()) {
+		completion = block;
+	} else {
+		frame.layer.shouldRasterize = YES;
+		frame.layer.rasterizationScale = frame.window.screen.scale;
 		
-		if (block) block();
-	};
+		completion = ^{
+			frame.layer.shouldRasterize = NO;
+			
+			if (block) block();
+		};
+	}
     
 	CGAffineTransform modified = CGAffineTransformIdentity;
 	const CGFloat beginAlpha = entering ? 0 : 1, endAlpha = entering ? 1 : 0;
@@ -384,7 +389,7 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 					[UIView animateWithDuration:secondary delay:0 options:chainedOptions animations:^{
 						frame.transform = end;
 					} completion:^(BOOL finished) {
-						completion();
+						if (completion) completion();
 					}];
 				}];
 			}];
@@ -392,7 +397,7 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 			frame.transform = end;
 		}
 	} completion:^(BOOL finished) {
-		if (!isChained) completion();
+		if (!isChained && completion) completion();
 	}];
 }
 
