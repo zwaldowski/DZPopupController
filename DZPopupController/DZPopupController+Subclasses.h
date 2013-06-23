@@ -25,4 +25,8 @@ extern void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame);
 @property (nonatomic, weak, readonly) UIControl *backgroundView;
 @property (nonatomic, strong, readonly) UIView *contentView;
 
+#if !DZPOPUP_HAS_7_SDK
+- (UIStatusBarStyle)preferredStatusBarStyle;
+#endif
+
 @end
