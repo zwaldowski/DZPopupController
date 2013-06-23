@@ -12,28 +12,53 @@
 #import "DZPopupSheetController.h"
 #import <QuartzCore/QuartzCore.h>
 
-static CATransform3D DZSemiModalTranslationForFrameSize(CGSize frameSize, UIInterfaceOrientation orientation) {
+static CATransform3D DZSemiModalPopupTranslate(CATransform3D translation, CGSize frameSize, UIInterfaceOrientation orientation) {
 	BOOL isPortrait = UIInterfaceOrientationIsPortrait(orientation);
-	CATransform3D translation = CATransform3DIdentity;
-	translation.m34 = 1.0 / -900;
-	CGFloat extra = DZPopupUIIsStark() ? [[UIApplication sharedApplication] statusBarFrame].size.height / 2 : 0;
+	
+	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
+	CGFloat statusBarHeight = MIN(statusBarFrame.size.height, statusBarFrame.size.width);
+	
+	CGFloat extra = DZPopupUIIsStark() ? statusBarHeight / 2 : 0;
 	if (isPortrait) {
 		CGFloat factor = (orientation == UIInterfaceOrientationPortrait) ? -0.08 : 0.08;
 		translation = CATransform3DTranslate(translation, 0, frameSize.height*factor + extra, 0);
 	} else {
-		CGFloat factor = (orientation == UIInterfaceOrientationLandscapeLeft) ? -0.08 : 0.08;
-		translation = CATransform3DTranslate(translation, frameSize.width*factor, 0 + extra, 0);
+		extra *= 1.25;
+		CGFloat factor = -0.08;
+
+		if (CATransform3DIsIdentity(translation)) {
+			if (orientation != UIInterfaceOrientationLandscapeLeft) {
+				extra *= -1;
+				factor *= -1;
+			}
+			translation = CATransform3DTranslate(translation, frameSize.width*factor + extra, 0, 0);
+		} else {
+			CGFloat factor = -0.08;
+			translation = CATransform3DTranslate(translation, 0, frameSize.height*factor + extra, 0);
+		}
 	}
+	
+	translation.m34 = 1.0 / -900;
+	
 	return CATransform3DScale(translation, 0.8, 0.8, 1);
 }
 
-static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrientation orient, BOOL entering, CATransform3D *step1, CATransform3D *step2) {
+static void DZSemiModalPopupMakeTransforms(CATransform3D original, CGSize frameSize, UIInterfaceOrientation orient, BOOL entering, CATransform3D *step1, CATransform3D *step2) {
 	BOOL isPortrait = UIInterfaceOrientationIsPortrait(orient);
-	CATransform3D t1 = CATransform3DIdentity;
+	CATransform3D t1 = original;
 	t1.m34 = 1.0 / -900;
 	t1 = CATransform3DScale(t1, 0.95, 0.95, 1);
-	t1 = CATransform3DRotate(t1, 15.0f*M_PI/180.0f, isPortrait ? 1 : 0, isPortrait ? 0 : -1, 0);
-	CATransform3D t2 = entering ? DZSemiModalTranslationForFrameSize(frameSize, orient) : CATransform3DIdentity;
+	CGFloat angle = 15.0f*M_PI/180.0f;
+	if (isPortrait) {
+		t1 = CATransform3DRotate(t1, angle, 1, 0, 0);
+	} else {
+		if (CATransform3DIsIdentity(original)) {
+			t1 = CATransform3DRotate(t1, angle, 0, -1, 0);
+		} else {
+			t1 = CATransform3DRotate(t1, angle, 1, 0, 0);
+		}
+	}
+	CATransform3D t2 = entering ? DZSemiModalPopupTranslate(original, frameSize, orient) : original;
 	if (step1) *step1 = t1;
 	if (step2) *step2 = t2;
 }
@@ -41,6 +66,7 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 @interface DZSemiModalPopupController ()
 
 @property (nonatomic, weak) UIView *frameView;
+@property (nonatomic) CATransform3D prePushBackTransform;
 
 @end
 
@@ -83,6 +109,8 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	
 	DZPopupSetFrameDuringTransform(self.frameView, self.frameForFrameView);
 	
+	if (!self.view.window) return;
+	
 	UIView *view = nil;
 	BOOL pushesContentBack = self.pushesContentBack;
 	
@@ -100,7 +128,7 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 			CGSize frameSize = view.bounds.size;
 			UIViewAnimationOptions opt = UIViewAnimationOptionCurveEaseInOut;
 			[UIView animateWithDuration:duration delay:0 options:opt animations:^{
-				view.layer.transform = DZSemiModalTranslationForFrameSize(frameSize, orient);
+				view.layer.transform = DZSemiModalPopupTranslate(self.prePushBackTransform, frameSize, orient);
 			} completion:NULL];
 		}
 	}
@@ -136,7 +164,7 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	}
 	
 	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
-	CGFloat statusBarHeight = statusBarFrame.size.height == appFrame.size.width ?  statusBarFrame.size.width : statusBarFrame.size.height;
+	CGFloat statusBarHeight = MIN(statusBarFrame.size.height, statusBarFrame.size.width);
 	
 	if (!self.height)
 		_height = appHeight / 2;
@@ -198,20 +226,23 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 							delay:(NSTimeInterval)delay
 					   completion:(void (^)(void))block
 {
-	UIView *view = nil;
 	BOOL pushesContentBack = self.pushesContentBack;
 	
 	if (pushesContentBack) {
+		UIView *view = nil;
 		UIInterfaceOrientation orient = UIInterfaceOrientationPortrait;
+		
 		if (self.presentingViewController) {
 			view = self.presentingViewController.view;
 			orient = self.presentingViewController.interfaceOrientation;
+			
 		} else {
 			view = self.previousKeyWindow;
 			orient = [[self.previousKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
 		}
-		
+				
 		if (view) {
+			if (entering) self.prePushBackTransform = view.layer.transform;
 			CGSize frameSize = view.bounds.size;
 			
 			if (entering) {
@@ -220,7 +251,7 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 			
 			NSTimeInterval pushDuration = DZPopupAnimationDuration / 2;
 			CATransform3D t1, t2;
-			DZSemiModalMakePushBackTransforms(frameSize, orient, entering, &t1, &t2);
+			DZSemiModalPopupMakeTransforms(self.prePushBackTransform, frameSize, orient, entering, &t1, &t2);
 			
 			UIViewAnimationOptions opt = UIViewAnimationOptionCurveEaseInOut;
 			[UIView animateWithDuration:pushDuration delay:0 options:opt animations:^{
@@ -231,16 +262,19 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 				} completion:NULL];
 			}];
 		}
-	}
-	
-	[super performAnimationWithStyle:style entering:entering delay:delay completion:^{
-		if (!entering && pushesContentBack && view) {
-			view.layer.transform = CATransform3DIdentity;
-			view.layer.zPosition = 0;
-		}
 		
-		if (block) block();
-	}];
+		[super performAnimationWithStyle:style entering:entering delay:delay completion:^{
+			
+			if (!entering && view) {
+				view.layer.transform = self.prePushBackTransform;
+				view.layer.zPosition = 0;
+			}
+			
+			if (block) block();
+		}];
+	} else {
+		[super performAnimationWithStyle:style entering:entering delay:delay completion:block];
+	}
 }
 
 @end

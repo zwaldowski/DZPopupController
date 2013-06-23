@@ -196,7 +196,7 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 - (NSUInteger)supportedInterfaceOrientations
 {
 	if (self.presentingViewController)
-		return UIInterfaceOrientationMaskPortrait;
+		return (1 << self.presentingViewController.interfaceOrientation);
 	if (self.contentViewController)
 		return self.contentViewController.supportedInterfaceOrientations;
     return UIInterfaceOrientationMaskAll;
