@@ -329,7 +329,7 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 		case DZPopupTransitionStyleFade:
 		case DZPopupTransitionStyleZoom: {
 			if (style == DZPopupTransitionStyleZoom) {
-				CGFloat scale = entering ? 1.1 : 0.8;
+				CGFloat scale = entering ? 1.1 : 0.85;
 				modified = CGAffineTransformMakeScale(scale, scale);
 			}
 			frameBeginAlpha = beginAlpha;
