@@ -50,10 +50,8 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    	
-	CGRect frameViewFrame = self.frameForFrameView;
 	
-	UIView *frame = [[UIView alloc] initWithFrame:frameViewFrame];
+	UIView *frame = [[UIView alloc] initWithFrame:self.frameForFrameView];
 	frame.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview: frame];
 	self.frameView = frame;
@@ -130,11 +128,18 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 
 - (CGRect)frameForFrameView {
 	CGRect appFrame = self.view.bounds;
+	CGFloat appHeight = appFrame.size.height;
+	
+	if (UIInterfaceOrientationIsLandscape(self.interfaceOrientation) && !self.view.window) {
+		// initializing in landscape mode
+		appHeight = appFrame.size.width;
+	}
+	
 	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
 	CGFloat statusBarHeight = statusBarFrame.size.height == appFrame.size.width ?  statusBarFrame.size.width : statusBarFrame.size.height;
 	
 	if (!self.height)
-		_height = appFrame.size.height / 2;
+		_height = appHeight / 2;
 	
 	CGFloat topInset = MAX(appFrame.size.height - self.height, statusBarHeight) - DZPopupControllerShadowPadding();
 	
@@ -153,6 +158,12 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 - (UIView *)contentViewForPerformingAnimation
 {
     return self.frameView;
+}
+
+- (void)viewDidLayoutSubviews
+{
+	[super viewDidLayoutSubviews];
+	DZPopupSetFrameDuringTransform(self.frameView, self.frameForFrameView);
 }
 
 #pragma mark - Accessors
