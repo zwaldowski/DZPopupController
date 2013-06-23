@@ -322,7 +322,8 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	};
     
 	CGAffineTransform modified = CGAffineTransformIdentity;
-	CGFloat beginAlpha = 1, endAlpha = 1;
+	const CGFloat beginAlpha = entering ? 0 : 1, endAlpha = entering ? 1 : 0;
+	CGFloat frameBeginAlpha = 1, frameEndAlpha = 1;
 
     switch (style) {
 		case DZPopupTransitionStyleFade:
@@ -331,8 +332,8 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 				CGFloat scale = entering ? 1.1 : 0.8;
 				modified = CGAffineTransformMakeScale(scale, scale);
 			}
-			endAlpha = entering ? 1 : 0;
-			beginAlpha = entering ? 0 : 1;
+			frameBeginAlpha = beginAlpha;
+			frameEndAlpha = endAlpha;
 			break;
 		}
         case DZPopupTransitionStylePop:
@@ -356,8 +357,8 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	CGAffineTransform end = entering ? CGAffineTransformIdentity : modified;
 	
 	frame.transform = begin;
-	frame.alpha = beginAlpha;
 	background.alpha = beginAlpha;
+	frame.alpha = frameBeginAlpha;
     
     UIViewAnimationOptions options = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionBeginFromCurrentState;
     UIViewAnimationOptions chainedOptions = options | UIViewAnimationOptionOverrideInheritedDuration | UIViewAnimationOptionOverrideInheritedCurve;
@@ -365,7 +366,7 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	__block BOOL isChained = NO;
 	[UIView animateWithDuration:duration delay:delay options:options animations:^{
 		background.alpha = endAlpha;
-		frame.alpha = endAlpha;
+		frame.alpha = frameEndAlpha ;
 		
 		if (entering && style == DZPopupTransitionStylePop) {
 			isChained = YES;
