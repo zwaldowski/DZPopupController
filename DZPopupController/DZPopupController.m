@@ -11,7 +11,30 @@
 #import "DZPopupController+Subclasses.h"
 #import <QuartzCore/QuartzCore.h>
 
-#pragma mark Helper functions and constants
+#pragma mark Constants
+
+/**
+ Determined experimentally against iOS 6.1:
+ 
+ - UIWindowLevelAlert = 1000
+ - UIWindowLevelStatusBar = 2000
+ - UIWindowLevelNormal = 0
+ - Keyboard is arbitrarily above whatever the current key window level,
+ iff window level < UIWindowLevelAlert. UIAlertView is not presented at
+ UIWindowLevelAlert if it triggers a keyboard.
+ - Keyboard window level == 1 when there's only one normal window
+ - Keyboard window level == 10 when there's an HBAPopupController.
+ */
+const UIWindowLevel DZWindowLevelPopup = 5;
+const UIWindowLevel DZWindowLevelHUD = 10;
+const UIWindowLevel DZWindowLevelAlert = 15;
+
+const CGFloat DZPopupControllerBorderRadius = 8.0f;
+
+const NSTimeInterval DZPopupAnimationDuration = (1./3.);
+const NSTimeInterval DZPopupPopEntranceAnimationDuration = 0.5;
+
+#pragma mark - Helper functions;
 
 #if DZPOPUP_HAS_7_SDK
 extern BOOL DZPopupUIIsStark() {
@@ -30,8 +53,6 @@ extern BOOL DZPopupUIIsStark() {
 }
 #endif
 
-const CGFloat DZPopupControllerBorderRadius = 8.0f;
-
 static inline CGFloat DZPopupControllerShadowPaddingForBorderRadius(CGFloat radius) {
 	CGFloat shadowOffset = radius / 4;
 	CGFloat shadowPad = 2 * (radius + (shadowOffset * 2));
@@ -41,24 +62,6 @@ static inline CGFloat DZPopupControllerShadowPaddingForBorderRadius(CGFloat radi
 CGFloat DZPopupControllerShadowPadding(void) {
 	return DZPopupControllerShadowPaddingForBorderRadius(DZPopupControllerBorderRadius);
 }
-
-/**
- Determined experimentally against iOS 6.1:
- 
- - UIWindowLevelAlert = 1000
- - UIWindowLevelStatusBar = 2000
- - UIWindowLevelNormal = 0
- - Keyboard is arbitrarily above whatever the current key window level,
-   iff window level < UIWindowLevelAlert. UIAlertView is not presented at
-   UIWindowLevelAlert if it triggers a keyboard.
- - Keyboard window level == 1 when there's only one normal window
- - Keyboard window level == 10 when there's an HBAPopupController.
- */
-const UIWindowLevel DZWindowLevelPopup = 5;
-const UIWindowLevel DZWindowLevelHUD = 10;
-const UIWindowLevel DZWindowLevelAlert = 15;
-
-const NSTimeInterval DZPopupAnimationDuration = (1./3.);
 
 static UIView *DZPopupFindFirstResponder(UIView *view) {
     if (view.isFirstResponder)
@@ -165,7 +168,7 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	[super viewDidAppear:animated];
     
 	if (self.presentingViewController) {
-		[self performAnimationWithStyle: self.entranceStyle entering: YES duration: animated ? (1./3.) : 0 completion: NULL];
+		[self performAnimationWithStyle:self.entranceStyle entering:YES delay:0 completion:NULL];
 	}
 }
 
@@ -175,7 +178,7 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	[[UIApplication sharedApplication] setStatusBarStyle: self.backupStatusBarStyle animated:YES];
 	
 	if (self.presentingViewController && !self.dismissingViaCustomMethod) {
-		[self performAnimationWithStyle: self.exitStyle entering: NO duration: animated ? (1./3.) : 0 completion:^{
+		[self performAnimationWithStyle:self.exitStyle entering:NO delay:0 completion:^{
 			if ([self.delegate respondsToSelector:@selector(popupControllerDidDismissPopup:)]) {
 				[self.delegate popupControllerDidDismissPopup:self];
 			}
@@ -227,26 +230,32 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	[self dismissWithCompletion: NULL];
 }
 
-- (void)presentWithCompletion:(void (^)(void))block {
+- (void)presentAfterDelay:(NSTimeInterval)delay completion:(void(^)(void))block {
+	if (self.isVisible) return;
+	
 	self.previousKeyWindow = [[UIApplication sharedApplication] keyWindow];
     [DZPopupFindFirstResponder(self.previousKeyWindow) resignFirstResponder];
-    
+	
 	UIWindow *window = [[UIWindow alloc] initWithFrame: [[UIScreen mainScreen] bounds]];
 	window.backgroundColor = [UIColor clearColor];
 	window.windowLevel = self.windowLevel;
 	window.rootViewController = self;
 	[window makeKeyAndVisible];
 	self.window = window;
-    
-    [self performAnimationWithStyle: self.entranceStyle entering: YES duration: (1./3.) completion: block];
+	
+    [self performAnimationWithStyle:self.entranceStyle entering:YES delay:delay completion:block];
+}
+
+- (void)presentWithCompletion:(void (^)(void))block {
+	[self presentAfterDelay:0 completion:block];
 }
 
 - (void)dismissWithCompletion:(void (^)(void))block {
 	self.dismissingViaCustomMethod = YES;
 	
 	[self.previousKeyWindow makeKeyWindow];
-    
-    [self performAnimationWithStyle: self.exitStyle entering: NO duration: (1./3.) completion: ^{
+	
+	[self performAnimationWithStyle:self.exitStyle entering:NO delay:0 completion:^{
 		if (self.presentingViewController) {
 			[self.presentingViewController dismissViewControllerAnimated: NO completion: ^{
 				self.dismissingViaCustomMethod = NO;
@@ -288,8 +297,12 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	return UIStatusBarStyleDefault;
 }
 
-- (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
+- (void)performAnimationWithStyle:(DZPopupTransitionStyle)style
+						 entering:(BOOL)entering
+							delay:(NSTimeInterval)delay completion:(void(^)(void))block
+{
 	if (DZPopupUIIsStark() && style == DZPopupTransitionStylePop) style = DZPopupTransitionStyleZoom;
+	const NSTimeInterval duration = [UIView areAnimationsEnabled] ? DZPopupAnimationDuration : 0;
 	
 	UIView *frame = [self contentViewForPerformingAnimation];
 	UIView *background = self.backgroundView;
@@ -346,21 +359,24 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
     UIViewAnimationOptions chainedOptions = options | UIViewAnimationOptionOverrideInheritedDuration | UIViewAnimationOptionOverrideInheritedCurve;
 	
 	__block BOOL isChained = NO;
-	[UIView animateWithDuration:duration delay:0.0 options:options animations:^{
+	[UIView animateWithDuration:duration delay:delay options:options animations:^{
 		background.alpha = endAlpha;
 		frame.alpha = endAlpha;
 		
 		if (entering && style == DZPopupTransitionStylePop) {
 			isChained = YES;
 			
-			NSTimeInterval firstAnimDiff = MAX(duration - 0.25, 0);
-			[UIView animateWithDuration:0.25 delay:firstAnimDiff options:chainedOptions animations:^{
+			const NSTimeInterval primary = DZPopupPopEntranceAnimationDuration / 2,
+								 secondary = DZPopupPopEntranceAnimationDuration / 4;
+			const NSTimeInterval popDelay = MAX(duration - primary - delay, 0);
+			
+			[UIView animateWithDuration:primary delay:popDelay options:chainedOptions animations:^{
 				frame.transform = CGAffineTransformMakeScale(1.1, 1.1);
 			} completion:^(BOOL finished) {
-				[UIView animateWithDuration:0.125 delay:0 options:chainedOptions animations:^{
+				[UIView animateWithDuration:secondary delay:0 options:chainedOptions animations:^{
 					frame.transform = CGAffineTransformMakeScale(0.9, 0.9);
 				} completion:^(BOOL finished) {
-					[UIView animateWithDuration:0.125 delay:0 options:chainedOptions animations:^{
+					[UIView animateWithDuration:secondary delay:0 options:chainedOptions animations:^{
 						frame.transform = end;
 					} completion:^(BOOL finished) {
 						completion();
@@ -398,21 +414,26 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	if (!newController || !self.isViewLoaded)
 		return;
 	
-	if (animated || !oldController) {
-		[UIView transitionWithView: self.contentView duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
-			newController.view.frame = self.contentView.bounds;
-			[self.contentView addSubview: newController.view];
-		} completion:^(BOOL finished) {
-			[self addChildViewController: newController];
-			[newController didMoveToParentViewController: self];
-		}];
-	} else if (!animated || !oldController.view.superview) {
+	const NSTimeInterval duration = DZPopupAnimationDuration;
+	const UIViewAnimationOptions opts = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve;
+	
+	void (^addView)(void) = ^{
 		newController.view.frame = self.contentView.bounds;
 		[self.contentView addSubview: newController.view];
+	};
+	
+	void (^addChild)(BOOL) = ^(BOOL fin){
 		[self addChildViewController: newController];
 		[newController didMoveToParentViewController: self];
+	};
+	
+	if (animated || !oldController) {
+		[UIView transitionWithView:self.contentView duration:duration options:opts animations:addView completion:addChild];
+	} else if (!animated || !oldController.view.superview) {
+		addView();
+		addChild(YES);
 	} else {
-		[self transitionFromViewController: oldController toViewController: newController duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{} completion:^(BOOL finished) {
+		[self transitionFromViewController:oldController toViewController:newController duration:duration options:opts animations:^{} completion:^(BOOL finished) {
 			[oldController removeFromParentViewController];
 			[newController didMoveToParentViewController: self];
 		}];

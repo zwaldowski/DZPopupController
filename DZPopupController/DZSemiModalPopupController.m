@@ -170,7 +170,8 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 	};
 	
 	if (animated) {
-		[UIView animateWithDuration: 1./3. delay: 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState animations: animations completion: NULL];
+		UIViewAnimationOptions opts = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState;
+		[UIView animateWithDuration:DZPopupAnimationDuration delay:0 options:opts animations:animations completion:NULL];
 	} else {
 		animations();
 	}
@@ -179,7 +180,11 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 
 #pragma mark - Present and dismiss
 
-- (void)performAnimationWithStyle: (DZPopupTransitionStyle)style entering: (BOOL)entering duration: (NSTimeInterval)duration completion: (void(^)(void))block {
+- (void)performAnimationWithStyle:(DZPopupTransitionStyle)style
+						 entering:(BOOL)entering
+							delay:(NSTimeInterval)delay
+					   completion:(void (^)(void))block
+{
 	UIView *view = nil;
 	BOOL pushesContentBack = self.pushesContentBack;
 	
@@ -192,18 +197,18 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 			view = self.previousKeyWindow;
 			orient = [[self.previousKeyWindow valueForKeyPath: @"interfaceOrientation"] intValue];
 		}
-
+		
 		if (view) {
 			CGSize frameSize = view.bounds.size;
 			
 			if (entering) {
 				view.layer.zPosition = -100;
 			}
-
-			NSTimeInterval pushDuration = duration / 2;
+			
+			NSTimeInterval pushDuration = DZPopupAnimationDuration / 2;
 			CATransform3D t1, t2;
 			DZSemiModalMakePushBackTransforms(frameSize, orient, entering, &t1, &t2);
-
+			
 			UIViewAnimationOptions opt = UIViewAnimationOptionCurveEaseInOut;
 			[UIView animateWithDuration:pushDuration delay:0 options:opt animations:^{
 				view.layer.transform = t1;
@@ -214,13 +219,13 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 			}];
 		}
 	}
-
-	[super performAnimationWithStyle:style entering:entering duration:duration completion:^{
+	
+	[super performAnimationWithStyle:style entering:entering delay:delay completion:^{
 		if (!entering && pushesContentBack && view) {
 			view.layer.transform = CATransform3DIdentity;
 			view.layer.zPosition = 0;
 		}
-
+		
 		if (block) block();
 	}];
 }

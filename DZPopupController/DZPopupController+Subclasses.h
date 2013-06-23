@@ -16,7 +16,8 @@ extern void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame);
 @interface DZPopupController (SubclassingHooks)
 
 - (UIView *)contentViewForPerformingAnimation;
-- (void)performAnimationWithStyle:(DZPopupTransitionStyle)style entering:(BOOL)entering duration:(NSTimeInterval)duration completion:(void(^)(void))block;
+- (void)performAnimationWithStyle:(DZPopupTransitionStyle)style entering:(BOOL)entering
+							delay:(NSTimeInterval)delay completion:(void(^)(void))block;
 
 @property (nonatomic, weak, readonly) UIWindow *previousKeyWindow;
 @property (nonatomic, weak, readonly) UIControl *backgroundView;

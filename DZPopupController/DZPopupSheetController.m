@@ -105,7 +105,8 @@
 	};
 
 	if (animated) {
-		[UIView animateWithDuration: animated ? 1./3. : 0 delay: 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionLayoutSubviews animations: animations completion: NULL];
+		UIViewAnimationOptions opts = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionBeginFromCurrentState;
+		[UIView animateWithDuration:DZPopupAnimationDuration delay:0 options:opts animations:animations completion:NULL];
 	} else {
 		animations();
 	}
@@ -139,8 +140,9 @@
 		}
 	};
 
-	if (self.frameView) {
-		[UIView transitionWithView: self.frameView duration: animated ? 1./3. : 0 options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionCrossDissolve animations: ^{
+	if (self.frameView && animated) {
+		UIViewAnimationOptions opts = UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionTransitionCrossDissolve | UIViewAnimationOptionBeginFromCurrentState;
+		[UIView transitionWithView:self.frameView duration:DZPopupAnimationDuration options:opts animations:^{
 			self.frameView.baseColor = frameColor;
 			[self.frameView setNeedsDisplay];
 
