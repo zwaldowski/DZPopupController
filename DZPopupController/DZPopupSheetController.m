@@ -236,7 +236,13 @@ inline CGFloat DZPopupSheetShadowPaddingForBorderRadius(CGFloat radius) {
 	const CGFloat scale = screen.scale;
 	
 	CGFloat inset = [self shadowPadding];
-	if (hasShadow) inset += 0.5f;
+	if (hasShadow) {
+		if (DZPopupUIIsStark()) {
+			inset -= 0.5f;
+		} else {
+			inset += 0.5f;
+		}
+	}	
 	if (hasBorder) inset += 1.5f;
 	inset = roundf(inset * scale) / scale;
 	

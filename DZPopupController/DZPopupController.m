@@ -99,9 +99,11 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
+	CGFloat alpha = DZPopupUIIsStark() ? 0.3 : 0.6;
+
     UIControl *background = [[UIControl alloc] initWithFrame: self.view.bounds];
 	background.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-	background.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.6];
+	background.backgroundColor = [UIColor colorWithWhite:0.0 alpha:alpha];
 	[self.view addSubview: background];
 	self.backgroundView = background;
 	

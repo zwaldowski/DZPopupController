@@ -39,13 +39,16 @@
 		outerRing.lineWidth = hairline;
 		[outerRing stroke];
 	}
+	
+	CGFloat pathRadius = DZPopupUIIsStark() ? radius-1 : radius;
 
-	UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: radius-1];
+	UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect: rect cornerRadius: pathRadius];
 	
 	if (self.shadowed) {
 		CGFloat shadowOffset = radius / 4;
 		CGContextRef ctx = UIGraphicsGetCurrentContext();
-		CGContextSetShadowWithColor(ctx, CGSizeMake(0, shadowOffset), 10, [[UIColor colorWithWhite:0 alpha:1] CGColor]);
+		CGFloat alpha = DZPopupUIIsStark() ? 0.3 : 1;
+		CGContextSetShadowWithColor(ctx, CGSizeMake(0, shadowOffset), 10, [[UIColor colorWithWhite:0 alpha:alpha] CGColor]);
 	}
 	
 	[self.baseColor setFill];
