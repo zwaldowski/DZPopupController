@@ -119,6 +119,10 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
     
 	self.backupStatusBarStyle = [[UIApplication sharedApplication] statusBarStyle];
 	[[UIApplication sharedApplication] setStatusBarStyle: UIStatusBarStyleBlackTranslucent animated:YES];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+	[super viewDidAppear:animated];
     
 	if (self.presentingViewController) {
 		[self performAnimationWithStyle: self.entranceStyle entering: YES duration: animated ? (1./3.) : 0 completion: NULL];
