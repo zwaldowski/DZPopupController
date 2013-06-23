@@ -15,6 +15,8 @@ extern void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame);
 
 @interface DZPopupController (SubclassingHooks)
 
+- (CGFloat)statusBarHeight;
+
 - (UIView *)contentViewForPerformingAnimation;
 - (void)performAnimationWithStyle:(DZPopupTransitionStyle)style entering:(BOOL)entering
 							delay:(NSTimeInterval)delay completion:(void(^)(void))block;

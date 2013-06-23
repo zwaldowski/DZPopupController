@@ -140,6 +140,11 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	[self.view addSubview: background];
 	self.backgroundView = background;
 	
+	CGRect contentRect = self.view.bounds;
+	CGFloat statusBarHeight = self.statusBarHeight;
+	contentRect.origin.y += statusBarHeight;
+	contentRect.size.height -= statusBarHeight;
+	
 	UIView *content = [[UIView alloc] initWithFrame: self.view.bounds];
 	content.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview: content];
@@ -447,7 +452,13 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 
 - (BOOL)isVisible
 {
-	return self.window || self.isBeingPresented;
+	return self.window || (self.presentingViewController && self.view.superview);
+}
+
+- (CGFloat)statusBarHeight {
+	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
+	CGFloat statusBarHeight = statusBarFrame.size.height == self.view.bounds.size.width ?  statusBarFrame.size.width : statusBarFrame.size.height;
+	return statusBarHeight;
 }
 
 @end

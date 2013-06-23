@@ -205,8 +205,14 @@
 - (CGRect)frameForFrameView
 {
     const CGFloat shadowPad = DZPopupControllerShadowPadding();
-	CGRect frameVisualRect = UIEdgeInsetsInsetRect(self.view.bounds, self.frameEdgeInsets);
-	CGRect frameOuterRect = CGRectInset(frameVisualRect, -shadowPad, -shadowPad);
+	
+	UIEdgeInsets insets = self.frameEdgeInsets;
+	insets.top -= MAX(shadowPad - self.statusBarHeight, shadowPad);
+	insets.bottom -= shadowPad;
+	insets.left -= shadowPad;
+	insets.right -= shadowPad;
+	
+	CGRect frameOuterRect = UIEdgeInsetsInsetRect(self.view.bounds, insets);
     return frameOuterRect;
 }
 
