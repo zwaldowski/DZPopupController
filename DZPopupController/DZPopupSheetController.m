@@ -229,7 +229,7 @@
 	CGFloat inset = DZPopupControllerShadowPadding();
 	if (hasShadow) {
 		if (DZPopupUIIsStark()) {
-			inset -= 0.5f;
+			inset -= 1.0f;
 		} else {
 			inset += 0.5f;
 		}
