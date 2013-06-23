@@ -16,12 +16,13 @@ static CATransform3D DZSemiModalTranslationForFrameSize(CGSize frameSize, UIInte
 	BOOL isPortrait = UIInterfaceOrientationIsPortrait(orientation);
 	CATransform3D translation = CATransform3DIdentity;
 	translation.m34 = 1.0 / -900;
+	CGFloat extra = DZPopupUIIsStark() ? [[UIApplication sharedApplication] statusBarFrame].size.height / 2 : 0;
 	if (isPortrait) {
 		CGFloat factor = (orientation == UIInterfaceOrientationPortrait) ? -0.08 : 0.08;
-		translation = CATransform3DTranslate(translation, 0, frameSize.height*factor, 0);
+		translation = CATransform3DTranslate(translation, 0, frameSize.height*factor + extra, 0);
 	} else {
 		CGFloat factor = (orientation == UIInterfaceOrientationLandscapeLeft) ? -0.08 : 0.08;
-		translation = CATransform3DTranslate(translation, frameSize.width*factor, 0, 0);
+		translation = CATransform3DTranslate(translation, frameSize.width*factor, 0 + extra, 0);
 	}
 	return CATransform3DScale(translation, 0.8, 0.8, 1);
 }
@@ -135,7 +136,7 @@ static void DZSemiModalMakePushBackTransforms(CGSize frameSize, UIInterfaceOrien
 
 - (UIStatusBarStyle)preferredStatusBarStyle
 {
-	return UIStatusBarStyleBlackTranslucent;
+	return self.pushesContentBack ? UIStatusBarStyleBlackTranslucent : [super preferredStatusBarStyle];
 }
 
 #pragma mark - Present and dismiss
