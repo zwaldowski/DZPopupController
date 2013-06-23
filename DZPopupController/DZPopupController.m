@@ -100,7 +100,7 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 	[super viewDidLoad];
 	
 	CGFloat alpha = DZPopupUIIsStark() ? 0.3 : 0.6;
-
+	
     UIControl *background = [[UIControl alloc] initWithFrame: self.view.bounds];
 	background.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	background.backgroundColor = [UIColor colorWithWhite:0.0 alpha:alpha];
@@ -296,11 +296,11 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 		if (block) block();
 	};
     
-	BOOL isChainedAnimation = (entering && style == DZPopupTransitionStylePop);
-    
-	if (isChainedAnimation) {
+	if (entering && style == DZPopupTransitionStylePop) {
 		frame.transform = CGAffineTransformMakeScale(0.0001, 0.0001);
 	}
+    
+	BOOL isChainedAnimation = (entering && style == DZPopupTransitionStylePop);
 	
 	[UIView animateWithDuration:duration delay:0.0 options:options animations:^{
 		self.backgroundView.alpha = entering ? 1 : 0;
@@ -346,6 +346,7 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 			[oldController willMoveToParentViewController: nil];
 			[oldController.view removeFromSuperview];
 			[oldController removeFromParentViewController];
+			oldController = nil;
 		}
 	}
 	
@@ -354,7 +355,7 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 	if (!newController || !self.isViewLoaded)
 		return;
 	
-	if (!oldController) {
+	if (animated || !oldController) {
 		[UIView transitionWithView: self.contentView duration: (1./3.) options: UIViewAnimationOptionCurveEaseInOut | UIViewAnimationOptionAllowAnimatedContent | UIViewAnimationOptionTransitionCrossDissolve animations:^{
 			newController.view.frame = self.contentView.bounds;
 			[self.contentView addSubview: newController.view];
@@ -362,7 +363,7 @@ static UIView *DZPopupFindFirstResponder(UIView *view) {
 			[self addChildViewController: newController];
 			[newController didMoveToParentViewController: self];
 		}];
-	} else if (!oldController.view.superview) {
+	} else if (!animated || !oldController.view.superview) {
 		newController.view.frame = self.contentView.bounds;
 		[self.contentView addSubview: newController.view];
 		[self addChildViewController: newController];
