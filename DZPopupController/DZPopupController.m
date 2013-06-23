@@ -251,33 +251,33 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 }
 
 - (void)dismissWithCompletion:(void (^)(void))block {
+	if (!self.isVisible) return;
+	
 	self.dismissingViaCustomMethod = YES;
 	
-	[self.previousKeyWindow makeKeyWindow];
+	if (self.window.isKeyWindow) {
+		[self.previousKeyWindow makeKeyWindow];
+	} else {
+		[self.window resignKeyWindow];
+	}
+	
+	void (^completion)(void) = ^{
+		self.dismissingViaCustomMethod = NO;
+		
+		if ([self.delegate respondsToSelector:@selector(popupControllerDidDismissPopup:)]) {
+			[self.delegate popupControllerDidDismissPopup:self];
+		}
+		
+		if (block)
+			block();
+	};
 	
 	[self performAnimationWithStyle:self.exitStyle entering:NO delay:0 completion:^{
 		if (self.presentingViewController) {
-			[self.presentingViewController dismissViewControllerAnimated: NO completion: ^{
-				self.dismissingViaCustomMethod = NO;
-                
-				if ([self.delegate respondsToSelector:@selector(popupControllerDidDismissPopup:)]) {
-					[self.delegate popupControllerDidDismissPopup:self];
-				}
-                
-				if (block)
-					block();
-			}];
+			[self.presentingViewController dismissViewControllerAnimated: NO completion:completion];
 		} else {
 			self.window = nil;
-            
-			self.dismissingViaCustomMethod = NO;
-            
-			if ([self.delegate respondsToSelector:@selector(popupControllerDidDismissPopup:)]) {
-				[self.delegate popupControllerDidDismissPopup:self];
-			}
-            
-			if (block)
-				block();
+            completion();
 		}
     }];
 }
@@ -312,7 +312,6 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	
 	void (^completion)(void) = ^{
 		frame.layer.shouldRasterize = NO;
-		frame.layer.rasterizationScale = frame.window.screen.scale;
 		
 		if (block) block();
 	};
@@ -446,9 +445,9 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 		self.window.windowLevel = _windowLevel;
 }
 
-- (BOOL)isVisible {
-	return !!self.view.superview;
+- (BOOL)isVisible
+{
+	return self.window || self.isBeingPresented;
 }
-
 
 @end
