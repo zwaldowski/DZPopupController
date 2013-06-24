@@ -207,7 +207,8 @@
     const CGFloat shadowPad = DZPopupControllerShadowPadding();
 	
 	UIEdgeInsets insets = self.frameEdgeInsets;
-	insets.top -= MAX(shadowPad - self.statusBarHeight, shadowPad);
+    CGFloat statusBarExtra = DZPopupUIIsStark() ? self.statusBarHeight / 2 : 0;
+	insets.top -= MIN(shadowPad - statusBarExtra, shadowPad);
 	insets.bottom -= shadowPad;
 	insets.left -= shadowPad;
 	insets.right -= shadowPad;
