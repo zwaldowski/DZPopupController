@@ -152,7 +152,7 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 	
 #if DZPOPUP_HAS_7_SDK
 	if (DZPopupUIIsStark()) {
-		self.edgesForExtendedLayout = UIExtendedEdgeNone;
+		self.edgesForExtendedLayout = UIRectEdgeNone;
 		self.automaticallyAdjustsScrollViewInsets = NO;
 		self.extendedLayoutIncludesOpaqueBars = YES;
 	}
