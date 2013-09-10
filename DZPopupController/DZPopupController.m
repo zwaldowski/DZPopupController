@@ -464,7 +464,11 @@ void DZPopupSetFrameDuringTransform(UIView *view, CGRect newFrame) {
 - (CGFloat)statusBarHeight {
 	CGRect statusBarFrame = [[UIApplication sharedApplication] statusBarFrame];
 	CGFloat statusBarHeight = statusBarFrame.size.height == self.view.bounds.size.width ?  statusBarFrame.size.width : statusBarFrame.size.height;
-	return statusBarHeight;
+	if (DZPopupUIIsStark()) {
+		return statusBarHeight * [[UIScreen mainScreen] scale];
+	} else {
+		return statusBarHeight;        
+	}
 }
 
 @end
